@@ -1,0 +1,1149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cornerstone Flow Switch</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --surface: #111118;
+    --surface2: #1a1a26;
+    --border: #2a2a3d;
+    --border-bright: #3d3d5c;
+    --accent: #6c63ff;
+    --accent2: #ff6584;
+    --native: #00d4aa;
+    --rn: #ff9500;
+    --text: #e8e8f0;
+    --text-dim: #7878a0;
+    --text-muted: #4a4a6a;
+    --success: #00d4aa;
+    --danger: #ff4d6a;
+    --mono: 'JetBrains Mono', monospace;
+    --sans: 'Syne', sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--mono);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Background grid */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(var(--border) 1px, transparent 1px),
+      linear-gradient(90deg, var(--border) 1px, transparent 1px);
+    background-size: 40px 40px;
+    opacity: 0.3;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* Glow orb */
+  body::after {
+    content: '';
+    position: fixed;
+    top: -200px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 600px;
+    height: 600px;
+    background: radial-gradient(circle, rgba(108,99,255,0.15) 0%, transparent 70%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .app { position: relative; z-index: 1; max-width: 1100px; margin: 0 auto; padding: 24px 20px 60px; }
+
+  /* Header */
+  header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 0 32px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 32px;
+  }
+
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .logo-icon {
+    width: 36px; height: 36px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px;
+  }
+
+  .logo-text {
+    font-family: var(--sans);
+    font-size: 18px;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+  }
+
+  .logo-text span { color: var(--accent); }
+
+  .header-actions { display: flex; gap: 10px; }
+
+  /* Tabs */
+  .tabs {
+    display: flex;
+    gap: 4px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 4px;
+    margin-bottom: 28px;
+  }
+
+  .tab {
+    flex: 1;
+    padding: 10px 16px;
+    background: transparent;
+    border: none;
+    color: var(--text-dim);
+    font-family: var(--mono);
+    font-size: 12px;
+    font-weight: 500;
+    border-radius: 7px;
+    cursor: pointer;
+    transition: all 0.2s;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+  }
+
+  .tab.active {
+    background: var(--surface2);
+    color: var(--text);
+    border: 1px solid var(--border-bright);
+  }
+
+  .tab:hover:not(.active) { color: var(--text); }
+
+  /* Panel */
+  .panel { display: none; }
+  .panel.active { display: block; }
+
+  /* Section title */
+  .section-title {
+    font-family: var(--sans);
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .section-title::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  /* Flow Toggle Banner */
+  .flow-banner {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px 24px;
+    margin-bottom: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    flex-wrap: wrap;
+  }
+
+  .flow-label {
+    font-family: var(--sans);
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  .flow-toggle-wrap {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .flow-name {
+    font-family: var(--sans);
+    font-size: 15px;
+    font-weight: 700;
+    transition: color 0.3s;
+  }
+
+  .flow-name.native { color: var(--native); }
+  .flow-name.rn { color: var(--rn); }
+  .flow-name.inactive { color: var(--text-muted); }
+
+  .toggle-track {
+    width: 56px; height: 28px;
+    background: var(--surface2);
+    border: 1px solid var(--border-bright);
+    border-radius: 14px;
+    position: relative;
+    cursor: pointer;
+    transition: background 0.3s;
+  }
+
+  .toggle-track.native-on { background: rgba(0,212,170,0.2); border-color: var(--native); }
+  .toggle-track.rn-on { background: rgba(255,149,0,0.2); border-color: var(--rn); }
+
+  .toggle-thumb {
+    width: 20px; height: 20px;
+    background: var(--text-dim);
+    border-radius: 50%;
+    position: absolute;
+    top: 3px; left: 4px;
+    transition: all 0.3s cubic-bezier(0.34,1.56,0.64,1);
+  }
+
+  .toggle-track.native-on .toggle-thumb {
+    background: var(--native);
+    box-shadow: 0 0 10px rgba(0,212,170,0.6);
+    left: 32px;
+  }
+
+  .flow-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  .flow-badge.native {
+    background: rgba(0,212,170,0.12);
+    color: var(--native);
+    border: 1px solid rgba(0,212,170,0.3);
+  }
+
+  .flow-badge.rn {
+    background: rgba(255,149,0,0.12);
+    color: var(--rn);
+    border: 1px solid rgba(255,149,0,0.3);
+  }
+
+  .dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; animation: pulse 2s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+
+  /* Rule card */
+  .rules-list { display: flex; flex-direction: column; gap: 12px; }
+
+  .rule-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px 18px;
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 1fr auto;
+    gap: 12px;
+    align-items: center;
+    transition: border-color 0.2s;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .rule-card::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 3px;
+    background: var(--native);
+    transition: background 0.3s;
+  }
+
+  .rule-card.rn::before { background: var(--rn); }
+  .rule-card.disabled::before { background: var(--text-muted); }
+
+  .rule-card:hover { border-color: var(--border-bright); }
+
+  .rule-field label {
+    display: block;
+    font-size: 10px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 4px;
+  }
+
+  .rule-field-value {
+    font-size: 13px;
+    color: var(--text);
+    font-weight: 500;
+  }
+
+  .rule-field-value.empty { color: var(--text-muted); font-style: italic; }
+
+  .badge-flow {
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 700;
+  }
+
+  .badge-flow.native {
+    background: rgba(0,212,170,0.12);
+    color: var(--native);
+  }
+
+  .badge-flow.rn {
+    background: rgba(255,149,0,0.12);
+    color: var(--rn);
+  }
+
+  .rule-actions { display: flex; gap: 6px; }
+
+  /* Form */
+  .form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 16px;
+  }
+
+  .form-group { display: flex; flex-direction: column; gap: 6px; }
+
+  .form-group label {
+    font-size: 11px;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  .form-input, .form-select {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 12px;
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 13px;
+    outline: none;
+    transition: border-color 0.2s;
+    width: 100%;
+  }
+
+  .form-input:focus, .form-select:focus { border-color: var(--accent); }
+  .form-select { cursor: pointer; appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%237878a0' stroke-width='1.5' fill='none'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; padding-right: 32px; }
+  .form-select option { background: var(--surface2); }
+
+  /* Segment control for flow */
+  .segment-control {
+    display: flex;
+    gap: 0;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+
+  .segment-btn {
+    flex: 1;
+    padding: 10px 12px;
+    background: transparent;
+    border: none;
+    color: var(--text-dim);
+    font-family: var(--mono);
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .segment-btn:first-child { border-right: 1px solid var(--border); }
+
+  .segment-btn.active-native {
+    background: rgba(0,212,170,0.15);
+    color: var(--native);
+  }
+
+  .segment-btn.active-rn {
+    background: rgba(255,149,0,0.15);
+    color: var(--rn);
+  }
+
+  /* Buttons */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 9px 16px;
+    border-radius: 8px;
+    font-family: var(--mono);
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    border: 1px solid transparent;
+    transition: all 0.2s;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+  }
+
+  .btn-primary {
+    background: var(--accent);
+    color: #fff;
+    border-color: var(--accent);
+  }
+  .btn-primary:hover { background: #7c75ff; }
+
+  .btn-ghost {
+    background: transparent;
+    color: var(--text-dim);
+    border-color: var(--border);
+  }
+  .btn-ghost:hover { border-color: var(--border-bright); color: var(--text); }
+
+  .btn-danger {
+    background: transparent;
+    color: var(--danger);
+    border-color: rgba(255,77,106,0.3);
+  }
+  .btn-danger:hover { background: rgba(255,77,106,0.1); }
+
+  .btn-icon {
+    padding: 8px;
+    font-size: 14px;
+    line-height: 1;
+  }
+
+  /* Add rule form container */
+  .add-form-box {
+    background: var(--surface);
+    border: 1px dashed var(--border-bright);
+    border-radius: 12px;
+    padding: 20px;
+    margin-top: 16px;
+    display: none;
+  }
+  .add-form-box.open { display: block; }
+
+  /* JSON Output */
+  .json-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+
+  .json-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface2);
+  }
+
+  .json-title { font-size: 11px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 1px; }
+
+  pre {
+    padding: 20px;
+    font-size: 12px;
+    line-height: 1.7;
+    overflow-x: auto;
+    color: var(--text-dim);
+    max-height: 400px;
+    overflow-y: auto;
+  }
+
+  pre .key { color: #a78bfa; }
+  pre .str { color: #34d399; }
+  pre .num { color: #fb923c; }
+  pre .bool-native { color: var(--native); }
+  pre .bool-rn { color: var(--rn); }
+
+  /* Stats bar */
+  .stats-bar {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+  }
+
+  .stat-chip {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 16px;
+    font-size: 12px;
+  }
+
+  .stat-num {
+    font-family: var(--sans);
+    font-size: 20px;
+    font-weight: 800;
+    line-height: 1;
+  }
+
+  .stat-num.native { color: var(--native); }
+  .stat-num.rn { color: var(--rn); }
+
+  .stat-label { color: var(--text-muted); font-size: 10px; text-transform: uppercase; letter-spacing: 1px; }
+
+  /* Notification toast */
+  .toast {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    background: var(--surface2);
+    border: 1px solid var(--border-bright);
+    border-radius: 10px;
+    padding: 14px 18px;
+    font-size: 13px;
+    z-index: 9999;
+    transform: translateY(80px);
+    opacity: 0;
+    transition: all 0.3s cubic-bezier(0.34,1.56,0.64,1);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .toast.show { transform: translateY(0); opacity: 1; }
+  .toast.success { border-color: var(--native); color: var(--native); }
+  .toast.info { border-color: var(--accent); color: var(--accent); }
+
+  /* Platform filter bar */
+  .filter-bar {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+
+  .filter-chip {
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 11px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text-dim);
+    cursor: pointer;
+    transition: all 0.15s;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .filter-chip:hover, .filter-chip.active { border-color: var(--accent); color: var(--accent); background: rgba(108,99,255,0.1); }
+
+  .filter-search {
+    margin-left: auto;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 6px 12px;
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 12px;
+    outline: none;
+    width: 200px;
+    transition: border-color 0.2s;
+  }
+  .filter-search:focus { border-color: var(--accent); }
+  .filter-search::placeholder { color: var(--text-muted); }
+
+  /* Empty state */
+  .empty-state {
+    text-align: center;
+    padding: 48px 20px;
+    color: var(--text-muted);
+  }
+  .empty-state-icon { font-size: 36px; margin-bottom: 12px; }
+  .empty-state-text { font-size: 13px; line-height: 1.6; }
+
+  /* Responsive */
+  @media (max-width: 700px) {
+    .rule-card { grid-template-columns: 1fr 1fr; }
+    .form-grid { grid-template-columns: 1fr; }
+    .rule-card .rule-actions { grid-column: span 2; }
+  }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border-bright); border-radius: 3px; }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <header>
+    <div class="logo">
+      <div class="logo-icon">⚡</div>
+      <div>
+        <div class="logo-text">Cornerstone <span>Flow</span> Switch</div>
+      </div>
+    </div>
+    <div class="header-actions">
+      <button class="btn btn-ghost" onclick="exportJSON()">⬇ Export</button>
+      <button class="btn btn-ghost" onclick="document.getElementById('importFile').click()">⬆ Import</button>
+      <input type="file" id="importFile" accept=".json" style="display:none" onchange="importJSON(event)">
+    </div>
+  </header>
+
+  <!-- Global Flow Toggle -->
+  <div class="flow-banner">
+    <div>
+      <div class="flow-label">Global Default Flow</div>
+      <div style="font-size:11px; color:var(--text-muted); margin-top:4px;">Override all rules nếu không match</div>
+    </div>
+    <div class="flow-toggle-wrap">
+      <span class="flow-name rn" id="labelRN">React Native</span>
+      <div class="toggle-track" id="globalToggle" onclick="toggleGlobal()">
+        <div class="toggle-thumb"></div>
+      </div>
+      <span class="flow-name native" id="labelNative">Native</span>
+    </div>
+    <div id="globalBadge" class="flow-badge rn">
+      <span class="dot"></span>
+      <span id="globalBadgeText">React Native Active</span>
+    </div>
+  </div>
+
+  <!-- Tabs -->
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('rules', this)">📋 Rules</button>
+    <button class="tab" onclick="switchTab('json', this)">{ } JSON Config</button>
+    <button class="tab" onclick="switchTab('simulator', this)">🔬 Simulator</button>
+  </div>
+
+  <!-- RULES PANEL -->
+  <div class="panel active" id="panel-rules">
+
+    <div class="stats-bar" id="statsBar"></div>
+
+    <div class="section-title">Switch Rules</div>
+
+    <div class="filter-bar">
+      <button class="filter-chip active" onclick="filterRules('all', this)">All</button>
+      <button class="filter-chip" onclick="filterRules('rn', this)">RN Fallback</button>
+      <button class="filter-chip" onclick="filterRules('native', this)">Native Override</button>
+      <button class="filter-chip" onclick="filterRules('ios', this)">iOS</button>
+      <button class="filter-chip" onclick="filterRules('android', this)">Android</button>
+      <input class="filter-search" placeholder="Search device / refId..." oninput="searchRules(this.value)">
+    </div>
+
+    <div class="rules-list" id="rulesList"></div>
+
+    <!-- Add Rule Button -->
+    <div style="margin-top:16px;">
+      <button class="btn btn-primary" onclick="toggleAddForm()">+ Add Rule</button>
+    </div>
+
+    <!-- Add Rule Form -->
+    <div class="add-form-box" id="addForm">
+      <div class="section-title" style="margin-bottom:16px;">New Rule</div>
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Platform</label>
+          <select class="form-select" id="f_platform">
+            <option value="">Any</option>
+            <option value="ios">iOS</option>
+            <option value="android">Android</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Platform Version</label>
+          <input class="form-input" id="f_platVer" placeholder="e.g. >= 17.0 or 16.0-17.5">
+        </div>
+        <div class="form-group">
+          <label>Package Version</label>
+          <input class="form-input" id="f_pkgVer" placeholder="e.g. >= 2.1.0 or 2.0.0-2.5.0">
+        </div>
+        <div class="form-group">
+          <label>Device Model</label>
+          <input class="form-input" id="f_device" placeholder="e.g. iPhone 14, Pixel 7">
+        </div>
+        <div class="form-group">
+          <label>refId</label>
+          <input class="form-input" id="f_refId" placeholder="e.g. ref_checkout_v2">
+        </div>
+        <div class="form-group">
+          <label>blockId</label>
+          <input class="form-input" id="f_blockId" placeholder="e.g. block_001">
+        </div>
+      </div>
+      <div class="form-group" style="margin-bottom:16px;">
+        <label>Target Flow</label>
+        <div class="segment-control" style="max-width:300px;">
+          <button class="segment-btn" id="seg_native" onclick="selectFlow('native')">⚙ Native</button>
+          <button class="segment-btn active-rn" id="seg_rn" onclick="selectFlow('rn')">⚛ React Native</button>
+        </div>
+      </div>
+      <div class="form-group" style="margin-bottom:16px;">
+        <label>Note (optional)</label>
+        <input class="form-input" id="f_note" placeholder="e.g. Native crash on this device/version — fallback to RN">
+      </div>
+      <div style="display:flex;gap:10px;">
+        <button class="btn btn-primary" onclick="addRule()">Save Rule</button>
+        <button class="btn btn-ghost" onclick="toggleAddForm()">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- JSON PANEL -->
+  <div class="panel" id="panel-json">
+    <div class="section-title">JSON Config Output</div>
+    <div class="json-box">
+      <div class="json-header">
+        <span class="json-title">cornerstone-flow-config.json</span>
+        <button class="btn btn-ghost" onclick="copyJSON()" style="padding:6px 12px;">Copy</button>
+      </div>
+      <pre id="jsonOutput"></pre>
+    </div>
+  </div>
+
+  <!-- SIMULATOR PANEL -->
+  <div class="panel" id="panel-simulator">
+    <div class="section-title">Rule Simulator</div>
+    <div style="background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:24px; margin-bottom:20px;">
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Platform</label>
+          <select class="form-select" id="sim_platform">
+            <option value="ios">iOS</option>
+            <option value="android">Android</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Platform Version</label>
+          <input class="form-input" id="sim_platVer" placeholder="e.g. 17.2">
+        </div>
+        <div class="form-group">
+          <label>Package Version</label>
+          <input class="form-input" id="sim_pkgVer" placeholder="e.g. 2.3.1">
+        </div>
+        <div class="form-group">
+          <label>Device Model</label>
+          <input class="form-input" id="sim_device" placeholder="e.g. iPhone 14">
+        </div>
+        <div class="form-group">
+          <label>refId</label>
+          <input class="form-input" id="sim_refId" placeholder="e.g. ref_checkout_v2">
+        </div>
+        <div class="form-group">
+          <label>blockId</label>
+          <input class="form-input" id="sim_blockId" placeholder="e.g. block_001">
+        </div>
+      </div>
+      <button class="btn btn-primary" onclick="runSimulator()">▶ Run Simulation</button>
+    </div>
+
+    <div id="simResult" style="display:none;"></div>
+  </div>
+
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ===== STATE =====
+let state = {
+  globalFlow: 'native', // 'native' | 'rn'
+  rules: [
+    { id: 'r1', platform: 'android', platVer: '', pkgVer: '2.0.0-2.3.0', device: 'Pixel 6', refId: 'ref_checkout', blockId: 'block_002', flow: 'rn', enabled: true, note: 'Native crash on Pixel 6 — fallback RN' },
+    { id: 'r2', platform: 'ios', platVer: '16.0-16.5', pkgVer: '', device: 'iPhone 12', refId: 'ref_profile', blockId: 'block_003', flow: 'rn', enabled: true, note: 'Native unstable on iOS 16.0-16.5' },
+  ]
+};
+
+let selectedFlow = 'rn';
+let activeFilter = 'all';
+let searchQuery = '';
+
+// ===== HELPERS =====
+function uid() { return 'r' + Date.now().toString(36); }
+
+function showToast(msg, type = 'success') {
+  const t = document.getElementById('toast');
+  t.textContent = (type === 'success' ? '✓ ' : 'ℹ ') + msg;
+  t.className = 'toast show ' + type;
+  setTimeout(() => t.className = 'toast', 2500);
+}
+
+// ===== GLOBAL TOGGLE =====
+function toggleGlobal() {
+  state.globalFlow = state.globalFlow === 'native' ? 'rn' : 'native';
+  renderGlobalToggle();
+  saveLocal();
+}
+
+function renderGlobalToggle() {
+  const track = document.getElementById('globalToggle');
+  const badge = document.getElementById('globalBadge');
+  const badgeText = document.getElementById('globalBadgeText');
+  if (state.globalFlow === 'native') {
+    track.className = 'toggle-track native-on';
+    badge.className = 'flow-badge native';
+    badgeText.textContent = 'Native Active';
+  } else {
+    track.className = 'toggle-track rn-on';
+    badge.className = 'flow-badge rn';
+    badgeText.textContent = 'React Native Active';
+  }
+}
+
+// ===== TABS =====
+function switchTab(name, btn) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('panel-' + name).classList.add('active');
+  btn.classList.add('active');
+  if (name === 'json') renderJSON();
+}
+
+// ===== RENDER RULES =====
+function getFilteredRules() {
+  return state.rules.filter(r => {
+    if (activeFilter === 'native' && r.flow !== 'native') return false;
+    if (activeFilter === 'rn' && r.flow !== 'rn') return false;
+    if (activeFilter === 'ios' && r.platform !== 'ios') return false;
+    if (activeFilter === 'android' && r.platform !== 'android') return false;
+    if (searchQuery) {
+      const q = searchQuery.toLowerCase();
+      return (r.device||'').toLowerCase().includes(q) ||
+             (r.refId||'').toLowerCase().includes(q) ||
+             (r.blockId||'').toLowerCase().includes(q) ||
+             (r.note||'').toLowerCase().includes(q);
+    }
+    return true;
+  });
+}
+
+function renderRules() {
+  const list = document.getElementById('rulesList');
+  const filtered = getFilteredRules();
+
+  if (filtered.length === 0) {
+    list.innerHTML = `<div class="empty-state"><div class="empty-state-icon">🔍</div><div class="empty-state-text">No rules found.<br>Add a new rule to get started.</div></div>`;
+  } else {
+    list.innerHTML = filtered.map(r => `
+      <div class="rule-card ${r.flow} ${r.enabled ? '' : 'disabled'}" id="card_${r.id}">
+        <div class="rule-field">
+          <label>Platform / Version</label>
+          <div class="rule-field-value">${r.platform ? r.platform.toUpperCase() : '<span class="empty">Any</span>'} ${r.platVer || ''}</div>
+        </div>
+        <div class="rule-field">
+          <label>Pkg Version</label>
+          <div class="rule-field-value ${r.pkgVer ? '' : 'empty'}">${r.pkgVer || 'Any'}</div>
+        </div>
+        <div class="rule-field">
+          <label>Device</label>
+          <div class="rule-field-value ${r.device ? '' : 'empty'}">${r.device || 'Any'}</div>
+        </div>
+        <div class="rule-field">
+          <label>refId → blockId</label>
+          <div class="rule-field-value ${r.refId ? '' : 'empty'}" style="font-size:12px;">${r.refId || '—'} ${r.refId && r.blockId ? '<span style="color:var(--text-muted)">→</span> '+r.blockId : ''}</div>
+          ${r.note ? `<div style="font-size:10px;color:var(--text-muted);margin-top:3px;">${r.note}</div>` : ''}
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px;">
+          <span class="badge-flow ${r.flow}">${r.flow === 'native' ? '⚙ Native' : '⚛ RN'}</span>
+          <div class="rule-actions">
+            <button class="btn btn-ghost btn-icon" title="${r.enabled ? 'Disable' : 'Enable'}" onclick="toggleRule('${r.id}')">${r.enabled ? '⏸' : '▶'}</button>
+            <button class="btn btn-danger btn-icon" title="Delete" onclick="deleteRule('${r.id}')">✕</button>
+          </div>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  renderStats();
+  renderJSON();
+}
+
+function renderStats() {
+  const nativeCount = state.rules.filter(r => r.flow === 'native' && r.enabled).length;
+  const rnCount = state.rules.filter(r => r.flow === 'rn' && r.enabled).length;
+  const disabledCount = state.rules.filter(r => !r.enabled).length;
+
+  document.getElementById('statsBar').innerHTML = `
+    <div class="stat-chip">
+      <div><div class="stat-num native">${nativeCount}</div><div class="stat-label">Native override</div></div>
+    </div>
+    <div class="stat-chip">
+      <div><div class="stat-num rn">${rnCount}</div><div class="stat-label">RN fallback</div></div>
+    </div>
+    <div class="stat-chip">
+      <div><div class="stat-num" style="color:var(--text-muted)">${disabledCount}</div><div class="stat-label">Disabled</div></div>
+    </div>
+    <div class="stat-chip">
+      <div><div class="stat-num" style="color:var(--accent)">${state.rules.length}</div><div class="stat-label">Total rules</div></div>
+    </div>
+  `;
+}
+
+// ===== FILTERS =====
+function filterRules(type, btn) {
+  activeFilter = type;
+  document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+  btn.classList.add('active');
+  renderRules();
+}
+
+function searchRules(val) {
+  searchQuery = val;
+  renderRules();
+}
+
+// ===== ADD/DELETE/TOGGLE RULE =====
+function toggleAddForm() {
+  const f = document.getElementById('addForm');
+  f.classList.toggle('open');
+}
+
+function selectFlow(flow) {
+  selectedFlow = flow;
+  document.getElementById('seg_native').className = 'segment-btn' + (flow === 'native' ? ' active-native' : '');
+  document.getElementById('seg_rn').className = 'segment-btn' + (flow === 'rn' ? ' active-rn' : '');
+}
+
+function addRule() {
+  const rule = {
+    id: uid(),
+    platform: document.getElementById('f_platform').value,
+    platVer: document.getElementById('f_platVer').value.trim(),
+    pkgVer: document.getElementById('f_pkgVer').value.trim(),
+    device: document.getElementById('f_device').value.trim(),
+    refId: document.getElementById('f_refId').value.trim(),
+    blockId: document.getElementById('f_blockId').value.trim(),
+    flow: selectedFlow,
+    enabled: true,
+    note: document.getElementById('f_note').value.trim(),
+  };
+
+  state.rules.push(rule);
+  renderRules();
+  saveLocal();
+  toggleAddForm();
+
+  // Reset form
+  ['f_platform','f_platVer','f_pkgVer','f_device','f_refId','f_blockId','f_note'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el.tagName === 'SELECT') el.value = '';
+    else el.value = '';
+  });
+
+  showToast('Rule added successfully');
+}
+
+function deleteRule(id) {
+  state.rules = state.rules.filter(r => r.id !== id);
+  renderRules();
+  saveLocal();
+  showToast('Rule deleted', 'info');
+}
+
+function toggleRule(id) {
+  const r = state.rules.find(r => r.id === id);
+  if (r) { r.enabled = !r.enabled; renderRules(); saveLocal(); }
+}
+
+// ===== JSON =====
+function buildConfig() {
+  return {
+    version: '1.0',
+    updatedAt: new Date().toISOString(),
+    globalDefaultFlow: state.globalFlow,
+    rules: state.rules.filter(r => r.enabled).map(({ id, enabled, ...rest }) => rest)
+  };
+}
+
+function syntaxHighlight(json) {
+  return json
+    .replace(/("[\w@-]+")\s*:/g, '<span class="key">$1</span>:')
+    .replace(/: (".*?")/g, ': <span class="str">$1</span>')
+    .replace(/: (\d+\.?\d*)/g, ': <span class="num">$1</span>')
+    .replace(/: (true|false)/g, (m, v) => `: <span class="${v === 'true' ? 'bool-native' : 'bool-rn'}">${v}</span>`);
+}
+
+function renderJSON() {
+  const json = JSON.stringify(buildConfig(), null, 2);
+  document.getElementById('jsonOutput').innerHTML = syntaxHighlight(json);
+}
+
+function copyJSON() {
+  navigator.clipboard.writeText(JSON.stringify(buildConfig(), null, 2));
+  showToast('JSON copied to clipboard');
+}
+
+function exportJSON() {
+  const blob = new Blob([JSON.stringify(buildConfig(), null, 2)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'cornerstone-flow-config.json';
+  a.click();
+  showToast('Config exported');
+}
+
+function importJSON(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    try {
+      const cfg = JSON.parse(ev.target.result);
+      if (cfg.globalDefaultFlow) state.globalFlow = cfg.globalDefaultFlow;
+      if (cfg.rules) state.rules = cfg.rules.map(r => ({ ...r, id: uid(), enabled: true }));
+      renderGlobalToggle();
+      renderRules();
+      saveLocal();
+      showToast('Config imported successfully');
+    } catch { showToast('Invalid JSON file', 'info'); }
+  };
+  reader.readAsText(file);
+  e.target.value = '';
+}
+
+// ===== SIMULATOR =====
+function versionInRange(version, range) {
+  if (!range || !version) return true;
+  version = version.trim();
+  range = range.trim();
+
+  if (range.startsWith('>=')) {
+    const min = range.slice(2).trim();
+    return compareVer(version, min) >= 0;
+  }
+  if (range.startsWith('<=')) {
+    const max = range.slice(2).trim();
+    return compareVer(version, max) <= 0;
+  }
+  if (range.includes('-')) {
+    const [min, max] = range.split('-').map(s => s.trim());
+    return compareVer(version, min) >= 0 && compareVer(version, max) <= 0;
+  }
+  return version === range;
+}
+
+function compareVer(a, b) {
+  const pa = a.split('.').map(Number);
+  const pb = b.split('.').map(Number);
+  for (let i = 0; i < Math.max(pa.length, pb.length); i++) {
+    const diff = (pa[i]||0) - (pb[i]||0);
+    if (diff !== 0) return diff;
+  }
+  return 0;
+}
+
+function runSimulator() {
+  const input = {
+    platform: document.getElementById('sim_platform').value,
+    platVer: document.getElementById('sim_platVer').value.trim(),
+    pkgVer: document.getElementById('sim_pkgVer').value.trim(),
+    device: document.getElementById('sim_device').value.trim(),
+    refId: document.getElementById('sim_refId').value.trim(),
+    blockId: document.getElementById('sim_blockId').value.trim(),
+  };
+
+  const matched = [];
+  for (const rule of state.rules) {
+    if (!rule.enabled) continue;
+    let match = true;
+    const reasons = [];
+
+    if (rule.platform && rule.platform !== input.platform) { match = false; }
+    else if (rule.platform) reasons.push(`platform = ${input.platform}`);
+
+    if (match && rule.platVer && !versionInRange(input.platVer, rule.platVer)) match = false;
+    else if (match && rule.platVer) reasons.push(`platVer ${rule.platVer}`);
+
+    if (match && rule.pkgVer && !versionInRange(input.pkgVer, rule.pkgVer)) match = false;
+    else if (match && rule.pkgVer) reasons.push(`pkgVer ${rule.pkgVer}`);
+
+    if (match && rule.device && !input.device.toLowerCase().includes(rule.device.toLowerCase())) match = false;
+    else if (match && rule.device) reasons.push(`device "${rule.device}"`);
+
+    if (match && rule.refId && rule.refId !== input.refId) match = false;
+    else if (match && rule.refId) reasons.push(`refId = ${rule.refId}`);
+
+    if (match && rule.blockId && rule.blockId !== input.blockId) match = false;
+    else if (match && rule.blockId) reasons.push(`blockId = ${rule.blockId}`);
+
+    if (match) matched.push({ rule, reasons });
+  }
+
+  const result = matched.length > 0 ? matched[0] : null;
+  const finalFlow = result ? result.rule.flow : state.globalFlow;
+  const isNative = finalFlow === 'native';
+
+  const div = document.getElementById('simResult');
+  div.style.display = 'block';
+  div.innerHTML = `
+    <div style="background:var(--surface); border:1px solid ${isNative ? 'var(--native)' : 'var(--rn)'}; border-radius:12px; padding:24px; margin-bottom:16px;">
+      <div style="display:flex; align-items:center; gap:16px; margin-bottom:20px;">
+        <div style="font-size:32px;">${isNative ? '⚙' : '⚛'}</div>
+        <div>
+          <div style="font-family:var(--sans); font-size:22px; font-weight:800; color:${isNative ? 'var(--native)' : 'var(--rn)'}">
+            ${isNative ? 'Cornerstone Native' : 'React Native'}
+          </div>
+          <div style="font-size:12px; color:var(--text-muted); margin-top:2px;">
+            ${result ? 'Matched rule: ' + (result.rule.note || result.rule.id) : 'No rule matched — using global default'}
+          </div>
+        </div>
+      </div>
+      ${result ? `
+        <div style="background:var(--surface2); border-radius:8px; padding:12px 16px; font-size:12px; color:var(--text-dim);">
+          <div style="color:var(--text-muted); margin-bottom:6px; text-transform:uppercase; letter-spacing:1px; font-size:10px;">Match conditions</div>
+          ${result.reasons.map(r => `<div>✓ ${r}</div>`).join('')}
+        </div>
+      ` : `
+        <div style="font-size:12px; color:var(--text-muted);">Fallback to global default: <strong style="color:${isNative ? 'var(--native)' : 'var(--rn)'}">${state.globalFlow}</strong></div>
+      `}
+    </div>
+    ${matched.length > 1 ? `<div style="font-size:11px; color:var(--text-muted); padding:8px 0;">⚠ ${matched.length - 1} other rule(s) also matched but were not applied (first match wins)</div>` : ''}
+  `;
+}
+
+// ===== LOCAL STORAGE =====
+function saveLocal() {
+  try { localStorage.setItem('cs_flow_state', JSON.stringify(state)); } catch(e) {}
+}
+
+function loadLocal() {
+  try {
+    const s = localStorage.getItem('cs_flow_state');
+    if (s) state = JSON.parse(s);
+  } catch(e) {}
+}
+
+// ===== INIT =====
+loadLocal();
+renderGlobalToggle();
+renderRules();
+</script>
+</body>
+</html>
