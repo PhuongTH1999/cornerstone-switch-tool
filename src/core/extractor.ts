@@ -35,7 +35,6 @@ function getLayout(node: SceneNode): LayoutInfo {
   if ('layoutSizingHorizontal' in n) {
     if (n.layoutSizingHorizontal === 'FILL') fillMaxWidth = true;
     if (n.layoutSizingHorizontal === 'FIXED') isFixedWidth = true;
-    
     if (n.layoutSizingVertical === 'FILL') fillMaxHeight = true;
     if (n.layoutSizingVertical === 'FIXED') isFixedHeight = true;
   } else {
@@ -51,7 +50,7 @@ function getLayout(node: SceneNode): LayoutInfo {
     isFixedHeight = !fillMaxHeight;
   }
 
-  // Text usually hugs content. Buttons shouldn't have hardcoded dimensions per rules.
+  // TEXT and CTA_BUTTON should hug content — no hardcoded dimensions
   if (node.type === 'TEXT') {
     isFixedWidth = false;
     isFixedHeight = false;
@@ -123,7 +122,6 @@ function getStyle(node: SceneNode): StyleInfo {
 
 function extractColor(fills: readonly Paint[]): string | null {
   if (!fills || fills.length === 0) return null;
-
   const fill = fills.find(f => f.visible !== false);
   if (!fill || fill.type !== 'SOLID') return null;
 
@@ -133,7 +131,6 @@ function extractColor(fills: readonly Paint[]): string | null {
   if (alpha < 1) {
     return `rgba(${Math.round(r * 255)}, ${Math.round(g * 255)}, ${Math.round(b * 255)}, ${alpha.toFixed(2)})`;
   }
-
   const toHex = (v: number) => Math.round(v * 255).toString(16).padStart(2, '0');
   return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
 }
@@ -144,7 +141,6 @@ function extractColor(fills: readonly Paint[]): string | null {
 
 function getTextInfo(node: SceneNode): TextInfo | null {
   if (node.type !== 'TEXT') return null;
-
   const fills = node.fills as Paint[];
   const fontSize = typeof node.fontSize === 'number' ? node.fontSize : 14;
   const fontName = typeof node.fontName !== 'symbol' ? node.fontName : null;

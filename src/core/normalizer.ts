@@ -1,27 +1,16 @@
 import { RawNode, EnrichedNode, SemanticRole } from './types';
 
 // ─────────────────────────────────────────────
-// Step 1: Clean — remove invisible, strip id
+// Step 1: Clean — remove invisible nodes
 // ─────────────────────────────────────────────
 
 export function cleanNode(node: RawNode): RawNode | null {
   if (!node.visible) return null;
-
   const children = node.children
     .map(cleanNode)
     .filter((c): c is RawNode => c !== null);
 
-  // Strip id — noise for LLM, keep name for semantic hints
-  return {
-    id: node.id, // kept for figmaNodeId traceability
-    name: node.name,
-    type: node.type,
-    visible: true,
-    layout: node.layout,
-    style: node.style,
-    text: node.text,
-    children,
-  };
+  return { ...node, visible: true, children };
 }
 
 // ─────────────────────────────────────────────
@@ -32,14 +21,9 @@ export function flattenNode(node: RawNode): RawNode {
   const flatChildren = node.children.map(flattenNode);
 
   // Merge passthrough wrapper into its only child
-  if (
-    flatChildren.length === 1 &&
-    !node.text &&
-    !hasSignificantStyle(node)
-  ) {
+  if (flatChildren.length === 1 && !node.text && !hasSignificantStyle(node)) {
     return flatChildren[0];
   }
-
   return { ...node, children: flatChildren };
 }
 
@@ -63,7 +47,6 @@ export function enrichNode(node: RawNode): EnrichedNode {
 }
 
 function detectRole(node: RawNode): SemanticRole | undefined {
-  // Text size → role
   if (node.type === 'TEXT' && node.text) {
     const size = node.text.fontSize;
     if (size >= 24) return 'heading';
@@ -72,7 +55,6 @@ function detectRole(node: RawNode): SemanticRole | undefined {
     return 'body';
   }
 
-  // Name-based detection
   const name = node.name.toLowerCase();
   if (/\bbtn\b|button|\bcta\b/.test(name)) return 'button';
   if (/input|field|textfield/.test(name)) return 'input';

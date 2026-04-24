@@ -261,12 +261,25 @@
     #resize-corner:hover {
       opacity: 0.8;
     }
+
+    #profileBadge {
+      display: inline-block;
+      margin-top: 6px;
+      font-size: 10px;
+      padding: 3px 8px;
+      border-radius: 12px;
+      background: rgba(168, 85, 247, 0.15);
+      color: #e8b0ff;
+      border: 1px solid rgba(168, 85, 247, 0.3);
+      font-weight: 500;
+    }
   </style>
 </head>
 <body>
   <div class="container">
     <div class="header">
       <h3>Design Extractor</h3>
+      <div id="profileBadge" style="display: none;"></div>
       <p class="hint">Select nodes in Figma, extract properties, and generate an LLM-ready SDUI prompt.</p>
     </div>
 
@@ -355,6 +368,21 @@
       status.innerHTML = `${checkSvg} <span>Copied to clipboard!</span>`;
       status.className = 'success';
     }
+
+    // --- Config Lifecycle On Load ---
+    window.addEventListener('load', () => {
+      if (window.PLUGIN_CONFIG) {
+        let flavorLabel = window.PLUGIN_CONFIG.flavor;
+        if (flavorLabel === 'marketing_sdui') flavorLabel = "Marketing SDUI";
+        if (flavorLabel === 'promotion_rn') flavorLabel = "Promotion RN";
+        
+        const badge = document.getElementById('profileBadge');
+        badge.innerHTML = `⚙️ Profile: ${flavorLabel}`;
+        badge.style.display = "inline-block";
+        
+        parent.postMessage({ pluginMessage: { type: 'SET_CONFIG', config: window.PLUGIN_CONFIG } }, '*');
+      }
+    });
 
     window.addEventListener('message', (event) => {
       const msg = event.data.pluginMessage;
