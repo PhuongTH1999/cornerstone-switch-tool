@@ -1,0 +1,15 @@
+{
+  "compilerOptions": {
+    "target": "ES6",
+    "lib": ["ES6"],
+    "strict": true,
+    "module": "commonjs",
+    "outDir": "dist",
+    "rootDir": "src",
+    "typeRoots": [
+      "./node_modules/@types",
+      "./node_modules/@figma/plugin-typings"
+    ]
+  },
+  "include": ["src/**/*"]
+}

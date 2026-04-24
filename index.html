@@ -1,602 +1,1056 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Cornerstone Flow Switch</title>
-<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
-<style>
-  :root {
-    --bg: #0a0a0f;
-    --surface: #111118;
-    --surface2: #1a1a26;
-    --border: #2a2a3d;
-    --border-bright: #3d3d5c;
-    --accent: #6c63ff;
-    --accent2: #ff6584;
-    --native: #00d4aa;
-    --rn: #ff9500;
-    --text: #e8e8f0;
-    --text-dim: #7878a0;
-    --text-muted: #4a4a6a;
-    --success: #00d4aa;
-    --danger: #ff4d6a;
-    --mono: 'JetBrains Mono', monospace;
-    --sans: 'Syne', sans-serif;
-  }
-
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-
-  body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: var(--mono);
-    min-height: 100vh;
-    overflow-x: hidden;
-  }
-
-  /* Background grid */
-  body::before {
-    content: '';
-    position: fixed;
-    inset: 0;
-    background-image:
-      linear-gradient(var(--border) 1px, transparent 1px),
-      linear-gradient(90deg, var(--border) 1px, transparent 1px);
-    background-size: 40px 40px;
-    opacity: 0.3;
-    pointer-events: none;
-    z-index: 0;
-  }
-
-  /* Glow orb */
-  body::after {
-    content: '';
-    position: fixed;
-    top: -200px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 600px;
-    height: 600px;
-    background: radial-gradient(circle, rgba(108,99,255,0.15) 0%, transparent 70%);
-    pointer-events: none;
-    z-index: 0;
-  }
-
-  .app { position: relative; z-index: 1; max-width: 1100px; margin: 0 auto; padding: 24px 20px 60px; }
-
-  /* Header */
-  header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 20px 0 32px;
-    border-bottom: 1px solid var(--border);
-    margin-bottom: 32px;
-  }
-
-  .logo {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-  }
-
-  .logo-icon {
-    width: 36px; height: 36px;
-    background: linear-gradient(135deg, var(--accent), var(--accent2));
-    border-radius: 8px;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 16px;
-  }
-
-  .logo-text {
-    font-family: var(--sans);
-    font-size: 18px;
-    font-weight: 800;
-    letter-spacing: -0.5px;
-  }
-
-  .logo-text span { color: var(--accent); }
-
-  .header-actions { display: flex; gap: 10px; }
-
-  /* Tabs */
-  .tabs {
-    display: flex;
-    gap: 4px;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 4px;
-    margin-bottom: 28px;
-  }
-
-  .tab {
-    flex: 1;
-    padding: 10px 16px;
-    background: transparent;
-    border: none;
-    color: var(--text-dim);
-    font-family: var(--mono);
-    font-size: 12px;
-    font-weight: 500;
-    border-radius: 7px;
-    cursor: pointer;
-    transition: all 0.2s;
-    letter-spacing: 0.5px;
-    text-transform: uppercase;
-  }
-
-  .tab.active {
-    background: var(--surface2);
-    color: var(--text);
-    border: 1px solid var(--border-bright);
-  }
-
-  .tab:hover:not(.active) { color: var(--text); }
-
-  /* Panel */
-  .panel { display: none; }
-  .panel.active { display: block; }
-
-  /* Section title */
-  .section-title {
-    font-family: var(--sans);
-    font-size: 13px;
-    font-weight: 600;
-    color: var(--text-dim);
-    text-transform: uppercase;
-    letter-spacing: 2px;
-    margin-bottom: 14px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-
-  .section-title::after {
-    content: '';
-    flex: 1;
-    height: 1px;
-    background: var(--border);
-  }
-
-  /* Flow Toggle Banner */
-  .flow-banner {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 20px 24px;
-    margin-bottom: 24px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 20px;
-    flex-wrap: wrap;
-  }
-
-  .flow-label {
-    font-family: var(--sans);
-    font-size: 14px;
-    font-weight: 700;
-    color: var(--text-dim);
-    text-transform: uppercase;
-    letter-spacing: 1px;
-  }
-
-  .flow-toggle-wrap {
-    display: flex;
-    align-items: center;
-    gap: 16px;
-  }
-
-  .flow-name {
-    font-family: var(--sans);
-    font-size: 15px;
-    font-weight: 700;
-    transition: color 0.3s;
-  }
-
-  .flow-name.native { color: var(--native); }
-  .flow-name.rn { color: var(--rn); }
-  .flow-name.inactive { color: var(--text-muted); }
-
-  .toggle-track {
-    width: 56px; height: 28px;
-    background: var(--surface2);
-    border: 1px solid var(--border-bright);
-    border-radius: 14px;
-    position: relative;
-    cursor: pointer;
-    transition: background 0.3s;
-  }
-
-  .toggle-track.native-on { background: rgba(0,212,170,0.2); border-color: var(--native); }
-  .toggle-track.rn-on { background: rgba(255,149,0,0.2); border-color: var(--rn); }
-
-  .toggle-thumb {
-    width: 20px; height: 20px;
-    background: var(--text-dim);
-    border-radius: 50%;
-    position: absolute;
-    top: 3px; left: 4px;
-    transition: all 0.3s cubic-bezier(0.34,1.56,0.64,1);
-  }
-
-  .toggle-track.native-on .toggle-thumb {
-    background: var(--native);
-    box-shadow: 0 0 10px rgba(0,212,170,0.6);
-    left: 32px;
-  }
-
-  .flow-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    padding: 6px 14px;
-    border-radius: 20px;
-    font-size: 11px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-  }
-
-  .flow-badge.native {
-    background: rgba(0,212,170,0.12);
-    color: var(--native);
-    border: 1px solid rgba(0,212,170,0.3);
-  }
-
-  .flow-badge.rn {
-    background: rgba(255,149,0,0.12);
-    color: var(--rn);
-    border: 1px solid rgba(255,149,0,0.3);
-  }
-
-  .dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; animation: pulse 2s infinite; }
-  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
-
-  /* Rule card */
-  .rules-list { display: flex; flex-direction: column; gap: 12px; }
-
-  .rule-card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 16px 18px;
-    display: grid;
-    grid-template-columns: 1fr 1fr 1fr 1fr auto;
-    gap: 12px;
-    align-items: center;
-    transition: border-color 0.2s;
-    position: relative;
-    overflow: hidden;
-  }
-
-  .rule-card::before {
-    content: '';
-    position: absolute;
-    left: 0; top: 0; bottom: 0;
-    width: 3px;
-    background: var(--native);
-    transition: background 0.3s;
-  }
-
-  .rule-card.rn::before { background: var(--rn); }
-  .rule-card.disabled::before { background: var(--text-muted); }
-
-  .rule-card:hover { border-color: var(--border-bright); }
-
-  .rule-field label {
-    display: block;
-    font-size: 10px;
-    color: var(--text-muted);
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    margin-bottom: 4px;
-  }
-
-  .rule-field-value {
-    font-size: 13px;
-    color: var(--text);
-    font-weight: 500;
-  }
-
-  .rule-field-value.empty { color: var(--text-muted); font-style: italic; }
-
-  .badge-flow {
-    padding: 3px 10px;
-    border-radius: 12px;
-    font-size: 11px;
-    font-weight: 700;
-  }
-
-  .badge-flow.native {
-    background: rgba(0,212,170,0.12);
-    color: var(--native);
-  }
-
-  .badge-flow.rn {
-    background: rgba(255,149,0,0.12);
-    color: var(--rn);
-  }
-
-  .rule-actions { display: flex; gap: 6px; }
-
-  /* Form */
-  .form-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 16px;
-    margin-bottom: 16px;
-  }
-
-  .form-group { display: flex; flex-direction: column; gap: 6px; }
-
-  .form-group label {
-    font-size: 11px;
-    color: var(--text-dim);
-    text-transform: uppercase;
-    letter-spacing: 1px;
-  }
-
-  .form-input, .form-select {
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 10px 12px;
-    color: var(--text);
-    font-family: var(--mono);
-    font-size: 13px;
-    outline: none;
-    transition: border-color 0.2s;
-    width: 100%;
-  }
-
-  .form-input:focus, .form-select:focus { border-color: var(--accent); }
-  .form-select { cursor: pointer; appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%237878a0' stroke-width='1.5' fill='none'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; padding-right: 32px; }
-  .form-select option { background: var(--surface2); }
-
-  /* Segment control for flow */
-  .segment-control {
-    display: flex;
-    gap: 0;
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    overflow: hidden;
-  }
-
-  .segment-btn {
-    flex: 1;
-    padding: 10px 12px;
-    background: transparent;
-    border: none;
-    color: var(--text-dim);
-    font-family: var(--mono);
-    font-size: 12px;
-    cursor: pointer;
-    transition: all 0.2s;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-  }
-
-  .segment-btn:first-child { border-right: 1px solid var(--border); }
-
-  .segment-btn.active-native {
-    background: rgba(0,212,170,0.15);
-    color: var(--native);
-  }
-
-  .segment-btn.active-rn {
-    background: rgba(255,149,0,0.15);
-    color: var(--rn);
-  }
-
-  /* Buttons */
-  .btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    padding: 9px 16px;
-    border-radius: 8px;
-    font-family: var(--mono);
-    font-size: 12px;
-    font-weight: 500;
-    cursor: pointer;
-    border: 1px solid transparent;
-    transition: all 0.2s;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    white-space: nowrap;
-  }
-
-  .btn-primary {
-    background: var(--accent);
-    color: #fff;
-    border-color: var(--accent);
-  }
-  .btn-primary:hover { background: #7c75ff; }
-
-  .btn-ghost {
-    background: transparent;
-    color: var(--text-dim);
-    border-color: var(--border);
-  }
-  .btn-ghost:hover { border-color: var(--border-bright); color: var(--text); }
-
-  .btn-danger {
-    background: transparent;
-    color: var(--danger);
-    border-color: rgba(255,77,106,0.3);
-  }
-  .btn-danger:hover { background: rgba(255,77,106,0.1); }
-
-  .btn-icon {
-    padding: 8px;
-    font-size: 14px;
-    line-height: 1;
-  }
-
-  /* Add rule form container */
-  .add-form-box {
-    background: var(--surface);
-    border: 1px dashed var(--border-bright);
-    border-radius: 12px;
-    padding: 20px;
-    margin-top: 16px;
-    display: none;
-  }
-  .add-form-box.open { display: block; }
-
-  /* JSON Output */
-  .json-box {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    overflow: hidden;
-  }
-
-  .json-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 12px 16px;
-    border-bottom: 1px solid var(--border);
-    background: var(--surface2);
-  }
-
-  .json-title { font-size: 11px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 1px; }
-
-  pre {
-    padding: 20px;
-    font-size: 12px;
-    line-height: 1.7;
-    overflow-x: auto;
-    color: var(--text-dim);
-    max-height: 400px;
-    overflow-y: auto;
-  }
-
-  pre .key { color: #a78bfa; }
-  pre .str { color: #34d399; }
-  pre .num { color: #fb923c; }
-  pre .bool-native { color: var(--native); }
-  pre .bool-rn { color: var(--rn); }
-
-  /* Stats bar */
-  .stats-bar {
-    display: flex;
-    gap: 16px;
-    margin-bottom: 24px;
-    flex-wrap: wrap;
-  }
-
-  .stat-chip {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 10px 16px;
-    font-size: 12px;
-  }
-
-  .stat-num {
-    font-family: var(--sans);
-    font-size: 20px;
-    font-weight: 800;
-    line-height: 1;
-  }
-
-  .stat-num.native { color: var(--native); }
-  .stat-num.rn { color: var(--rn); }
-
-  .stat-label { color: var(--text-muted); font-size: 10px; text-transform: uppercase; letter-spacing: 1px; }
-
-  /* Notification toast */
-  .toast {
-    position: fixed;
-    bottom: 24px;
-    right: 24px;
-    background: var(--surface2);
-    border: 1px solid var(--border-bright);
-    border-radius: 10px;
-    padding: 14px 18px;
-    font-size: 13px;
-    z-index: 9999;
-    transform: translateY(80px);
-    opacity: 0;
-    transition: all 0.3s cubic-bezier(0.34,1.56,0.64,1);
-    display: flex;
-    align-items: center;
-    gap: 10px;
-  }
-
-  .toast.show { transform: translateY(0); opacity: 1; }
-  .toast.success { border-color: var(--native); color: var(--native); }
-  .toast.info { border-color: var(--accent); color: var(--accent); }
-
-  /* Platform filter bar */
-  .filter-bar {
-    display: flex;
-    gap: 8px;
-    margin-bottom: 16px;
-    flex-wrap: wrap;
-    align-items: center;
-  }
-
-  .filter-chip {
-    padding: 5px 12px;
-    border-radius: 20px;
-    font-size: 11px;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    color: var(--text-dim);
-    cursor: pointer;
-    transition: all 0.15s;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-  }
-
-  .filter-chip:hover, .filter-chip.active { border-color: var(--accent); color: var(--accent); background: rgba(108,99,255,0.1); }
-
-  .filter-search {
-    margin-left: auto;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 6px 12px;
-    color: var(--text);
-    font-family: var(--mono);
-    font-size: 12px;
-    outline: none;
-    width: 200px;
-    transition: border-color 0.2s;
-  }
-  .filter-search:focus { border-color: var(--accent); }
-  .filter-search::placeholder { color: var(--text-muted); }
-
-  /* Empty state */
-  .empty-state {
-    text-align: center;
-    padding: 48px 20px;
-    color: var(--text-muted);
-  }
-  .empty-state-icon { font-size: 36px; margin-bottom: 12px; }
-  .empty-state-text { font-size: 13px; line-height: 1.6; }
-
-  /* Responsive */
-  @media (max-width: 700px) {
-    .rule-card { grid-template-columns: 1fr 1fr; }
-    .form-grid { grid-template-columns: 1fr; }
-    .rule-card .rule-actions { grid-column: span 2; }
-  }
-
-  /* Scrollbar */
-  ::-webkit-scrollbar { width: 6px; height: 6px; }
-  ::-webkit-scrollbar-track { background: var(--bg); }
-  ::-webkit-scrollbar-thumb { background: var(--border-bright); border-radius: 3px; }
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cornerstone Flow Switch</title>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0a0a0f;
+      --surface: #111118;
+      --surface2: #1a1a26;
+      --border: #2a2a3d;
+      --border-bright: #3d3d5c;
+      --accent: #6c63ff;
+      --accent2: #ff6584;
+      --native: #00d4aa;
+      --rn: #ff9500;
+      --text: #e8e8f0;
+      --text-dim: #7878a0;
+      --text-muted: #4a4a6a;
+      --success: #00d4aa;
+      --danger: #ff4d6a;
+      --mono: 'JetBrains Mono', monospace;
+      --sans: 'Syne', sans-serif;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--mono);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* Background grid */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+              linear-gradient(var(--border) 1px, transparent 1px),
+              linear-gradient(90deg, var(--border) 1px, transparent 1px);
+      background-size: 40px 40px;
+      opacity: 0.3;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* Glow orb */
+    body::after {
+      content: '';
+      position: fixed;
+      top: -200px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 600px;
+      height: 600px;
+      background: radial-gradient(circle, rgba(108,99,255,0.15) 0%, transparent 70%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .app { position: relative; z-index: 1; max-width: 1100px; margin: 0 auto; padding: 24px 20px 60px; }
+
+    /* Header */
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 20px 0 32px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 32px;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .logo-icon {
+      width: 36px; height: 36px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 16px;
+    }
+
+    .logo-text {
+      font-family: var(--sans);
+      font-size: 18px;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+    }
+
+    .logo-text span { color: var(--accent); }
+
+    .header-actions { display: flex; gap: 10px; }
+
+    /* Tabs */
+    .tabs {
+      display: flex;
+      gap: 4px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 4px;
+      margin-bottom: 28px;
+    }
+
+    .tab {
+      flex: 1;
+      padding: 10px 16px;
+      background: transparent;
+      border: none;
+      color: var(--text-dim);
+      font-family: var(--mono);
+      font-size: 12px;
+      font-weight: 500;
+      border-radius: 7px;
+      cursor: pointer;
+      transition: all 0.2s;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+    }
+
+    .tab.active {
+      background: var(--surface2);
+      color: var(--text);
+      border: 1px solid var(--border-bright);
+    }
+
+    .tab:hover:not(.active) { color: var(--text); }
+
+    /* Panel */
+    .panel { display: none; }
+    .panel.active { display: block; }
+
+    /* Section title */
+    .section-title {
+      font-family: var(--sans);
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .section-title::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+
+    /* Flow Toggle Banner */
+    .flow-banner {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px 24px;
+      margin-bottom: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+
+    .flow-label {
+      font-family: var(--sans);
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .flow-toggle-wrap {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .flow-name {
+      font-family: var(--sans);
+      font-size: 15px;
+      font-weight: 700;
+      transition: color 0.3s;
+    }
+
+    .flow-name.native { color: var(--native); }
+    .flow-name.rn { color: var(--rn); }
+    .flow-name.inactive { color: var(--text-muted); }
+
+    .toggle-track {
+      width: 56px; height: 28px;
+      background: var(--surface2);
+      border: 1px solid var(--border-bright);
+      border-radius: 14px;
+      position: relative;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+
+    .toggle-track.native-on { background: rgba(0,212,170,0.2); border-color: var(--native); }
+    .toggle-track.rn-on { background: rgba(255,149,0,0.2); border-color: var(--rn); }
+
+    .toggle-thumb {
+      width: 20px; height: 20px;
+      background: var(--text-dim);
+      border-radius: 50%;
+      position: absolute;
+      top: 3px; left: 4px;
+      transition: all 0.3s cubic-bezier(0.34,1.56,0.64,1);
+    }
+
+    .toggle-track.native-on .toggle-thumb {
+      background: var(--native);
+      box-shadow: 0 0 10px rgba(0,212,170,0.6);
+      left: 32px;
+    }
+
+    .flow-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .flow-badge.native {
+      background: rgba(0,212,170,0.12);
+      color: var(--native);
+      border: 1px solid rgba(0,212,170,0.3);
+    }
+
+    .flow-badge.rn {
+      background: rgba(255,149,0,0.12);
+      color: var(--rn);
+      border: 1px solid rgba(255,149,0,0.3);
+    }
+
+    .dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; animation: pulse 2s infinite; }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+
+    /* Rule card */
+    .rules-list { display: flex; flex-direction: column; gap: 12px; }
+
+    .rule-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 16px 18px;
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr 1fr auto;
+      gap: 12px;
+      align-items: center;
+      transition: border-color 0.2s;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .rule-card::before {
+      content: '';
+      position: absolute;
+      left: 0; top: 0; bottom: 0;
+      width: 3px;
+      background: var(--native);
+      transition: background 0.3s;
+    }
+
+    .rule-card.rn::before { background: var(--rn); }
+    .rule-card.disabled::before { background: var(--text-muted); }
+
+    .rule-card:hover { border-color: var(--border-bright); }
+
+    .rule-field label {
+      display: block;
+      font-size: 10px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 4px;
+    }
+
+    .rule-field-value {
+      font-size: 13px;
+      color: var(--text);
+      font-weight: 500;
+    }
+
+    .rule-field-value.empty { color: var(--text-muted); font-style: italic; }
+
+    .badge-flow {
+      padding: 3px 10px;
+      border-radius: 12px;
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .badge-flow.native {
+      background: rgba(0,212,170,0.12);
+      color: var(--native);
+    }
+
+    .badge-flow.rn {
+      background: rgba(255,149,0,0.12);
+      color: var(--rn);
+    }
+
+    .rule-actions { display: flex; gap: 6px; }
+
+    /* Form */
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+
+    .form-group { display: flex; flex-direction: column; gap: 6px; }
+
+    .form-group label {
+      font-size: 11px;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .form-input, .form-select {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 12px;
+      color: var(--text);
+      font-family: var(--mono);
+      font-size: 13px;
+      outline: none;
+      transition: border-color 0.2s;
+      width: 100%;
+    }
+
+    .form-input:focus, .form-select:focus { border-color: var(--accent); }
+    .form-select { cursor: pointer; appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%237878a0' stroke-width='1.5' fill='none'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; padding-right: 32px; }
+    .form-select option { background: var(--surface2); }
+
+    /* Segment control for flow */
+    .segment-control {
+      display: flex;
+      gap: 0;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    .segment-btn {
+      flex: 1;
+      padding: 10px 12px;
+      background: transparent;
+      border: none;
+      color: var(--text-dim);
+      font-family: var(--mono);
+      font-size: 12px;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .segment-btn:first-child { border-right: 1px solid var(--border); }
+
+    .segment-btn.active-native {
+      background: rgba(0,212,170,0.15);
+      color: var(--native);
+    }
+
+    .segment-btn.active-rn {
+      background: rgba(255,149,0,0.15);
+      color: var(--rn);
+    }
+
+    /* Buttons */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 9px 16px;
+      border-radius: 8px;
+      font-family: var(--mono);
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      border: 1px solid transparent;
+      transition: all 0.2s;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      white-space: nowrap;
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      color: #fff;
+      border-color: var(--accent);
+    }
+    .btn-primary:hover { background: #7c75ff; }
+
+    .btn-ghost {
+      background: transparent;
+      color: var(--text-dim);
+      border-color: var(--border);
+    }
+    .btn-ghost:hover { border-color: var(--border-bright); color: var(--text); }
+
+    .btn-danger {
+      background: transparent;
+      color: var(--danger);
+      border-color: rgba(255,77,106,0.3);
+    }
+    .btn-danger:hover { background: rgba(255,77,106,0.1); }
+
+    .btn-icon {
+      padding: 8px;
+      font-size: 14px;
+      line-height: 1;
+    }
+
+    /* Add rule form container */
+    .add-form-box {
+      background: var(--surface);
+      border: 1px dashed var(--border-bright);
+      border-radius: 12px;
+      padding: 20px;
+      margin-top: 16px;
+      display: none;
+    }
+    .add-form-box.open { display: block; }
+
+    /* JSON Output */
+    .json-box {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      overflow: hidden;
+    }
+
+    .json-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border);
+      background: var(--surface2);
+    }
+
+    .json-title { font-size: 11px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 1px; }
+
+    pre {
+      padding: 20px;
+      font-size: 12px;
+      line-height: 1.7;
+      overflow-x: auto;
+      color: var(--text-dim);
+      max-height: 400px;
+      overflow-y: auto;
+    }
+
+    pre .key { color: #a78bfa; }
+    pre .str { color: #34d399; }
+    pre .num { color: #fb923c; }
+    pre .bool-native { color: var(--native); }
+    pre .bool-rn { color: var(--rn); }
+
+    /* Stats bar */
+    .stats-bar {
+      display: flex;
+      gap: 16px;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+    }
+
+    .stat-chip {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 16px;
+      font-size: 12px;
+    }
+
+    .stat-num {
+      font-family: var(--sans);
+      font-size: 20px;
+      font-weight: 800;
+      line-height: 1;
+    }
+
+    .stat-num.native { color: var(--native); }
+    .stat-num.rn { color: var(--rn); }
+
+    .stat-label { color: var(--text-muted); font-size: 10px; text-transform: uppercase; letter-spacing: 1px; }
+
+    /* Notification toast */
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: var(--surface2);
+      border: 1px solid var(--border-bright);
+      border-radius: 10px;
+      padding: 14px 18px;
+      font-size: 13px;
+      z-index: 9999;
+      transform: translateY(80px);
+      opacity: 0;
+      transition: all 0.3s cubic-bezier(0.34,1.56,0.64,1);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .toast.show { transform: translateY(0); opacity: 1; }
+    .toast.success { border-color: var(--native); color: var(--native); }
+    .toast.info { border-color: var(--accent); color: var(--accent); }
+
+    /* Platform filter bar */
+    .filter-bar {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .filter-chip {
+      padding: 5px 12px;
+      border-radius: 20px;
+      font-size: 11px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--text-dim);
+      cursor: pointer;
+      transition: all 0.15s;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .filter-chip:hover, .filter-chip.active { border-color: var(--accent); color: var(--accent); background: rgba(108,99,255,0.1); }
+
+    .filter-search {
+      margin-left: auto;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 6px 12px;
+      color: var(--text);
+      font-family: var(--mono);
+      font-size: 12px;
+      outline: none;
+      width: 200px;
+      transition: border-color 0.2s;
+    }
+    .filter-search:focus { border-color: var(--accent); }
+    .filter-search::placeholder { color: var(--text-muted); }
+
+    /* Empty state */
+    .empty-state {
+      text-align: center;
+      padding: 48px 20px;
+      color: var(--text-muted);
+    }
+    .empty-state-icon { font-size: 36px; margin-bottom: 12px; }
+    .empty-state-text { font-size: 13px; line-height: 1.6; }
+
+    /* Responsive */
+    @media (max-width: 700px) {
+      .rule-card { grid-template-columns: 1fr 1fr; }
+      .form-grid { grid-template-columns: 1fr; }
+      .rule-card .rule-actions { grid-column: span 2; }
+    }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: var(--bg); }
+    ::-webkit-scrollbar-thumb { background: var(--border-bright); border-radius: 3px; }
+
+    /* ==================== SDUI GENERATOR ==================== */
+    .sdui-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+    @media (max-width: 900px) { .sdui-grid { grid-template-columns: 1fr; } }
+
+    .sdui-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px;
+    }
+
+    .sdui-card-title {
+      font-family: var(--sans);
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text);
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .sdui-setup-row {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap;
+      margin-bottom: 12px;
+    }
+
+    .sdui-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      font-size: 10px;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+    .sdui-pill.ok { color: var(--success); border-color: rgba(0,212,170,0.4); }
+    .sdui-pill.warn { color: var(--rn); border-color: rgba(255,149,0,0.4); }
+
+    .sdui-dropzone {
+      border: 1.5px dashed var(--border-bright);
+      border-radius: 10px;
+      padding: 28px 16px;
+      text-align: center;
+      color: var(--text-dim);
+      font-size: 12px;
+      cursor: pointer;
+      transition: all 0.2s;
+      background: var(--surface2);
+    }
+    .sdui-dropzone:hover, .sdui-dropzone.drag {
+      border-color: var(--accent);
+      background: rgba(108,99,255,0.05);
+      color: var(--text);
+    }
+    .sdui-dropzone-icon { font-size: 26px; margin-bottom: 8px; }
+
+    .sdui-preview {
+      margin-top: 12px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+      position: relative;
+      display: none;
+    }
+    .sdui-preview.show { display: block; }
+    .sdui-preview img { width: 100%; display: block; max-height: 360px; object-fit: contain; background: #000; }
+    .sdui-preview-remove {
+      position: absolute; top: 8px; right: 8px;
+      background: rgba(0,0,0,0.7);
+      border: 1px solid var(--border-bright);
+      color: var(--text);
+      width: 26px; height: 26px;
+      border-radius: 50%;
+      cursor: pointer;
+      font-size: 12px;
+    }
+
+    .sdui-textarea {
+      width: 100%;
+      min-height: 80px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 12px;
+      color: var(--text);
+      font-family: var(--mono);
+      font-size: 12px;
+      resize: vertical;
+      transition: border-color 0.2s;
+    }
+    .sdui-textarea:focus { outline: none; border-color: var(--accent); }
+
+    .sdui-input {
+      width: 100%;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 9px 12px;
+      color: var(--text);
+      font-family: var(--mono);
+      font-size: 12px;
+    }
+    .sdui-input:focus { outline: none; border-color: var(--accent); }
+    #sduiImgUrl { display: none; }
+    #sduiImgUrl.show-url { display: block; }
+
+    .sdui-preset-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-bottom: 10px;
+    }
+    .sdui-preset-chip {
+      padding: 6px 12px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      color: var(--text-dim);
+      font-size: 11px;
+      font-family: var(--mono);
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .sdui-preset-chip:hover { color: var(--text); border-color: var(--border-bright); }
+    .sdui-preset-chip.active {
+      background: rgba(108,99,255,0.15);
+      color: var(--accent);
+      border-color: var(--accent);
+    }
+
+    /* Mode toggle (segmented control) */
+    .sdui-mode-toggle {
+      display: flex;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 3px;
+      gap: 3px;
+      margin-bottom: 14px;
+    }
+    .sdui-mode-btn {
+      flex: 1;
+      padding: 10px 14px;
+      background: transparent;
+      border: none;
+      color: var(--text-dim);
+      font-family: var(--mono);
+      font-size: 11px;
+      font-weight: 500;
+      border-radius: 7px;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-align: left;
+      line-height: 1.4;
+    }
+    .sdui-mode-btn:hover:not(.active) { color: var(--text); background: rgba(255,255,255,0.03); }
+    .sdui-mode-btn.active {
+      background: var(--surface);
+      color: var(--text);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+    }
+    .sdui-mode-btn.active.api { border: 1px solid var(--accent); }
+    .sdui-mode-btn.active.prompt { border: 1px solid var(--success); }
+    .sdui-mode-btn .mode-title {
+      font-family: var(--sans);
+      font-weight: 700;
+      font-size: 12px;
+      display: block;
+      margin-bottom: 2px;
+      letter-spacing: 0.3px;
+    }
+    .sdui-mode-btn .mode-desc {
+      font-size: 9.5px;
+      color: var(--text-muted);
+      letter-spacing: 0.2px;
+    }
+    .sdui-mode-btn.active.api .mode-title { color: var(--accent); }
+    .sdui-mode-btn.active.prompt .mode-title { color: var(--success); }
+
+    /* Mode-specific blocks */
+    .sdui-mode-block { display: none; }
+    .sdui-mode-block.active { display: block; }
+
+    /* Step indicator for Prompt mode */
+    .sdui-step-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 12px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      margin-bottom: 10px;
+    }
+    .sdui-step-num {
+      width: 22px; height: 22px;
+      border-radius: 50%;
+      background: var(--accent);
+      color: white;
+      font-size: 11px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .sdui-step-row.done .sdui-step-num { background: var(--success); }
+    .sdui-step-content { flex: 1; }
+    .sdui-step-title {
+      font-size: 12px;
+      color: var(--text);
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+    .sdui-step-desc {
+      font-size: 10.5px;
+      color: var(--text-dim);
+      line-height: 1.5;
+    }
+
+    /* Schema preview (collapsible) */
+    .sdui-schema-box {
+      background: #050508;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      max-height: 180px;
+      overflow: auto;
+      padding: 10px;
+      font-family: var(--mono);
+      font-size: 10px;
+      color: #9fc3ff;
+      margin-top: 8px;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    /* Paste response area */
+    .sdui-paste-area {
+      background: var(--surface2);
+      border: 1px solid var(--success);
+      border-radius: 8px;
+      padding: 10px;
+      margin-top: 10px;
+    }
+    .sdui-paste-area textarea {
+      background: #050508;
+      border: 1px solid var(--border);
+      color: #c8d4ff;
+      font-family: var(--mono);
+      font-size: 10.5px;
+      min-height: 80px;
+    }
+
+    .sdui-json-box {
+      background: #050508;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      max-height: 480px;
+      overflow: auto;
+      position: relative;
+    }
+
+    /* Format tabs (above json-box) */
+    .sdui-format-tabs {
+      display: flex;
+      gap: 2px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-bottom: none;
+      border-radius: 8px 8px 0 0;
+      padding: 4px 4px 0 4px;
+      margin-bottom: -1px;
+    }
+    .sdui-format-tab {
+      padding: 6px 12px;
+      background: transparent;
+      border: 1px solid transparent;
+      border-bottom: none;
+      color: var(--text-dim);
+      font-family: var(--mono);
+      font-size: 10px;
+      font-weight: 500;
+      cursor: pointer;
+      border-radius: 6px 6px 0 0;
+      transition: all 0.15s;
+    }
+    .sdui-format-tab:hover { color: var(--text); background: rgba(255,255,255,0.03); }
+    .sdui-format-tab.active {
+      background: #050508;
+      color: var(--accent);
+      border-color: var(--border);
+      border-bottom-color: #050508;
+      position: relative;
+      z-index: 1;
+    }
+    /* Make json-box corner square on top when tabs present */
+    .sdui-format-tabs + .sdui-json-box {
+      border-radius: 0 0 8px 8px;
+    }
+    .sdui-json-box pre {
+      padding: 14px 16px;
+      margin: 0;
+      color: #c8d4ff;
+      font-family: var(--mono);
+      font-size: 11.5px;
+      line-height: 1.55;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+    .sdui-json-empty {
+      padding: 40px 20px;
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 12px;
+    }
+
+    .sdui-json-toolbar {
+      display: flex;
+      gap: 6px;
+      padding: 8px 10px;
+      background: var(--surface2);
+      border-bottom: 1px solid var(--border);
+    }
+    .sdui-json-toolbar .btn { padding: 5px 10px; font-size: 10px; }
+
+    .sdui-history {
+      max-height: 500px;
+      overflow-y: auto;
+      padding-right: 4px;
+    }
+    .sdui-history::-webkit-scrollbar { width: 6px; }
+    .sdui-history::-webkit-scrollbar-thumb { background: var(--border-bright); border-radius: 3px; }
+
+    .sdui-history-item {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px;
+      margin-bottom: 8px;
+      display: grid;
+      grid-template-columns: 60px 1fr auto;
+      gap: 10px;
+      align-items: center;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .sdui-history-item:hover { border-color: var(--accent); }
+    .sdui-history-thumb {
+      width: 60px; height: 60px;
+      background: #000;
+      border-radius: 6px;
+      overflow: hidden;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 22px;
+    }
+    .sdui-history-thumb img { width: 100%; height: 100%; object-fit: cover; }
+    .sdui-history-meta { font-size: 11px; color: var(--text-dim); overflow: hidden; }
+    .sdui-history-meta .title { color: var(--text); font-size: 12px; margin-bottom: 3px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .sdui-history-meta .time { font-size: 10px; color: var(--text-muted); }
+    .sdui-history-del {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      width: 26px; height: 26px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 12px;
+    }
+    .sdui-history-del:hover { color: var(--danger); border-color: var(--danger); }
+
+    .sdui-spinner {
+      display: inline-block;
+      width: 12px; height: 12px;
+      border: 2px solid var(--border-bright);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: sdui-spin 0.7s linear infinite;
+      vertical-align: middle;
+      margin-right: 6px;
+    }
+    @keyframes sdui-spin { to { transform: rotate(360deg); } }
+
+    .sdui-config-row {
+      display: grid;
+      grid-template-columns: 110px 1fr;
+      gap: 10px;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+    .sdui-config-row label {
+      font-size: 10px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .sdui-warning {
+      padding: 10px 12px;
+      background: rgba(255,149,0,0.08);
+      border: 1px solid rgba(255,149,0,0.3);
+      border-radius: 6px;
+      color: var(--rn);
+      font-size: 11px;
+      margin-bottom: 12px;
+    }
+
+    .sdui-link {
+      color: var(--accent);
+      font-size: 11px;
+      text-decoration: none;
+      cursor: pointer;
+    }
+    .sdui-link:hover { text-decoration: underline; }
+
+    details.sdui-details {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 12px;
+      margin-bottom: 10px;
+    }
+    details.sdui-details summary {
+      cursor: pointer;
+      font-size: 12px;
+      color: var(--text-dim);
+      user-select: none;
+    }
+    details.sdui-details[open] summary { color: var(--text); margin-bottom: 8px; }
+    details.sdui-details pre {
+      font-family: var(--mono);
+      font-size: 10.5px;
+      color: var(--text-dim);
+      max-height: 200px;
+      overflow: auto;
+      white-space: pre-wrap;
+      padding: 8px;
+      background: #050508;
+      border-radius: 4px;
+    }
+  </style>
 </head>
 <body>
 <div class="app">
@@ -639,6 +1093,7 @@
     <button class="tab active" onclick="switchTab('rules', this)">📋 Rules</button>
     <button class="tab" onclick="switchTab('json', this)">{ } JSON Config</button>
     <button class="tab" onclick="switchTab('simulator', this)">🔬 Simulator</button>
+    <button class="tab" onclick="switchTab('sdui', this)">🎨 SDUI Gen</button>
   </div>
 
   <!-- RULES PANEL -->
@@ -766,92 +1221,337 @@
     <div id="simResult" style="display:none;"></div>
   </div>
 
+  <!-- SDUI GEN PANEL -->
+  <div class="panel" id="panel-sdui">
+
+    <!-- Setup bar -->
+    <div class="sdui-card" style="margin-bottom:20px;">
+      <div class="sdui-card-title">⚙ Setup <span style="flex:1"></span>
+        <span class="sdui-pill" id="sduiApiPill">API: Not Set</span>
+        <span class="sdui-pill" id="sduiKbPill">KB: Default</span>
+      </div>
+
+      <div class="sdui-config-row">
+        <label>Model</label>
+        <select class="sdui-input" id="sduiModel">
+          <option value="claude-opus-4-7">Claude Opus 4.7 (best, $$$)</option>
+          <option value="claude-opus-4-6">Claude Opus 4.6</option>
+          <option value="claude-sonnet-4-6" selected>Claude Sonnet 4.6 (recommended)</option>
+          <option value="claude-haiku-4-5-20251001">Claude Haiku 4.5 (fastest, cheapest)</option>
+        </select>
+      </div>
+
+      <div class="sdui-config-row">
+        <label>API Key</label>
+        <div style="display:flex; gap:8px;">
+          <input type="password" class="sdui-input" id="sduiApiKey" placeholder="sk-ant-..." style="flex:1;">
+          <button class="btn btn-ghost" onclick="sduiSaveApiKey()" style="white-space:nowrap;">Save</button>
+          <button class="btn btn-ghost" onclick="sduiClearApiKey()" title="Clear">✕</button>
+        </div>
+      </div>
+
+      <div class="sdui-config-row">
+        <label>SDUI KB</label>
+        <div style="display:flex; gap:8px; align-items:center;">
+          <button class="btn btn-ghost" onclick="document.getElementById('sduiKbFile').click()">📄 Upload SDUI_README.md</button>
+          <input type="file" id="sduiKbFile" accept=".md,.txt" style="display:none" onchange="sduiUploadKB(event)">
+          <button class="btn btn-ghost" onclick="sduiResetKB()" title="Reset to default">Reset</button>
+          <span style="font-size:10px; color:var(--text-muted);" id="sduiKbInfo">Using default built-in spec</span>
+        </div>
+      </div>
+
+      <details class="sdui-details">
+        <summary>View/Edit System Prompt (Instructions)</summary>
+        <textarea class="sdui-textarea" id="sduiSystemPrompt" style="min-height:220px; font-size:11px;"></textarea>
+        <div style="display:flex; gap:8px; margin-top:8px;">
+          <button class="btn btn-ghost" onclick="sduiSaveSystemPrompt()">Save Prompt</button>
+          <button class="btn btn-ghost" onclick="sduiResetSystemPrompt()">Reset to Default</button>
+        </div>
+      </details>
+
+      <details class="sdui-details">
+        <summary>View Current Knowledge Base (SDUI Spec)</summary>
+        <pre id="sduiKbPreview">Loading...</pre>
+      </details>
+    </div>
+
+    <!-- Main workspace -->
+    <div class="sdui-grid">
+      <!-- LEFT: Input -->
+      <div class="sdui-card">
+        <div class="sdui-card-title">🖼 Input</div>
+
+        <!-- ═══ MODE TOGGLE ═══ -->
+        <div class="sdui-mode-toggle" id="sduiModeToggle">
+          <button class="sdui-mode-btn api active" data-mode="api">
+            <span class="mode-title">🔑 API Mode</span>
+            <span class="mode-desc">Plugin tự gọi Claude API → JSON trực tiếp. Cần API key.</span>
+          </button>
+          <button class="sdui-mode-btn prompt" data-mode="prompt">
+            <span class="mode-title">📋 Prompt-Based</span>
+            <span class="mode-desc">Copy prompt + ảnh qua Claude.ai/ChatGPT tự gen. Free, không key.</span>
+          </button>
+        </div>
+
+        <details class="sdui-details" style="margin-bottom: 12px;">
+          <summary>💡 How to copy image from Figma</summary>
+          <div style="font-size: 11px; line-height: 1.7; color: var(--text-dim); padding: 4px 0;">
+            <strong style="color:var(--text);">Option A — Copy as PNG (recommended):</strong><br>
+            Right-click layer/frame → <code style="color:var(--accent);">Copy/Paste as</code> → <code style="color:var(--accent);">Copy as PNG</code> → paste vào đây (Ctrl/Cmd+V)<br><br>
+            <strong style="color:var(--text);">Option B — Export:</strong><br>
+            Select frame → Export panel (right sidebar) → chọn PNG → drag file từ Figma vào dropzone<br><br>
+            <strong style="color:var(--text);">Option C — Screenshot:</strong><br>
+            macOS: <code style="color:var(--accent);">Shift+Ctrl+Cmd+4</code> (clipboard) rồi paste<br>
+            Windows: <code style="color:var(--accent);">Win+Shift+S</code> rồi paste
+          </div>
+        </details>
+
+        <!-- Image drop -->
+        <div class="sdui-dropzone" id="sduiDropzone" onclick="document.getElementById('sduiImgFile').click()">
+          <div class="sdui-dropzone-icon">📸</div>
+          <div><strong>Click to upload</strong> or drag UI mockup here</div>
+          <div style="font-size:10px; color:var(--text-muted); margin-top:6px; line-height:1.6;">
+            PNG, JPG, WEBP (max ~5MB)<br>
+            <span style="color:var(--accent);">⌘V / Ctrl+V</span> to paste from clipboard
+          </div>
+        </div>
+        <input type="file" id="sduiImgFile" accept="image/*" style="display:none" onchange="sduiHandleImage(event)">
+
+        <!-- Figma-only: Import from Figma selection (hidden when running in browser) -->
+        <div id="sduiFigmaImport" style="display:none; margin-top:8px;">
+          <div style="display:flex; gap:6px; align-items:stretch;">
+            <button class="btn btn-primary" id="sduiFigmaImportBtn" onclick="sduiImportFromFigma()" style="flex:1; font-size:12px; background:linear-gradient(135deg, var(--accent), var(--accent2)); font-weight:600;" title="Export currently selected Figma frame">
+              🎨 Import from Figma Selection
+            </button>
+            <select id="sduiFigmaScale" class="sdui-input" style="width:72px; flex:0 0 72px;" title="Export scale">
+              <option value="1">1x</option>
+              <option value="2" selected>2x</option>
+              <option value="3">3x</option>
+            </select>
+          </div>
+          <div style="font-size:10px; color:var(--text-muted); margin-top:4px;" id="sduiFigmaImportHint">
+            💡 Chọn 1 frame/component trong Figma → click để import ảnh
+          </div>
+        </div>
+
+        <!-- Quick actions -->
+        <div style="display:flex; gap:6px; margin-top:8px;">
+          <button class="btn btn-ghost" onclick="sduiPasteFromClipboard()" style="flex:1; font-size:11px;" title="Paste image from clipboard">📋 Paste from Clipboard</button>
+          <button class="btn btn-ghost" onclick="document.getElementById('sduiImgUrl').classList.toggle('show-url')" style="font-size:11px;" title="Paste image URL">🔗 URL</button>
+        </div>
+        <input type="text" id="sduiImgUrl" class="sdui-input" style="margin-top:6px; display:none;" placeholder="Paste image URL and press Enter..." onkeydown="if(event.key==='Enter') sduiLoadFromUrl(this.value)">
+
+        <div class="sdui-preview" id="sduiPreview">
+          <button class="sdui-preview-remove" onclick="sduiClearImage()">✕</button>
+          <img id="sduiPreviewImg" src="" alt="">
+        </div>
+
+        <!-- Schema preview (only in prompt mode, only if figma schema available) -->
+        <div id="sduiSchemaWrap" style="display:none; margin-top:10px;">
+          <details class="sdui-details">
+            <summary>🌳 Figma Schema Extracted (will be included in prompt)</summary>
+            <pre class="sdui-schema-box" id="sduiSchemaPreview"></pre>
+          </details>
+        </div>
+
+        <!-- Preset -->
+        <div style="margin-top:16px;">
+          <label style="font-size:10px; color:var(--text-muted); text-transform:uppercase; letter-spacing:1px; display:block; margin-bottom:6px;">Format preset</label>
+          <div class="sdui-preset-chips" id="sduiPresets">
+            <div class="sdui-preset-chip active" data-preset="content_info">content_info</div>
+            <div class="sdui-preset-chip" data-preset="content_ranking">content_ranking</div>
+            <div class="sdui-preset-chip" data-preset="content">content</div>
+            <div class="sdui-preset-chip" data-preset="custom">custom</div>
+          </div>
+        </div>
+
+        <!-- Context -->
+        <div style="margin-top:12px;">
+          <label style="font-size:10px; color:var(--text-muted); text-transform:uppercase; letter-spacing:1px; display:block; margin-bottom:6px;">Context / Hints (optional)</label>
+          <textarea class="sdui-textarea" id="sduiContext" placeholder="VD: Thẻ chi tiêu tháng 4, text số lượng màu xanh lá #2FB350, có icon ở góc trên trái, maxItems 3..."></textarea>
+        </div>
+
+        <!-- ═══ MODE 1: API — direct gen ═══ -->
+        <div class="sdui-mode-block active" id="sduiModeApiBlock">
+          <div style="margin-top:14px; display:flex; gap:8px;">
+            <button class="btn btn-primary" id="sduiGenBtn" onclick="sduiGenerate()" style="flex:1;">✨ Generate dataSchema</button>
+          </div>
+          <div id="sduiGenStatus" style="margin-top:10px; font-size:11px; color:var(--text-dim); min-height:16px;"></div>
+        </div>
+
+        <!-- ═══ MODE 2: Prompt-based — copy + paste response ═══ -->
+        <div class="sdui-mode-block" id="sduiModePromptBlock">
+          <div style="margin-top:14px;">
+
+            <!-- Step 1: Build prompt -->
+            <div class="sdui-step-row" id="sduiStep1">
+              <div class="sdui-step-num">1</div>
+              <div class="sdui-step-content">
+                <div class="sdui-step-title">Build & copy prompt</div>
+                <div class="sdui-step-desc">Tạo prompt gồm: system instructions + SDUI spec + Figma schema + context. Prompt sẽ được copy vào clipboard.</div>
+                <button class="btn btn-primary" onclick="sduiBuildAndCopyPrompt()" style="margin-top:8px; font-size:11px;">📋 Build & Copy Prompt</button>
+              </div>
+            </div>
+
+            <!-- Step 2: Paste into Claude.ai -->
+            <div class="sdui-step-row">
+              <div class="sdui-step-num">2</div>
+              <div class="sdui-step-content">
+                <div class="sdui-step-title">Paste vào Claude.ai / ChatGPT</div>
+                <div class="sdui-step-desc">
+                  Mở <a href="https://claude.ai" target="_blank" style="color:var(--accent);">claude.ai</a> (hoặc ChatGPT/Gemini) → tạo chat mới → paste prompt →
+                  <strong style="color:var(--text);">attach ảnh PNG đã preview</strong> ở trên (download ảnh bằng nút bên dưới rồi drag/attach) → gửi.
+                </div>
+                <div style="display:flex; gap:6px; margin-top:8px;">
+                  <button class="btn btn-ghost" onclick="sduiDownloadPreviewImage()" style="font-size:11px;">⬇ Download Image</button>
+                  <button class="btn btn-ghost" onclick="sduiOpenClaudeAI()" style="font-size:11px;">🌐 Open Claude.ai</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Step 3: Paste response back -->
+            <div class="sdui-step-row">
+              <div class="sdui-step-num">3</div>
+              <div class="sdui-step-content">
+                <div class="sdui-step-title">Paste response về</div>
+                <div class="sdui-step-desc">Copy toàn bộ response của Claude (kèm code block JSON) → paste vào ô bên dưới → click Parse.</div>
+                <div class="sdui-paste-area">
+                  <textarea class="sdui-textarea" id="sduiPasteResponse" placeholder="Paste Claude's full response here (including ```json block)..."></textarea>
+                  <div style="display:flex; gap:6px; margin-top:8px;">
+                    <button class="btn btn-primary" onclick="sduiParsePastedResponse()" style="flex:1;">✓ Parse JSON Response</button>
+                    <button class="btn btn-ghost" onclick="sduiPasteFromClipboardToArea()" title="Auto paste from clipboard">📋 Paste</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div id="sduiPromptStatus" style="margin-top:10px; font-size:11px; color:var(--text-dim); min-height:16px;"></div>
+        </div>
+
+      </div>
+
+      <!-- RIGHT: Output + History -->
+      <div>
+        <div class="sdui-card" style="margin-bottom:16px;">
+          <div class="sdui-card-title">📤 Output JSON</div>
+
+          <!-- Format tabs -->
+          <div class="sdui-format-tabs">
+            <button class="sdui-format-tab" data-format="raw">Raw value</button>
+            <button class="sdui-format-tab" data-format="wrap">"dataSchema": { ... }</button>
+            <button class="sdui-format-tab active" data-format="full">Full dataSchema</button>
+          </div>
+
+          <div class="sdui-json-box">
+            <div class="sdui-json-toolbar">
+              <button class="btn btn-ghost" onclick="sduiCopyOutput()">📋 Copy</button>
+              <button class="btn btn-ghost" onclick="sduiDownloadOutput()">⬇ Download</button>
+              <button class="btn btn-ghost" onclick="sduiFormatOutput()">{ } Format</button>
+              <span style="flex:1"></span>
+              <span id="sduiCharCount" style="font-size:10px; color:var(--text-muted); align-self:center;">0 chars</span>
+            </div>
+            <div id="sduiOutput"><div class="sdui-json-empty">Generated dataSchema will appear here</div></div>
+          </div>
+        </div>
+
+        <div class="sdui-card">
+          <div class="sdui-card-title">🕘 History <span style="flex:1"></span>
+            <button class="btn btn-ghost" onclick="sduiClearHistory()" style="padding:4px 10px; font-size:10px;">Clear All</button>
+          </div>
+          <div class="sdui-history" id="sduiHistory">
+            <div class="sdui-json-empty">No history yet</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
 </div>
 
 <!-- Toast -->
 <div class="toast" id="toast"></div>
 
 <script>
-// ===== STATE =====
-let state = {
-  globalFlow: 'native', // 'native' | 'rn'
-  rules: [
-    { id: 'r1', platform: 'android', platVer: '', pkgVer: '2.0.0-2.3.0', device: 'Pixel 6', refId: 'ref_checkout', blockId: 'block_002', flow: 'rn', enabled: true, note: 'Native crash on Pixel 6 — fallback RN' },
-    { id: 'r2', platform: 'ios', platVer: '16.0-16.5', pkgVer: '', device: 'iPhone 12', refId: 'ref_profile', blockId: 'block_003', flow: 'rn', enabled: true, note: 'Native unstable on iOS 16.0-16.5' },
-  ]
-};
+  // ===== STATE =====
+  let state = {
+    globalFlow: 'native', // 'native' | 'rn'
+    rules: [
+      { id: 'r1', platform: 'android', platVer: '', pkgVer: '2.0.0-2.3.0', device: 'Pixel 6', refId: 'ref_checkout', blockId: 'block_002', flow: 'rn', enabled: true, note: 'Native crash on Pixel 6 — fallback RN' },
+      { id: 'r2', platform: 'ios', platVer: '16.0-16.5', pkgVer: '', device: 'iPhone 12', refId: 'ref_profile', blockId: 'block_003', flow: 'rn', enabled: true, note: 'Native unstable on iOS 16.0-16.5' },
+    ]
+  };
 
-let selectedFlow = 'rn';
-let activeFilter = 'all';
-let searchQuery = '';
+  let selectedFlow = 'rn';
+  let activeFilter = 'all';
+  let searchQuery = '';
 
-// ===== HELPERS =====
-function uid() { return 'r' + Date.now().toString(36); }
+  // ===== HELPERS =====
+  function uid() { return 'r' + Date.now().toString(36); }
 
-function showToast(msg, type = 'success') {
-  const t = document.getElementById('toast');
-  t.textContent = (type === 'success' ? '✓ ' : 'ℹ ') + msg;
-  t.className = 'toast show ' + type;
-  setTimeout(() => t.className = 'toast', 2500);
-}
-
-// ===== GLOBAL TOGGLE =====
-function toggleGlobal() {
-  state.globalFlow = state.globalFlow === 'native' ? 'rn' : 'native';
-  renderGlobalToggle();
-  saveLocal();
-}
-
-function renderGlobalToggle() {
-  const track = document.getElementById('globalToggle');
-  const badge = document.getElementById('globalBadge');
-  const badgeText = document.getElementById('globalBadgeText');
-  if (state.globalFlow === 'native') {
-    track.className = 'toggle-track native-on';
-    badge.className = 'flow-badge native';
-    badgeText.textContent = 'Native Active';
-  } else {
-    track.className = 'toggle-track rn-on';
-    badge.className = 'flow-badge rn';
-    badgeText.textContent = 'React Native Active';
+  function showToast(msg, type = 'success') {
+    const t = document.getElementById('toast');
+    t.textContent = (type === 'success' ? '✓ ' : 'ℹ ') + msg;
+    t.className = 'toast show ' + type;
+    setTimeout(() => t.className = 'toast', 2500);
   }
-}
 
-// ===== TABS =====
-function switchTab(name, btn) {
-  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
-  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-  document.getElementById('panel-' + name).classList.add('active');
-  btn.classList.add('active');
-  if (name === 'json') renderJSON();
-}
+  // ===== GLOBAL TOGGLE =====
+  function toggleGlobal() {
+    state.globalFlow = state.globalFlow === 'native' ? 'rn' : 'native';
+    renderGlobalToggle();
+    saveLocal();
+  }
 
-// ===== RENDER RULES =====
-function getFilteredRules() {
-  return state.rules.filter(r => {
-    if (activeFilter === 'native' && r.flow !== 'native') return false;
-    if (activeFilter === 'rn' && r.flow !== 'rn') return false;
-    if (activeFilter === 'ios' && r.platform !== 'ios') return false;
-    if (activeFilter === 'android' && r.platform !== 'android') return false;
-    if (searchQuery) {
-      const q = searchQuery.toLowerCase();
-      return (r.device||'').toLowerCase().includes(q) ||
-             (r.refId||'').toLowerCase().includes(q) ||
-             (r.blockId||'').toLowerCase().includes(q) ||
-             (r.note||'').toLowerCase().includes(q);
+  function renderGlobalToggle() {
+    const track = document.getElementById('globalToggle');
+    const badge = document.getElementById('globalBadge');
+    const badgeText = document.getElementById('globalBadgeText');
+    if (state.globalFlow === 'native') {
+      track.className = 'toggle-track native-on';
+      badge.className = 'flow-badge native';
+      badgeText.textContent = 'Native Active';
+    } else {
+      track.className = 'toggle-track rn-on';
+      badge.className = 'flow-badge rn';
+      badgeText.textContent = 'React Native Active';
     }
-    return true;
-  });
-}
+  }
 
-function renderRules() {
-  const list = document.getElementById('rulesList');
-  const filtered = getFilteredRules();
+  // ===== TABS =====
+  function switchTab(name, btn) {
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.getElementById('panel-' + name).classList.add('active');
+    btn.classList.add('active');
+    if (name === 'json') renderJSON();
+  }
 
-  if (filtered.length === 0) {
-    list.innerHTML = `<div class="empty-state"><div class="empty-state-icon">🔍</div><div class="empty-state-text">No rules found.<br>Add a new rule to get started.</div></div>`;
-  } else {
-    list.innerHTML = filtered.map(r => `
+  // ===== RENDER RULES =====
+  function getFilteredRules() {
+    return state.rules.filter(r => {
+      if (activeFilter === 'native' && r.flow !== 'native') return false;
+      if (activeFilter === 'rn' && r.flow !== 'rn') return false;
+      if (activeFilter === 'ios' && r.platform !== 'ios') return false;
+      if (activeFilter === 'android' && r.platform !== 'android') return false;
+      if (searchQuery) {
+        const q = searchQuery.toLowerCase();
+        return (r.device||'').toLowerCase().includes(q) ||
+                (r.refId||'').toLowerCase().includes(q) ||
+                (r.blockId||'').toLowerCase().includes(q) ||
+                (r.note||'').toLowerCase().includes(q);
+      }
+      return true;
+    });
+  }
+
+  function renderRules() {
+    const list = document.getElementById('rulesList');
+    const filtered = getFilteredRules();
+
+    if (filtered.length === 0) {
+      list.innerHTML = `<div class="empty-state"><div class="empty-state-icon">🔍</div><div class="empty-state-text">No rules found.<br>Add a new rule to get started.</div></div>`;
+    } else {
+      list.innerHTML = filtered.map(r => `
       <div class="rule-card ${r.flow} ${r.enabled ? '' : 'disabled'}" id="card_${r.id}">
         <div class="rule-field">
           <label>Platform / Version</label>
@@ -879,18 +1579,18 @@ function renderRules() {
         </div>
       </div>
     `).join('');
+    }
+
+    renderStats();
+    renderJSON();
   }
 
-  renderStats();
-  renderJSON();
-}
+  function renderStats() {
+    const nativeCount = state.rules.filter(r => r.flow === 'native' && r.enabled).length;
+    const rnCount = state.rules.filter(r => r.flow === 'rn' && r.enabled).length;
+    const disabledCount = state.rules.filter(r => !r.enabled).length;
 
-function renderStats() {
-  const nativeCount = state.rules.filter(r => r.flow === 'native' && r.enabled).length;
-  const rnCount = state.rules.filter(r => r.flow === 'rn' && r.enabled).length;
-  const disabledCount = state.rules.filter(r => !r.enabled).length;
-
-  document.getElementById('statsBar').innerHTML = `
+    document.getElementById('statsBar').innerHTML = `
     <div class="stat-chip">
       <div><div class="stat-num native">${nativeCount}</div><div class="stat-label">Native override</div></div>
     </div>
@@ -904,205 +1604,205 @@ function renderStats() {
       <div><div class="stat-num" style="color:var(--accent)">${state.rules.length}</div><div class="stat-label">Total rules</div></div>
     </div>
   `;
-}
-
-// ===== FILTERS =====
-function filterRules(type, btn) {
-  activeFilter = type;
-  document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
-  btn.classList.add('active');
-  renderRules();
-}
-
-function searchRules(val) {
-  searchQuery = val;
-  renderRules();
-}
-
-// ===== ADD/DELETE/TOGGLE RULE =====
-function toggleAddForm() {
-  const f = document.getElementById('addForm');
-  f.classList.toggle('open');
-}
-
-function selectFlow(flow) {
-  selectedFlow = flow;
-  document.getElementById('seg_native').className = 'segment-btn' + (flow === 'native' ? ' active-native' : '');
-  document.getElementById('seg_rn').className = 'segment-btn' + (flow === 'rn' ? ' active-rn' : '');
-}
-
-function addRule() {
-  const rule = {
-    id: uid(),
-    platform: document.getElementById('f_platform').value,
-    platVer: document.getElementById('f_platVer').value.trim(),
-    pkgVer: document.getElementById('f_pkgVer').value.trim(),
-    device: document.getElementById('f_device').value.trim(),
-    refId: document.getElementById('f_refId').value.trim(),
-    blockId: document.getElementById('f_blockId').value.trim(),
-    flow: selectedFlow,
-    enabled: true,
-    note: document.getElementById('f_note').value.trim(),
-  };
-
-  state.rules.push(rule);
-  renderRules();
-  saveLocal();
-  toggleAddForm();
-
-  // Reset form
-  ['f_platform','f_platVer','f_pkgVer','f_device','f_refId','f_blockId','f_note'].forEach(id => {
-    const el = document.getElementById(id);
-    if (el.tagName === 'SELECT') el.value = '';
-    else el.value = '';
-  });
-
-  showToast('Rule added successfully');
-}
-
-function deleteRule(id) {
-  state.rules = state.rules.filter(r => r.id !== id);
-  renderRules();
-  saveLocal();
-  showToast('Rule deleted', 'info');
-}
-
-function toggleRule(id) {
-  const r = state.rules.find(r => r.id === id);
-  if (r) { r.enabled = !r.enabled; renderRules(); saveLocal(); }
-}
-
-// ===== JSON =====
-function buildConfig() {
-  return {
-    version: '1.0',
-    updatedAt: new Date().toISOString(),
-    globalDefaultFlow: state.globalFlow,
-    rules: state.rules.filter(r => r.enabled).map(({ id, enabled, ...rest }) => rest)
-  };
-}
-
-function syntaxHighlight(json) {
-  return json
-    .replace(/("[\w@-]+")\s*:/g, '<span class="key">$1</span>:')
-    .replace(/: (".*?")/g, ': <span class="str">$1</span>')
-    .replace(/: (\d+\.?\d*)/g, ': <span class="num">$1</span>')
-    .replace(/: (true|false)/g, (m, v) => `: <span class="${v === 'true' ? 'bool-native' : 'bool-rn'}">${v}</span>`);
-}
-
-function renderJSON() {
-  const json = JSON.stringify(buildConfig(), null, 2);
-  document.getElementById('jsonOutput').innerHTML = syntaxHighlight(json);
-}
-
-function copyJSON() {
-  navigator.clipboard.writeText(JSON.stringify(buildConfig(), null, 2));
-  showToast('JSON copied to clipboard');
-}
-
-function exportJSON() {
-  const blob = new Blob([JSON.stringify(buildConfig(), null, 2)], { type: 'application/json' });
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = 'cornerstone-flow-config.json';
-  a.click();
-  showToast('Config exported');
-}
-
-function importJSON(e) {
-  const file = e.target.files[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = ev => {
-    try {
-      const cfg = JSON.parse(ev.target.result);
-      if (cfg.globalDefaultFlow) state.globalFlow = cfg.globalDefaultFlow;
-      if (cfg.rules) state.rules = cfg.rules.map(r => ({ ...r, id: uid(), enabled: true }));
-      renderGlobalToggle();
-      renderRules();
-      saveLocal();
-      showToast('Config imported successfully');
-    } catch { showToast('Invalid JSON file', 'info'); }
-  };
-  reader.readAsText(file);
-  e.target.value = '';
-}
-
-// ===== SIMULATOR =====
-function versionInRange(version, range) {
-  if (!range || !version) return true;
-  version = version.trim();
-  range = range.trim();
-
-  if (range.startsWith('>=')) {
-    const min = range.slice(2).trim();
-    return compareVer(version, min) >= 0;
-  }
-  if (range.startsWith('<=')) {
-    const max = range.slice(2).trim();
-    return compareVer(version, max) <= 0;
-  }
-  if (range.includes('-')) {
-    const [min, max] = range.split('-').map(s => s.trim());
-    return compareVer(version, min) >= 0 && compareVer(version, max) <= 0;
-  }
-  return version === range;
-}
-
-function compareVer(a, b) {
-  const pa = a.split('.').map(Number);
-  const pb = b.split('.').map(Number);
-  for (let i = 0; i < Math.max(pa.length, pb.length); i++) {
-    const diff = (pa[i]||0) - (pb[i]||0);
-    if (diff !== 0) return diff;
-  }
-  return 0;
-}
-
-function runSimulator() {
-  const input = {
-    platform: document.getElementById('sim_platform').value,
-    platVer: document.getElementById('sim_platVer').value.trim(),
-    pkgVer: document.getElementById('sim_pkgVer').value.trim(),
-    device: document.getElementById('sim_device').value.trim(),
-    refId: document.getElementById('sim_refId').value.trim(),
-    blockId: document.getElementById('sim_blockId').value.trim(),
-  };
-
-  const matched = [];
-  for (const rule of state.rules) {
-    if (!rule.enabled) continue;
-    let match = true;
-    const reasons = [];
-
-    if (rule.platform && rule.platform !== input.platform) { match = false; }
-    else if (rule.platform) reasons.push(`platform = ${input.platform}`);
-
-    if (match && rule.platVer && !versionInRange(input.platVer, rule.platVer)) match = false;
-    else if (match && rule.platVer) reasons.push(`platVer ${rule.platVer}`);
-
-    if (match && rule.pkgVer && !versionInRange(input.pkgVer, rule.pkgVer)) match = false;
-    else if (match && rule.pkgVer) reasons.push(`pkgVer ${rule.pkgVer}`);
-
-    if (match && rule.device && !input.device.toLowerCase().includes(rule.device.toLowerCase())) match = false;
-    else if (match && rule.device) reasons.push(`device "${rule.device}"`);
-
-    if (match && rule.refId && rule.refId !== input.refId) match = false;
-    else if (match && rule.refId) reasons.push(`refId = ${rule.refId}`);
-
-    if (match && rule.blockId && rule.blockId !== input.blockId) match = false;
-    else if (match && rule.blockId) reasons.push(`blockId = ${rule.blockId}`);
-
-    if (match) matched.push({ rule, reasons });
   }
 
-  const result = matched.length > 0 ? matched[0] : null;
-  const finalFlow = result ? result.rule.flow : state.globalFlow;
-  const isNative = finalFlow === 'native';
+  // ===== FILTERS =====
+  function filterRules(type, btn) {
+    activeFilter = type;
+    document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+    btn.classList.add('active');
+    renderRules();
+  }
 
-  const div = document.getElementById('simResult');
-  div.style.display = 'block';
-  div.innerHTML = `
+  function searchRules(val) {
+    searchQuery = val;
+    renderRules();
+  }
+
+  // ===== ADD/DELETE/TOGGLE RULE =====
+  function toggleAddForm() {
+    const f = document.getElementById('addForm');
+    f.classList.toggle('open');
+  }
+
+  function selectFlow(flow) {
+    selectedFlow = flow;
+    document.getElementById('seg_native').className = 'segment-btn' + (flow === 'native' ? ' active-native' : '');
+    document.getElementById('seg_rn').className = 'segment-btn' + (flow === 'rn' ? ' active-rn' : '');
+  }
+
+  function addRule() {
+    const rule = {
+      id: uid(),
+      platform: document.getElementById('f_platform').value,
+      platVer: document.getElementById('f_platVer').value.trim(),
+      pkgVer: document.getElementById('f_pkgVer').value.trim(),
+      device: document.getElementById('f_device').value.trim(),
+      refId: document.getElementById('f_refId').value.trim(),
+      blockId: document.getElementById('f_blockId').value.trim(),
+      flow: selectedFlow,
+      enabled: true,
+      note: document.getElementById('f_note').value.trim(),
+    };
+
+    state.rules.push(rule);
+    renderRules();
+    saveLocal();
+    toggleAddForm();
+
+    // Reset form
+    ['f_platform','f_platVer','f_pkgVer','f_device','f_refId','f_blockId','f_note'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el.tagName === 'SELECT') el.value = '';
+      else el.value = '';
+    });
+
+    showToast('Rule added successfully');
+  }
+
+  function deleteRule(id) {
+    state.rules = state.rules.filter(r => r.id !== id);
+    renderRules();
+    saveLocal();
+    showToast('Rule deleted', 'info');
+  }
+
+  function toggleRule(id) {
+    const r = state.rules.find(r => r.id === id);
+    if (r) { r.enabled = !r.enabled; renderRules(); saveLocal(); }
+  }
+
+  // ===== JSON =====
+  function buildConfig() {
+    return {
+      version: '1.0',
+      updatedAt: new Date().toISOString(),
+      globalDefaultFlow: state.globalFlow,
+      rules: state.rules.filter(r => r.enabled).map(({ id, enabled, ...rest }) => rest)
+    };
+  }
+
+  function syntaxHighlight(json) {
+    return json
+            .replace(/("[\w@-]+")\s*:/g, '<span class="key">$1</span>:')
+            .replace(/: (".*?")/g, ': <span class="str">$1</span>')
+            .replace(/: (\d+\.?\d*)/g, ': <span class="num">$1</span>')
+            .replace(/: (true|false)/g, (m, v) => `: <span class="${v === 'true' ? 'bool-native' : 'bool-rn'}">${v}</span>`);
+  }
+
+  function renderJSON() {
+    const json = JSON.stringify(buildConfig(), null, 2);
+    document.getElementById('jsonOutput').innerHTML = syntaxHighlight(json);
+  }
+
+  function copyJSON() {
+    navigator.clipboard.writeText(JSON.stringify(buildConfig(), null, 2));
+    showToast('JSON copied to clipboard');
+  }
+
+  function exportJSON() {
+    const blob = new Blob([JSON.stringify(buildConfig(), null, 2)], { type: 'application/json' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'cornerstone-flow-config.json';
+    a.click();
+    showToast('Config exported');
+  }
+
+  function importJSON(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = ev => {
+      try {
+        const cfg = JSON.parse(ev.target.result);
+        if (cfg.globalDefaultFlow) state.globalFlow = cfg.globalDefaultFlow;
+        if (cfg.rules) state.rules = cfg.rules.map(r => ({ ...r, id: uid(), enabled: true }));
+        renderGlobalToggle();
+        renderRules();
+        saveLocal();
+        showToast('Config imported successfully');
+      } catch { showToast('Invalid JSON file', 'info'); }
+    };
+    reader.readAsText(file);
+    e.target.value = '';
+  }
+
+  // ===== SIMULATOR =====
+  function versionInRange(version, range) {
+    if (!range || !version) return true;
+    version = version.trim();
+    range = range.trim();
+
+    if (range.startsWith('>=')) {
+      const min = range.slice(2).trim();
+      return compareVer(version, min) >= 0;
+    }
+    if (range.startsWith('<=')) {
+      const max = range.slice(2).trim();
+      return compareVer(version, max) <= 0;
+    }
+    if (range.includes('-')) {
+      const [min, max] = range.split('-').map(s => s.trim());
+      return compareVer(version, min) >= 0 && compareVer(version, max) <= 0;
+    }
+    return version === range;
+  }
+
+  function compareVer(a, b) {
+    const pa = a.split('.').map(Number);
+    const pb = b.split('.').map(Number);
+    for (let i = 0; i < Math.max(pa.length, pb.length); i++) {
+      const diff = (pa[i]||0) - (pb[i]||0);
+      if (diff !== 0) return diff;
+    }
+    return 0;
+  }
+
+  function runSimulator() {
+    const input = {
+      platform: document.getElementById('sim_platform').value,
+      platVer: document.getElementById('sim_platVer').value.trim(),
+      pkgVer: document.getElementById('sim_pkgVer').value.trim(),
+      device: document.getElementById('sim_device').value.trim(),
+      refId: document.getElementById('sim_refId').value.trim(),
+      blockId: document.getElementById('sim_blockId').value.trim(),
+    };
+
+    const matched = [];
+    for (const rule of state.rules) {
+      if (!rule.enabled) continue;
+      let match = true;
+      const reasons = [];
+
+      if (rule.platform && rule.platform !== input.platform) { match = false; }
+      else if (rule.platform) reasons.push(`platform = ${input.platform}`);
+
+      if (match && rule.platVer && !versionInRange(input.platVer, rule.platVer)) match = false;
+      else if (match && rule.platVer) reasons.push(`platVer ${rule.platVer}`);
+
+      if (match && rule.pkgVer && !versionInRange(input.pkgVer, rule.pkgVer)) match = false;
+      else if (match && rule.pkgVer) reasons.push(`pkgVer ${rule.pkgVer}`);
+
+      if (match && rule.device && !input.device.toLowerCase().includes(rule.device.toLowerCase())) match = false;
+      else if (match && rule.device) reasons.push(`device "${rule.device}"`);
+
+      if (match && rule.refId && rule.refId !== input.refId) match = false;
+      else if (match && rule.refId) reasons.push(`refId = ${rule.refId}`);
+
+      if (match && rule.blockId && rule.blockId !== input.blockId) match = false;
+      else if (match && rule.blockId) reasons.push(`blockId = ${rule.blockId}`);
+
+      if (match) matched.push({ rule, reasons });
+    }
+
+    const result = matched.length > 0 ? matched[0] : null;
+    const finalFlow = result ? result.rule.flow : state.globalFlow;
+    const isNative = finalFlow === 'native';
+
+    const div = document.getElementById('simResult');
+    div.style.display = 'block';
+    div.innerHTML = `
     <div style="background:var(--surface); border:1px solid ${isNative ? 'var(--native)' : 'var(--rn)'}; border-radius:12px; padding:24px; margin-bottom:16px;">
       <div style="display:flex; align-items:center; gap:16px; margin-bottom:20px;">
         <div style="font-size:32px;">${isNative ? '⚙' : '⚛'}</div>
@@ -1126,24 +1826,1060 @@ function runSimulator() {
     </div>
     ${matched.length > 1 ? `<div style="font-size:11px; color:var(--text-muted); padding:8px 0;">⚠ ${matched.length - 1} other rule(s) also matched but were not applied (first match wins)</div>` : ''}
   `;
-}
+  }
 
-// ===== LOCAL STORAGE =====
-function saveLocal() {
-  try { localStorage.setItem('cs_flow_state', JSON.stringify(state)); } catch(e) {}
-}
+  // ===== LOCAL STORAGE =====
+  function saveLocal() {
+    try { localStorage.setItem('cs_flow_state', JSON.stringify(state)); } catch(e) {}
+  }
 
-function loadLocal() {
-  try {
-    const s = localStorage.getItem('cs_flow_state');
-    if (s) state = JSON.parse(s);
-  } catch(e) {}
-}
+  function loadLocal() {
+    try {
+      const s = localStorage.getItem('cs_flow_state');
+      if (s) state = JSON.parse(s);
+    } catch(e) {}
+  }
 
-// ===== INIT =====
-loadLocal();
-renderGlobalToggle();
-renderRules();
+  // ===== INIT =====
+  loadLocal();
+  renderGlobalToggle();
+  renderRules();
+
+  // ==================== SDUI GENERATOR ====================
+
+  // Default SDUI Knowledge Base (built-in). User can override via upload.
+  const SDUI_KB_DEFAULT = `# Hướng Dẫn SDUI Cấu Trúc Giao Diện & Dữ Liệu (MoMo Native Widget)
+
+Tài liệu này là đặc tả kỹ thuật (Specification) chuẩn của hệ thống Server-Driven UI (SDUI) dành riêng cho MoMo Native Widget (Android & iOS).
+
+## 1. Cấu Trúc Khung Của dataSchema
+
+Cấu trúc cơ bản: "dataSchema" chứa "header" và các "content_*" (key tự định nghĩa theo biến thể: content_info, content_ranking, content...).
+
+\`\`\`json
+"dataSchema": {
+  "header": { "showHeader": false, "backgroundImage": "" },
+  "content_info": {
+    "value": {
+      "modifier": { ... },
+      "header": { ... },
+      "body": { "layout": "column", "modifier": { ... }, "children": [ ... ] },
+      "footer": { ... }
+    }
+  }
+}
+\`\`\`
+
+## 2. Layout System
+- "layout": "row" — xếp ngang (Row / HStack)
+- "layout": "column" — xếp dọc (Column / VStack)
+
+## 3. Modifier
+### Alignment & Arrangement
+- arrangement (main axis):
+  - row: start, center, end, spaceBetween, spaceAround, spaceEvenly
+  - column: top, center, bottom, start, spaceBetween
+- alignment (cross axis):
+  - row: top, center, bottom, start
+  - column: start, center, end
+
+### Size
+- fillMaxWidth (bool), fillMaxHeight (bool), fillMaxSize (bool)
+- width (px), height (px)
+- weight (number): Chỉ dùng trong children của layout để chiếm tỉ lệ dư, cực kỳ quan trọng để đẩy component dạt lề
+
+### Styling
+- padding: number hoặc {top, bottom, left, right}
+- backgroundColor: hex string
+- cornerRadius: number
+- border: {width, color}
+
+## 4. Components
+
+### TEXT
+\`\`\`json
+{
+  "componentType": "TEXT",
+  "field": "name",
+  "modifier": { "padding": { "bottom": 4 } },
+  "style": {
+    "typography": "labelXsMedium",
+    "color": "#727272",
+    "fontWeight": "500",
+    "maxLines": 1
+  }
+}
+\`\`\`
+typography: labelXsMedium, headerSSemibold, descriptionDefaultRegular, actionSBold, headerXsSemibold, descriptionXsRegular
+
+### ICON
+\`\`\`json
+{
+  "componentType": "ICON",
+  "field": "icon",
+  "iconSize": 32,
+  "modifier": { "padding": { "right": 4 } }
+}
+\`\`\`
+
+### CTA_BUTTON
+\`\`\`json
+{ "componentType": "CTA_BUTTON", "modifier": { "alignment": "end" } }
+\`\`\`
+
+### ITEM_LIST (Dynamic Array)
+\`\`\`json
+{
+  "componentType": "ITEM_LIST",
+  "field": "items",
+  "maxItems": 3,
+  "modifier": { "alignment": "start", "fillMaxHeight": true },
+  "itemTemplate": {
+    "layout": "row",
+    "modifier": { "fillMaxWidth": true, "alignment": "center" },
+    "children": [
+      { "componentType": "ICON", "field": "icon", "iconSize": 16 },
+      { "componentType": "TEXT", "field": "label", "modifier": { "weight": 1 } },
+      { "componentType": "TEXT", "field": "value", "style": { "typography": "headerXsSemibold", "color": "#303233" } }
+    ]
+  }
+}
+\`\`\`
+
+## 5. Data Binding Fields
+- Root: name, description, subDescription, icon, cardImage
+- titleInformation.content, titleInformation.icon
+- quantityLabel.content, quantityLabel.icon
+- items (array, dùng với ITEM_LIST). Child fields: label, value, icon
+
+## 6. Nguyên Tắc Sống Còn
+1. alignment vs arrangement: column → arrangement = top-bottom, alignment = left-right. Row ngược lại.
+2. Dán component vào góc Bottom Right: wrapper phải có fillMaxWidth: true, fillMaxHeight: true, arrangement: "bottom" hoặc "spaceBetween", alignment: "end"
+3. Đẩy element sang mép: wrapper = row, Item trái có modifier: { weight: 1 }, Item phải tự động dạt lề
+4. Mặc định text: maxLines: 1 trừ khi thiết kế cho thấy nhiều dòng
+`;
+
+  const SDUI_SYSTEM_PROMPT_DEFAULT = `# Role
+Bạn là Senior Frontend/Mobile Engineer kiêm chuyên gia Server-Driven UI (SDUI). Nhiệm vụ: nhận ảnh bản thiết kế UI (mockup), phân tích layout và sinh mã JSON \`dataSchema\` chính xác theo đặc tả SDUI của MoMo.
+
+# Data & Context
+Luôn bám theo tài liệu SDUI_README trong Knowledge Base. TUYỆT ĐỐI không tự bịa modifier hoặc component không có trong spec.
+
+# Workflow
+1. Phân tích: xác định layout gốc (row/column), viền, màu nền, padding tổng thể
+2. Cấu trúc cây: đi từ ngoài vào trong, xác định các khối Row/Column lồng nhau và Components (ICON, TEXT, ITEM_LIST)
+3. Mapping data: phán đoán field từ visual (tên → name, biểu tượng → icon, mô tả → description, etc.)
+4. Generate JSON: trả về khối JSON cho \`value\` của content_* chuẩn chỉnh
+
+# Rules
+- Dùng fillMaxWidth/fillMaxHeight khi cần căn lề với alignment/arrangement
+- Phân biệt RÕ arrangement (trục chính) vs alignment (trục phụ)
+- Dùng modifier: { "weight": 1 } để đẩy component dạt mép (cực kỳ phổ biến)
+- Text mặc định maxLines: 1 trừ khi thiết kế cho nhiều dòng
+- KHÔNG gen khóa thư viện ngoại lai, chỉ dùng JSON thuần như trong spec
+
+# Output Format
+QUAN TRỌNG: Trả về DUY NHẤT 1 code block JSON hợp lệ (bọc trong \`\`\`json ... \`\`\`). Không giải thích dài dòng. Có thể thêm 1-2 câu phân tích ngắn TRƯỚC code block nếu cần.
+
+Cấu trúc:
+\`\`\`json
+{
+  "layout": "row|column",
+  "modifier": { ... },
+  "children": [ ... ]
+}
+\`\`\``;
+
+  // ===== SDUI STATE =====
+  let sduiState = {
+    apiKey: '',
+    model: 'claude-sonnet-4-6',
+    systemPrompt: SDUI_SYSTEM_PROMPT_DEFAULT,
+    kb: SDUI_KB_DEFAULT,
+    kbName: 'default (built-in)',
+    preset: 'content_info',
+    mode: 'api', // 'api' | 'prompt'
+    outputFormat: 'full', // 'raw' | 'wrap' | 'full'
+    currentImage: null, // { dataUrl, mediaType, filename, base64 }
+    figmaSchema: null, // extracted node tree from Figma (only when imported via Figma)
+    currentOutput: '',
+    history: [] // [{ id, timestamp, thumbnail, title, preset, context, output, mode }]
+  };
+
+  function sduiLoadState() {
+    try {
+      const s = localStorage.getItem('sdui_state');
+      if (s) {
+        const parsed = JSON.parse(s);
+        sduiState = { ...sduiState, ...parsed };
+      }
+    } catch(e) {}
+  }
+
+  function sduiSaveState() {
+    try {
+      // Don't persist the currentImage or figmaSchema (too big); persist everything else
+      const { currentImage, figmaSchema, ...toSave } = sduiState;
+      localStorage.setItem('sdui_state', JSON.stringify(toSave));
+    } catch(e) {
+      console.warn('SDUI state save failed (quota?)', e);
+    }
+  }
+
+  // ===== SDUI UI RENDER =====
+  function sduiRenderPills() {
+    const apiPill = document.getElementById('sduiApiPill');
+    const kbPill = document.getElementById('sduiKbPill');
+    if (sduiState.apiKey) {
+      apiPill.className = 'sdui-pill ok';
+      apiPill.textContent = 'API: Ready';
+    } else {
+      apiPill.className = 'sdui-pill warn';
+      apiPill.textContent = 'API: Not Set';
+    }
+    kbPill.className = sduiState.kbName.startsWith('default') ? 'sdui-pill' : 'sdui-pill ok';
+    kbPill.textContent = 'KB: ' + (sduiState.kbName.startsWith('default') ? 'Default' : 'Custom');
+    document.getElementById('sduiKbInfo').textContent = 'Using: ' + sduiState.kbName;
+  }
+
+  function sduiRenderMode() {
+    // Toggle buttons
+    document.querySelectorAll('#sduiModeToggle .sdui-mode-btn').forEach(b => {
+      b.classList.toggle('active', b.dataset.mode === sduiState.mode);
+    });
+    // Mode-specific blocks
+    document.getElementById('sduiModeApiBlock').classList.toggle('active', sduiState.mode === 'api');
+    document.getElementById('sduiModePromptBlock').classList.toggle('active', sduiState.mode === 'prompt');
+    // Schema preview (only visible in prompt mode + when schema available)
+    sduiRenderSchemaPreview();
+  }
+
+  function sduiRenderSchemaPreview() {
+    const wrap = document.getElementById('sduiSchemaWrap');
+    const pre = document.getElementById('sduiSchemaPreview');
+    if (!wrap || !pre) return;
+    if (sduiState.mode === 'prompt' && sduiState.figmaSchema) {
+      wrap.style.display = 'block';
+      try {
+        pre.textContent = JSON.stringify(sduiState.figmaSchema, null, 2);
+      } catch { pre.textContent = '(unable to serialize schema)'; }
+    } else {
+      wrap.style.display = 'none';
+    }
+  }
+
+  function sduiRenderAll() {
+    sduiRenderPills();
+    sduiRenderMode();
+    document.getElementById('sduiModel').value = sduiState.model;
+    document.getElementById('sduiApiKey').value = sduiState.apiKey || '';
+    document.getElementById('sduiSystemPrompt').value = sduiState.systemPrompt;
+    document.getElementById('sduiKbPreview').textContent = sduiState.kb;
+
+    // Preset chips
+    document.querySelectorAll('#sduiPresets .sdui-preset-chip').forEach(c => {
+      c.classList.toggle('active', c.dataset.preset === sduiState.preset);
+    });
+
+    // Format tabs
+    document.querySelectorAll('.sdui-format-tab').forEach(t => {
+      t.classList.toggle('active', t.dataset.format === (sduiState.outputFormat || 'full'));
+    });
+
+    sduiRenderOutput();
+    sduiRenderHistory();
+  }
+
+  // ===== CONFIG HANDLERS =====
+  function sduiSaveApiKey() {
+    sduiState.apiKey = document.getElementById('sduiApiKey').value.trim();
+    sduiSaveState();
+    sduiRenderPills();
+    showToast(sduiState.apiKey ? 'API key saved' : 'API key cleared');
+  }
+
+  function sduiClearApiKey() {
+    sduiState.apiKey = '';
+    document.getElementById('sduiApiKey').value = '';
+    sduiSaveState();
+    sduiRenderPills();
+    showToast('API key cleared');
+  }
+
+  document.getElementById('sduiModel').addEventListener('change', (e) => {
+    sduiState.model = e.target.value;
+    sduiSaveState();
+  });
+
+  function sduiUploadKB(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      sduiState.kb = e.target.result;
+      sduiState.kbName = file.name;
+      sduiSaveState();
+      sduiRenderPills();
+      document.getElementById('sduiKbPreview').textContent = sduiState.kb;
+      showToast('KB uploaded: ' + file.name);
+    };
+    reader.readAsText(file);
+  }
+
+  function sduiResetKB() {
+    sduiState.kb = SDUI_KB_DEFAULT;
+    sduiState.kbName = 'default (built-in)';
+    sduiSaveState();
+    sduiRenderPills();
+    document.getElementById('sduiKbPreview').textContent = sduiState.kb;
+    showToast('KB reset to default');
+  }
+
+  function sduiSaveSystemPrompt() {
+    sduiState.systemPrompt = document.getElementById('sduiSystemPrompt').value;
+    sduiSaveState();
+    showToast('System prompt saved');
+  }
+
+  function sduiResetSystemPrompt() {
+    sduiState.systemPrompt = SDUI_SYSTEM_PROMPT_DEFAULT;
+    document.getElementById('sduiSystemPrompt').value = sduiState.systemPrompt;
+    sduiSaveState();
+    showToast('System prompt reset');
+  }
+
+  // ===== IMAGE HANDLERS =====
+  function sduiHandleImage(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    sduiLoadImage(file);
+  }
+
+  function sduiLoadImage(file) {
+    if (!file.type.startsWith('image/')) {
+      showToast('Please upload an image file', 'warn');
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      showToast('Image too large (max 5MB)', 'warn');
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const dataUrl = e.target.result;
+      sduiState.currentImage = {
+        dataUrl,
+        mediaType: file.type,
+        filename: file.name,
+        base64: dataUrl.split(',')[1]
+      };
+      document.getElementById('sduiPreviewImg').src = dataUrl;
+      document.getElementById('sduiPreview').classList.add('show');
+    };
+    reader.readAsDataURL(file);
+  }
+
+  function sduiClearImage() {
+    sduiState.currentImage = null;
+    sduiState.figmaSchema = null;
+    document.getElementById('sduiPreview').classList.remove('show');
+    document.getElementById('sduiPreviewImg').src = '';
+    document.getElementById('sduiImgFile').value = '';
+    sduiRenderSchemaPreview();
+    // Reset step 1 done mark
+    const step1 = document.getElementById('sduiStep1');
+    if (step1) step1.classList.remove('done');
+  }
+
+  // Paste from clipboard via button click (Clipboard API — needs HTTPS or localhost)
+  async function sduiPasteFromClipboard() {
+    if (!navigator.clipboard || !navigator.clipboard.read) {
+      showToast('Clipboard API not supported — use Ctrl/Cmd+V instead', 'warn');
+      return;
+    }
+    try {
+      const items = await navigator.clipboard.read();
+      for (const item of items) {
+        const imgType = item.types.find(t => t.startsWith('image/'));
+        if (imgType) {
+          const blob = await item.getType(imgType);
+          const file = new File([blob], 'clipboard.png', { type: imgType });
+          sduiLoadImage(file);
+          showToast('Image pasted from clipboard');
+          return;
+        }
+      }
+      showToast('No image in clipboard — copy an image from Figma first', 'warn');
+    } catch(err) {
+      if (err.name === 'NotAllowedError') {
+        showToast('Clipboard permission denied — use Ctrl/Cmd+V instead', 'warn');
+      } else {
+        showToast('Paste failed: ' + err.message, 'warn');
+      }
+    }
+  }
+
+  // Load image from URL (e.g., Figma export link, Imgur, etc.)
+  async function sduiLoadFromUrl(url) {
+    url = (url || '').trim();
+    if (!url) return;
+    try {
+      const res = await fetch(url);
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      const blob = await res.blob();
+      if (!blob.type.startsWith('image/')) {
+        showToast('URL does not point to an image', 'warn');
+        return;
+      }
+      const file = new File([blob], 'from-url.' + (blob.type.split('/')[1] || 'png'), { type: blob.type });
+      sduiLoadImage(file);
+      document.getElementById('sduiImgUrl').value = '';
+      document.getElementById('sduiImgUrl').classList.remove('show-url');
+      showToast('Image loaded from URL');
+    } catch(err) {
+      showToast('Failed to load URL: ' + err.message + ' (CORS?)', 'warn');
+    }
+  }
+
+  // Drag & drop
+  (function setupSduiDrop() {
+    const dz = document.getElementById('sduiDropzone');
+    if (!dz) return;
+    ['dragenter','dragover'].forEach(ev => dz.addEventListener(ev, (e) => {
+      e.preventDefault(); e.stopPropagation();
+      dz.classList.add('drag');
+    }));
+    ['dragleave','drop'].forEach(ev => dz.addEventListener(ev, (e) => {
+      e.preventDefault(); e.stopPropagation();
+      dz.classList.remove('drag');
+    }));
+    dz.addEventListener('drop', (e) => {
+      const file = e.dataTransfer.files[0];
+      if (file) sduiLoadImage(file);
+    });
+    // Paste from clipboard (works anywhere in SDUI panel, including inside textareas for image paste)
+    document.addEventListener('paste', (e) => {
+      const sduiPanel = document.getElementById('panel-sdui');
+      if (!sduiPanel.classList.contains('active')) return;
+      const items = e.clipboardData?.items;
+      if (!items) return;
+      // Only handle image paste — let text paste into textarea/input pass through normally
+      let hasImage = false;
+      for (const it of items) {
+        if (it.type.startsWith('image/')) {
+          hasImage = true;
+          const file = it.getAsFile();
+          if (file) {
+            e.preventDefault();
+            sduiLoadImage(file);
+            showToast('Image pasted from clipboard');
+          }
+          break;
+        }
+      }
+    });
+  })();
+
+  // Preset chips
+  document.getElementById('sduiPresets').addEventListener('click', (e) => {
+    const chip = e.target.closest('.sdui-preset-chip');
+    if (!chip) return;
+    sduiState.preset = chip.dataset.preset;
+    document.querySelectorAll('#sduiPresets .sdui-preset-chip').forEach(c => {
+      c.classList.toggle('active', c === chip);
+    });
+    sduiSaveState();
+    // 'full' format uses preset as content_* key → re-render
+    sduiRenderOutput();
+  });
+
+  // Format tabs (Raw value / wrap / Full dataSchema)
+  document.addEventListener('click', (e) => {
+    const tab = e.target.closest('.sdui-format-tab');
+    if (!tab) return;
+    sduiSwitchFormat(tab.dataset.format);
+  });
+
+  // ===== GENERATE =====
+  async function sduiGenerate() {
+    if (!sduiState.apiKey) {
+      showToast('Please set your API key first', 'warn');
+      document.getElementById('sduiApiKey').focus();
+      return;
+    }
+    if (!sduiState.currentImage) {
+      showToast('Please upload an image first', 'warn');
+      return;
+    }
+
+    const btn = document.getElementById('sduiGenBtn');
+    const status = document.getElementById('sduiGenStatus');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="sdui-spinner"></span> Generating...';
+    status.innerHTML = '<span class="sdui-spinner"></span> Calling Claude API...';
+
+    const context = document.getElementById('sduiContext').value.trim();
+    const preset = sduiState.preset;
+
+    // Build user message
+    const userText = `Phân tích ảnh UI mockup này và tạo dataSchema JSON.
+
+**Format preset**: ${preset}${preset === 'custom' ? ' (tự chọn key name phù hợp)' : ''}
+${context ? `**Context bổ sung từ user**:\n${context}` : ''}
+
+Trả về JSON hợp lệ theo đúng spec SDUI. Bọc trong \`\`\`json ... \`\`\``;
+
+    // System prompt with KB embedded
+    const fullSystem = sduiState.systemPrompt + '\n\n---\n\n# SDUI Knowledge Base (Specification Reference)\n\n' + sduiState.kb;
+
+    try {
+      const response = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': sduiState.apiKey,
+          'anthropic-version': '2023-06-01',
+          'anthropic-dangerous-direct-browser-access': 'true'
+        },
+        body: JSON.stringify({
+          model: sduiState.model,
+          max_tokens: 4096,
+          system: fullSystem,
+          messages: [{
+            role: 'user',
+            content: [
+              {
+                type: 'image',
+                source: {
+                  type: 'base64',
+                  media_type: sduiState.currentImage.mediaType,
+                  data: sduiState.currentImage.base64
+                }
+              },
+              { type: 'text', text: userText }
+            ]
+          }]
+        })
+      });
+
+      if (!response.ok) {
+        const errText = await response.text();
+        let errMsg = `API error ${response.status}`;
+        try {
+          const errJson = JSON.parse(errText);
+          errMsg += ': ' + (errJson.error?.message || errText.slice(0, 200));
+        } catch { errMsg += ': ' + errText.slice(0, 200); }
+        throw new Error(errMsg);
+      }
+
+      const data = await response.json();
+      const fullText = data.content
+              .filter(b => b.type === 'text')
+              .map(b => b.text)
+              .join('\n');
+
+      // Try to extract JSON block
+      let extractedJson = fullText;
+      const jsonMatch = fullText.match(/```json\s*([\s\S]*?)\s*```/);
+      if (jsonMatch) {
+        extractedJson = jsonMatch[1].trim();
+      } else {
+        const anyMatch = fullText.match(/```\s*([\s\S]*?)\s*```/);
+        if (anyMatch) extractedJson = anyMatch[1].trim();
+      }
+
+      sduiState.currentOutput = extractedJson;
+      sduiRenderOutput();
+
+      // Save to history
+      sduiAddHistory({
+        preset,
+        context,
+        output: extractedJson,
+        imageDataUrl: sduiState.currentImage.dataUrl,
+        filename: sduiState.currentImage.filename
+      });
+
+      const usage = data.usage;
+      status.innerHTML = `✓ Generated (${usage.input_tokens} in / ${usage.output_tokens} out tokens)`;
+      showToast('dataSchema generated');
+    } catch(err) {
+      console.error(err);
+      status.innerHTML = `<span style="color:var(--danger);">✗ ${err.message}</span>`;
+      showToast('Generation failed: ' + err.message, 'warn');
+    } finally {
+      btn.disabled = false;
+      btn.innerHTML = '✨ Generate dataSchema';
+    }
+  }
+
+  // ===== OUTPUT RENDER =====
+
+  // Build formatted output based on selected tab.
+  // Returns a string that represents the output in the requested shape:
+  //   'raw'  → the original JSON value AI returned (as-is)
+  //   'wrap' → `"dataSchema": <value>`  (a single key-value fragment, ready to merge into parent JSON)
+  //   'full' → a complete SDUI object with header + content_* wrapper per spec
+  function sduiBuildFormattedOutput() {
+    const raw = sduiState.currentOutput || '';
+    if (!raw) return '';
+
+    const fmt = sduiState.outputFormat || 'full';
+
+    if (fmt === 'raw') return raw;
+
+    // Try to parse the raw. If it fails, fall back to string embedding (still readable for user).
+    let parsed;
+    try { parsed = JSON.parse(raw); }
+    catch (e) { parsed = null; }
+
+    if (fmt === 'wrap') {
+      if (parsed !== null) {
+        // Produce a JS-style fragment: "dataSchema": { ... } — not a full object since user pastes inline
+        return '"dataSchema": ' + JSON.stringify(parsed, null, 2);
+      }
+      return '"dataSchema": ' + raw;
+    }
+
+    if (fmt === 'full') {
+      // Pick the content_* key based on the current preset
+      const preset = sduiState.preset || 'content_info';
+      const contentKey = (preset === 'custom') ? 'content_info' : preset;
+
+      const innerValue = parsed !== null ? parsed : { __raw: raw };
+
+      const full = {
+        dataSchema: {
+          header: {
+            showHeader: false,
+            backgroundImage: ''
+          },
+          [contentKey]: {
+            value: innerValue
+          }
+        }
+      };
+      return JSON.stringify(full, null, 2);
+    }
+
+    return raw;
+  }
+
+  function sduiRenderOutput() {
+    const out = document.getElementById('sduiOutput');
+    const formatted = sduiBuildFormattedOutput();
+
+    if (!formatted) {
+      out.innerHTML = '<div class="sdui-json-empty">Generated dataSchema will appear here</div>';
+      document.getElementById('sduiCharCount').textContent = '0 chars';
+      return;
+    }
+    out.innerHTML = '<pre>' + sduiEscapeHtml(formatted) + '</pre>';
+    document.getElementById('sduiCharCount').textContent = formatted.length + ' chars';
+  }
+
+  function sduiEscapeHtml(s) {
+    return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  }
+
+  function sduiCopyOutput() {
+    const formatted = sduiBuildFormattedOutput();
+    if (!formatted) return showToast('Nothing to copy', 'warn');
+    navigator.clipboard.writeText(formatted)
+            .then(() => showToast('Copied (' + sduiState.outputFormat + ' format)'))
+            .catch(() => {
+              // Fallback: textarea trick
+              const ta = document.createElement('textarea');
+              ta.value = formatted;
+              ta.style.position = 'fixed';
+              ta.style.opacity = '0';
+              document.body.appendChild(ta);
+              ta.select();
+              try { document.execCommand('copy'); showToast('Copied (fallback)'); }
+              catch { showToast('Copy failed', 'warn'); }
+              document.body.removeChild(ta);
+            });
+  }
+
+  function sduiDownloadOutput() {
+    const formatted = sduiBuildFormattedOutput();
+    if (!formatted) return showToast('Nothing to download', 'warn');
+    const blob = new Blob([formatted], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    const suffix = sduiState.outputFormat === 'full' ? 'full' :
+            sduiState.outputFormat === 'wrap' ? 'wrapped' : 'raw';
+    a.download = `dataSchema-${suffix}-${Date.now()}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  // Format = re-indent the raw JSON (pretty-print). Only affects the raw value, not the wrapper view.
+  function sduiFormatOutput() {
+    if (!sduiState.currentOutput) return;
+    try {
+      const parsed = JSON.parse(sduiState.currentOutput);
+      sduiState.currentOutput = JSON.stringify(parsed, null, 2);
+      sduiRenderOutput();
+      showToast('Formatted');
+    } catch(e) {
+      showToast('Not valid JSON — cannot format', 'warn');
+    }
+  }
+
+  // Format tab switch
+  function sduiSwitchFormat(fmt) {
+    sduiState.outputFormat = fmt;
+    document.querySelectorAll('.sdui-format-tab').forEach(t => {
+      t.classList.toggle('active', t.dataset.format === fmt);
+    });
+    sduiRenderOutput();
+    sduiSaveState();
+  }
+
+  // ===== HISTORY =====
+  function sduiAddHistory(entry) {
+    const item = {
+      id: 'sh_' + Date.now().toString(36),
+      timestamp: Date.now(),
+      thumbnail: entry.imageDataUrl,
+      title: entry.filename || 'untitled',
+      preset: entry.preset,
+      context: entry.context,
+      output: entry.output,
+      mode: entry.mode || sduiState.mode || 'api'
+    };
+    sduiState.history.unshift(item);
+    // Cap history at 20 items to keep localStorage reasonable
+    if (sduiState.history.length > 20) sduiState.history = sduiState.history.slice(0, 20);
+    sduiSaveState();
+    sduiRenderHistory();
+  }
+
+  function sduiRenderHistory() {
+    const box = document.getElementById('sduiHistory');
+    if (!sduiState.history.length) {
+      box.innerHTML = '<div class="sdui-json-empty">No history yet</div>';
+      return;
+    }
+    box.innerHTML = sduiState.history.map(h => {
+      const date = new Date(h.timestamp);
+      const timeStr = date.toLocaleString('vi-VN', { hour: '2-digit', minute: '2-digit', day: '2-digit', month: '2-digit' });
+      const modeBadge = h.mode === 'prompt'
+              ? '<span style="color:var(--success);">📋</span>'
+              : '<span style="color:var(--accent);">🔑</span>';
+      return `
+      <div class="sdui-history-item" onclick="sduiLoadHistory('${h.id}')">
+        <div class="sdui-history-thumb">
+          ${h.thumbnail ? `<img src="${h.thumbnail}" alt="">` : '🖼'}
+        </div>
+        <div class="sdui-history-meta">
+          <div class="title">${sduiEscapeHtml(h.title)}</div>
+          <div class="time">${timeStr} · ${modeBadge} ${h.preset}</div>
+          ${h.context ? `<div class="time" style="margin-top:2px;">${sduiEscapeHtml(h.context.slice(0, 50))}${h.context.length > 50 ? '…' : ''}</div>` : ''}
+        </div>
+        <button class="sdui-history-del" onclick="event.stopPropagation(); sduiDeleteHistory('${h.id}')">✕</button>
+      </div>
+    `;
+    }).join('');
+  }
+
+  function sduiLoadHistory(id) {
+    const h = sduiState.history.find(x => x.id === id);
+    if (!h) return;
+    sduiState.currentOutput = h.output;
+    sduiRenderOutput();
+    if (h.thumbnail) {
+      document.getElementById('sduiPreviewImg').src = h.thumbnail;
+      document.getElementById('sduiPreview').classList.add('show');
+      // Not setting currentImage — user needs to re-upload to re-generate
+    }
+    if (h.context) document.getElementById('sduiContext').value = h.context;
+    sduiState.preset = h.preset;
+    document.querySelectorAll('#sduiPresets .sdui-preset-chip').forEach(c => {
+      c.classList.toggle('active', c.dataset.preset === h.preset);
+    });
+    showToast('Loaded from history');
+  }
+
+  function sduiDeleteHistory(id) {
+    sduiState.history = sduiState.history.filter(h => h.id !== id);
+    sduiSaveState();
+    sduiRenderHistory();
+  }
+
+  function sduiClearHistory() {
+    if (!confirm('Clear all history?')) return;
+    sduiState.history = [];
+    sduiSaveState();
+    sduiRenderHistory();
+    showToast('History cleared');
+  }
+
+  // ===== SDUI INIT =====
+  sduiLoadState();
+  sduiRenderAll();
+
+  // ==================== FIGMA PLUGIN BRIDGE ====================
+  // Detect if running inside Figma plugin sandbox.
+  // When running as standalone HTML (browser), these hooks are silently no-op.
+
+  const IS_FIGMA_PLUGIN = (function() {
+    // Figma plugin UI runs in an iframe with parent.postMessage to the plugin.
+    // We also check for figma-specific globals that appear in the sandbox.
+    try {
+      // `parent !== window` is true in any iframe — tighten with pluginMessage convention.
+      // We can't reliably detect Figma before any message, so fall back to user-agent/host.
+      return window.location.protocol === 'null:' // Figma uses null origin
+              || /figma/i.test(navigator.userAgent)
+              || window.parent !== window; // conservative: any iframe enables the feature
+    } catch (e) {
+      return false;
+    }
+  })();
+
+  if (IS_FIGMA_PLUGIN) {
+    // Show Figma import button
+    const figmaImport = document.getElementById('sduiFigmaImport');
+    if (figmaImport) figmaImport.style.display = 'block';
+
+    // Listen for messages from plugin (code.js)
+    window.addEventListener('message', (event) => {
+      const msg = event.data && event.data.pluginMessage;
+      if (!msg || !msg.type) return;
+
+      if (msg.type === 'FIGMA_EXPORT_READY') {
+        sduiReceiveFigmaImage(msg);
+      } else if (msg.type === 'FIGMA_EXPORT_ERROR') {
+        showToast(msg.message || 'Figma export failed', 'warn');
+        const btn = document.getElementById('sduiFigmaImportBtn');
+        if (btn) {
+          btn.disabled = false;
+          btn.innerHTML = '🎨 Import from Figma Selection';
+        }
+      }
+    });
+  }
+
+  function sduiImportFromFigma() {
+    const btn = document.getElementById('sduiFigmaImportBtn');
+    if (btn) {
+      btn.disabled = true;
+      btn.innerHTML = '<span class="sdui-spinner"></span> Exporting from Figma...';
+    }
+    const scale = parseInt(document.getElementById('sduiFigmaScale').value, 10) || 2;
+    // In Prompt mode we also extract the node schema — gives Claude a much richer context
+    const messageType = sduiState.mode === 'prompt' ? 'EXPORT_WITH_SCHEMA' : 'EXPORT_SELECTION_AS_PNG';
+    parent.postMessage({ pluginMessage: { type: messageType, scale } }, '*');
+  }
+
+  function sduiReceiveFigmaImage(msg) {
+    const dataUrl = 'data:' + msg.mediaType + ';base64,' + msg.base64;
+    sduiState.currentImage = {
+      dataUrl,
+      mediaType: msg.mediaType,
+      filename: (msg.nodeName || 'figma-frame') + '.png',
+      base64: msg.base64
+    };
+    // Schema (only when requested via EXPORT_WITH_SCHEMA)
+    sduiState.figmaSchema = msg.schema || null;
+
+    document.getElementById('sduiPreviewImg').src = dataUrl;
+    document.getElementById('sduiPreview').classList.add('show');
+
+    const btn = document.getElementById('sduiFigmaImportBtn');
+    if (btn) {
+      btn.disabled = false;
+      btn.innerHTML = '🎨 Import from Figma Selection';
+    }
+
+    sduiRenderSchemaPreview();
+
+    const w = Math.round(msg.width || 0);
+    const h = Math.round(msg.height || 0);
+    const schemaHint = sduiState.figmaSchema ? ' + schema' : '';
+    showToast('✓ Imported "' + (msg.nodeName || 'frame') + '" (' + w + '×' + h + ')' + schemaHint);
+  }
+
+  // ═════════════ MODE TOGGLE ═════════════
+  document.getElementById('sduiModeToggle').addEventListener('click', (e) => {
+    const btn = e.target.closest('.sdui-mode-btn');
+    if (!btn) return;
+    sduiState.mode = btn.dataset.mode;
+    sduiRenderMode();
+    sduiSaveState();
+
+    // Update Figma import hint based on mode
+    const hint = document.getElementById('sduiFigmaImportHint');
+    if (hint && IS_FIGMA_PLUGIN) {
+      hint.innerHTML = sduiState.mode === 'prompt'
+              ? '💡 Chọn frame trong Figma → click để import <strong style="color:var(--success);">ảnh + schema</strong> (schema giúp AI chính xác hơn)'
+              : '💡 Chọn 1 frame/component trong Figma → click để import ảnh';
+    }
+  });
+
+  // ═════════════ MODE 2: PROMPT-BASED ═════════════
+
+  function sduiBuildPromptText() {
+    const preset = sduiState.preset;
+    const context = document.getElementById('sduiContext').value.trim();
+
+    let userText = '# Task\nPhân tích UI mockup đính kèm và sinh mã JSON `dataSchema` chuẩn SDUI.\n\n';
+    userText += '**Format preset**: ' + preset + (preset === 'custom' ? ' (tự chọn key name phù hợp)' : '') + '\n\n';
+
+    if (sduiState.figmaSchema) {
+      userText += '# Figma Node Schema (extracted from source)\n\n';
+      userText += 'Dùng schema này làm ground truth về structure, màu, kích thước chính xác. Ảnh để hiểu visual hierarchy.\n\n';
+      userText += '```json\n' + JSON.stringify(sduiState.figmaSchema, null, 2) + '\n```\n\n';
+    }
+
+    if (context) {
+      userText += '# Context bổ sung từ user\n' + context + '\n\n';
+    }
+
+    userText += '# Output Requirement\nTrả về DUY NHẤT 1 code block JSON hợp lệ (bọc trong ```json ... ```). Không giải thích dài dòng.';
+
+    const fullPrompt = [
+      '═══════════════════════════════════════════',
+      '# SYSTEM INSTRUCTIONS',
+      '═══════════════════════════════════════════',
+      '',
+      sduiState.systemPrompt,
+      '',
+      '═══════════════════════════════════════════',
+      '# SDUI KNOWLEDGE BASE (Spec Reference)',
+      '═══════════════════════════════════════════',
+      '',
+      sduiState.kb,
+      '',
+      '═══════════════════════════════════════════',
+      '# USER REQUEST',
+      '═══════════════════════════════════════════',
+      '',
+      userText,
+      '',
+      sduiState.currentImage
+              ? '📎 [ẢNH: đã copy file ảnh riêng — hãy attach vào chat Claude.ai bằng cách download PNG ở plugin]'
+              : '⚠ [Chưa có ảnh — vui lòng import/upload ảnh trước]'
+    ].join('\n');
+
+    return fullPrompt;
+  }
+
+  async function sduiBuildAndCopyPrompt() {
+    if (!sduiState.currentImage) {
+      setPromptStatus('✗ Cần import/upload ảnh trước', 'error');
+      showToast('Upload or import an image first', 'warn');
+      return;
+    }
+    const prompt = sduiBuildPromptText();
+    try {
+      await navigator.clipboard.writeText(prompt);
+      setPromptStatus('✓ Prompt đã copy (' + prompt.length + ' chars). Paste vào Claude.ai!', 'success');
+      // Mark Step 1 as done
+      document.getElementById('sduiStep1').classList.add('done');
+      showToast('Prompt copied to clipboard');
+    } catch(err) {
+      // Fallback: textarea trick
+      try {
+        const ta = document.createElement('textarea');
+        ta.value = prompt;
+        ta.style.position = 'fixed';
+        ta.style.opacity = '0';
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand('copy');
+        document.body.removeChild(ta);
+        setPromptStatus('✓ Prompt đã copy (fallback). Paste vào Claude.ai!', 'success');
+        document.getElementById('sduiStep1').classList.add('done');
+        showToast('Prompt copied (fallback)');
+      } catch(e2) {
+        setPromptStatus('✗ Copy failed: ' + e2.message, 'error');
+      }
+    }
+  }
+
+  function sduiDownloadPreviewImage() {
+    if (!sduiState.currentImage) {
+      showToast('No image to download', 'warn');
+      return;
+    }
+    const a = document.createElement('a');
+    a.href = sduiState.currentImage.dataUrl;
+    a.download = sduiState.currentImage.filename || 'sdui-mockup.png';
+    a.click();
+    showToast('Image downloaded — drag file vào chat Claude');
+  }
+
+  function sduiOpenClaudeAI() {
+    window.open('https://claude.ai/new', '_blank');
+  }
+
+  async function sduiPasteFromClipboardToArea() {
+    try {
+      const txt = await navigator.clipboard.readText();
+      document.getElementById('sduiPasteResponse').value = txt;
+      showToast('Pasted from clipboard');
+    } catch(err) {
+      showToast('Clipboard read blocked — paste manually (Ctrl+V)', 'warn');
+    }
+  }
+
+  function sduiParsePastedResponse() {
+    const raw = document.getElementById('sduiPasteResponse').value.trim();
+    if (!raw) {
+      setPromptStatus('✗ Paste response first', 'error');
+      return;
+    }
+
+    // Extract JSON block
+    let extracted = raw;
+    const jsonMatch = raw.match(/```json\s*([\s\S]*?)\s*```/);
+    if (jsonMatch) {
+      extracted = jsonMatch[1].trim();
+    } else {
+      const anyMatch = raw.match(/```\s*([\s\S]*?)\s*```/);
+      if (anyMatch) extracted = anyMatch[1].trim();
+    }
+
+    // Validate JSON
+    try {
+      const parsed = JSON.parse(extracted);
+      extracted = JSON.stringify(parsed, null, 2); // pretty-print
+    } catch(e) {
+      setPromptStatus('⚠ Text không parse được thành JSON — dùng raw (có thể Claude response sai format)', 'warn');
+    }
+
+    sduiState.currentOutput = extracted;
+    sduiRenderOutput();
+
+    // Save to history
+    sduiAddHistory({
+      preset: sduiState.preset,
+      context: document.getElementById('sduiContext').value.trim(),
+      output: extracted,
+      imageDataUrl: sduiState.currentImage?.dataUrl,
+      filename: sduiState.currentImage?.filename || 'prompt-mode',
+      mode: 'prompt'
+    });
+
+    setPromptStatus('✓ Response parsed & saved to history', 'success');
+    showToast('JSON parsed successfully');
+  }
+
+  function setPromptStatus(text, kind) {
+    const el = document.getElementById('sduiPromptStatus');
+    if (!el) return;
+    const colorMap = {
+      success: 'var(--success)',
+      error: 'var(--danger)',
+      warn: 'var(--rn)'
+    };
+    el.textContent = text;
+    el.style.color = colorMap[kind] || 'var(--text-dim)';
+  }
+
 </script>
 </body>
 </html>

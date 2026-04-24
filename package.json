@@ -1,0 +1,17 @@
+{
+  "name": "figma-plugins",
+  "version": "1.0.0",
+  "description": "Figma plugin — extract & normalize design nodes to LLM-friendly schema for React Native code generation",
+  "scripts": {
+    "build": "esbuild src/code.ts --bundle --outfile=dist/code.js --target=es6",
+    "watch": "esbuild src/code.ts --bundle --outfile=dist/code.js --target=es6 --watch",
+    "type-check": "tsc --noEmit",
+    "start": "python3 -m http.server 8085",
+    "tunnel": "ssh -o StrictHostKeyChecking=no -R 80:localhost:8085 serveo.net"
+  },
+  "devDependencies": {
+    "@figma/plugin-typings": "*",
+    "esbuild": "^0.20.0",
+    "typescript": "^5.4.0"
+  }
+}
