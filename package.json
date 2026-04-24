@@ -7,7 +7,8 @@
     "watch": "esbuild src/code.ts --bundle --outfile=dist/code.js --target=es6 --watch",
     "type-check": "tsc --noEmit",
     "start": "python3 -m http.server 8085",
-    "tunnel": "ssh -o StrictHostKeyChecking=no -R 80:localhost:8085 serveo.net"
+    "tunnel": "ssh -o StrictHostKeyChecking=no -R 80:localhost:8085 serveo.net",
+    "deloy": "npx vercel --prod"
   },
   "devDependencies": {
     "@figma/plugin-typings": "*",

@@ -404,6 +404,11 @@
       case "EXTRACT":
         handleExtract();
         break;
+      case "RESIZE":
+        if (msg.width && msg.height) {
+          figma.ui.resize(msg.width, msg.height);
+        }
+        break;
       case "CLOSE":
         figma.closePlugin();
         break;
