@@ -4,397 +4,549 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Cornerstone Flow Switch</title>
+  <link rel="icon" type="image/svg+xml" href="assets/logo.svg">
+  <link rel="apple-touch-icon" href="assets/logo.svg">
   <meta name="description" content="Cornerstone Flow Switch — Manage native/RN flow rules, export plugin configs and generate SDUI schemas from Figma designs.">
-  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <script>
+    // Apply saved theme before CSS paints to avoid flash
+    (function () {
+      try {
+        var t = localStorage.getItem('cornerstone-theme') || 'dark';
+        document.documentElement.setAttribute('data-theme', t);
+      } catch (e) {
+        document.documentElement.setAttribute('data-theme', 'dark');
+      }
+    })();
+  </script>
+  <script>document.write('<link rel="stylesheet" href="css/style.css?v=' + Date.now() + '">');</script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/12.0.0/marked.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 </head>
 <body>
-<div class="app">
+<div class="appshell">
 
-  <header>
-    <div class="logo">
-      <div class="logo-icon">⚡</div>
-      <div>
-        <div class="logo-text">Cornerstone <span>Flow</span> Switch</div>
-      </div>
+  <!-- ===================== TOP BAR ===================== -->
+  <header class="topbar">
+    <button class="theme-toggle nav-collapse-btn" id="navCollapseToggle" onclick="toggleNavCollapse()" title="Thu gọn / mở menu trái">☰</button>
+    <div class="brand">
+      <img class="logo-icon" src="assets/logo.svg" alt="Cornerstone logo">
+      <div class="logo-text">Cornerstone</div>
     </div>
-    <div class="header-actions">
-      <button class="btn btn-ghost" onclick="exportJSON()">⬇ Export</button>
-      <button class="btn btn-ghost" onclick="document.getElementById('importFile').click()">⬆ Import</button>
+
+    <nav class="topnav" id="topnav"><!-- filled by JS --></nav>
+
+    <div class="topbar-right">
+      <div class="version-dd" title="Version package @momo-platform/cornerstone-native">
+        <span class="version-dd-label">CNS</span>
+        <select id="versionSelect" class="version-select" onchange="onVersionChange(this.value)"></select>
+      </div>
+      <div id="globalBadge" class="flow-badge rn" style="display:none;">
+        <span class="dot"></span>
+        <span id="globalBadgeText">React Native Active</span>
+      </div>
+      <button class="theme-toggle" onclick="exportJSON()" title="Export flow config">⬇</button>
+      <button class="theme-toggle" onclick="document.getElementById('importFile').click()" title="Import flow config">⬆</button>
       <input type="file" id="importFile" accept=".json" style="display:none" onchange="importJSON(event)">
+      <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()" title="Toggle light / dark theme">🌙</button>
+      <button class="theme-toggle subnav-burger" onclick="toggleSubnav()" title="Menu">☰</button>
     </div>
   </header>
 
-  <!-- Global Flow Toggle -->
-  <div class="flow-banner">
-    <div>
-      <div class="flow-label">Global Default Flow</div>
-      <div style="font-size:11px; color:var(--text-muted); margin-top:4px;">Override all rules nếu không match</div>
-    </div>
-    <div class="flow-toggle-wrap">
-      <span class="flow-name rn" id="labelRN">React Native</span>
-      <div class="toggle-track" id="globalToggle" onclick="toggleGlobal()">
-        <div class="toggle-thumb"></div>
-      </div>
-      <span class="flow-name native" id="labelNative">Native</span>
-    </div>
-    <div id="globalBadge" class="flow-badge rn">
-      <span class="dot"></span>
-      <span id="globalBadgeText">React Native Active</span>
-    </div>
-  </div>
+  <!-- ===================== BODY (subnav + content) ===================== -->
+  <div class="body-layout">
+    <aside class="subnav" id="subnav"><!-- filled by JS per section --></aside>
+    <div class="subnav-backdrop" id="subnavBackdrop" onclick="toggleSubnav()"></div>
 
-  <!-- Tabs -->
-  <div class="tabs">
-    <button class="tab active" onclick="switchTab('rules', this)">📋 Rules</button>
-    <button class="tab" onclick="switchTab('json', this)">{ } JSON Config</button>
-    <button class="tab" onclick="switchTab('pluginconfig', this)">🔌 Plugin Config</button>
-    <button class="tab" onclick="switchTab('sdui', this)">🎨 SDUI Gen</button>
-  </div>
+    <main class="content">
+      <div class="content-inner">
 
-  <!-- RULES PANEL -->
-  <div class="panel active" id="panel-rules">
-    <div class="stats-bar" id="statsBar"></div>
-    <div class="section-title">Switch Rules</div>
-    <div class="filter-bar">
-      <button class="filter-chip active" onclick="filterRules('all', this)">All</button>
-      <button class="filter-chip" onclick="filterRules('rn', this)">RN Fallback</button>
-      <button class="filter-chip" onclick="filterRules('native', this)">Native Override</button>
-      <button class="filter-chip" onclick="filterRules('ios', this)">iOS</button>
-      <button class="filter-chip" onclick="filterRules('android', this)">Android</button>
-      <input class="filter-search" placeholder="Search device / refId..." oninput="searchRules(this.value)">
-    </div>
-    <div class="rules-list" id="rulesList"></div>
-    <div style="margin-top:16px;">
-      <button class="btn btn-primary" onclick="toggleAddForm()">+ Add Rule</button>
-    </div>
-    <div class="add-form-box" id="addForm">
-      <div class="section-title" style="margin-bottom:16px;">New Rule</div>
-      <div class="form-grid">
-        <div class="form-group">
-          <label>Platform</label>
-          <select class="form-select" id="f_platform">
-            <option value="">Any</option>
-            <option value="ios">iOS</option>
-            <option value="android">Android</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label>Platform Version</label>
-          <input class="form-input" id="f_platVer" placeholder="e.g. >= 17.0 or 16.0-17.5">
-        </div>
-        <div class="form-group">
-          <label>Package Version</label>
-          <input class="form-input" id="f_pkgVer" placeholder="e.g. >= 2.1.0 or 2.0.0-2.5.0">
-        </div>
-        <div class="form-group">
-          <label>Device Model</label>
-          <input class="form-input" id="f_device" placeholder="e.g. iPhone 14, Pixel 7">
-        </div>
-        <div class="form-group">
-          <label>refId</label>
-          <input class="form-input" id="f_refId" placeholder="e.g. ref_checkout_v2">
-        </div>
-        <div class="form-group">
-          <label>blockId</label>
-          <input class="form-input" id="f_blockId" placeholder="e.g. block_001">
-        </div>
-      </div>
-      <div class="form-group" style="margin-bottom:16px;">
-        <label>Target Flow</label>
-        <div class="segment-control" style="max-width:300px;">
-          <button class="segment-btn" id="seg_native" onclick="selectFlow('native')">⚙ Native</button>
-          <button class="segment-btn active-rn" id="seg_rn" onclick="selectFlow('rn')">⚛ React Native</button>
-        </div>
-      </div>
-      <div class="form-group" style="margin-bottom:16px;">
-        <label>Note (optional)</label>
-        <input class="form-input" id="f_note" placeholder="e.g. Native crash on this device/version — fallback to RN">
-      </div>
-      <div style="display:flex;gap:10px;">
-        <button class="btn btn-primary" onclick="addRule()">Save Rule</button>
-        <button class="btn btn-ghost" onclick="toggleAddForm()">Cancel</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- JSON PANEL -->
-  <div class="panel" id="panel-json">
-    <div class="section-title">JSON Config Output</div>
-    <div class="json-box">
-      <div class="json-header">
-        <span class="json-title">cornerstone-flow-config.json</span>
-        <button class="btn btn-ghost" onclick="copyJSON()" style="padding:6px 12px;">Copy</button>
-      </div>
-      <pre id="jsonOutput"></pre>
-    </div>
-  </div>
-
-  <!-- PLUGIN CONFIG PANEL -->
-  <div class="panel" id="panel-pluginconfig">
-    <div class="section-title">Figma Plugin Architect</div>
-    <div style="background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:24px; margin-bottom:20px;">
-      <p style="font-size: 11px; color: var(--text-dim); margin-bottom: 20px;">Choose a platform flavor. A ZIP with the correct plugin logic will be generated — unzip and load the <code>manifest.json</code> in Figma to use it.</p>
-
-      <div class="form-grid">
-        <div class="form-group" style="grid-column: span 2;">
-          <label>Platform Flavor</label>
-          <select class="form-select" id="flavor_select" onchange="selectFlavor(this.value)">
-            <option value="marketing_sdui">🎁 Marketing Platform — SDUI Native</option>
-            <option value="promotion_rn">💸 Promotion Hub — React Native</option>
-          </select>
-        </div>
-
-        <div class="form-group">
-          <label>Root Container</label>
-          <select class="form-select" id="cfg_root_container">
-            <option value="scrollable">Scrollable View</option>
-            <option value="fixed">Fixed Screen</option>
-          </select>
-        </div>
-
-        <div class="form-group">
-          <label>Strict Semantic Matching</label>
-          <select class="form-select" id="cfg_strict_matching">
-            <option value="true">True (Require exact block naming)</option>
-            <option value="false">False (Fallback to heuristics)</option>
-          </select>
-        </div>
-
-        <div class="form-group">
-          <label>Notes (optional)</label>
-          <input class="form-input" id="cfg_notes" placeholder="e.g. Campaign Spring 2026">
-        </div>
-      </div>
-      <button class="btn btn-primary" style="margin-top: 16px;" onclick="exportPluginConfig()">⬇ Export Plugin ZIP</button>
-    </div>
-  </div>
-
-  <!-- SDUI GEN PANEL -->
-  <div class="panel" id="panel-sdui">
-    <!-- Setup bar -->
-    <div class="sdui-card" style="margin-bottom:20px;">
-      <div class="sdui-card-title">⚙ Setup <span style="flex:1"></span>
-        <span class="sdui-pill" id="sduiApiPill">API: Not Set</span>
-        <span class="sdui-pill" id="sduiKbPill">KB: Default</span>
-      </div>
-
-      <div class="sdui-config-row">
-        <label>Model</label>
-        <select class="sdui-input" id="sduiModel">
-          <option value="claude-opus-4-7">Claude Opus 4.7 (best, $$$)</option>
-          <option value="claude-opus-4-6">Claude Opus 4.6</option>
-          <option value="claude-sonnet-4-6" selected>Claude Sonnet 4.6 (recommended)</option>
-          <option value="claude-haiku-4-5-20251001">Claude Haiku 4.5 (fastest, cheapest)</option>
-        </select>
-      </div>
-
-      <div class="sdui-config-row">
-        <label>API Key</label>
-        <div style="display:flex; gap:8px;">
-          <input type="password" class="sdui-input" id="sduiApiKey" placeholder="sk-ant-..." style="flex:1;">
-          <button class="btn btn-ghost" onclick="sduiSaveApiKey()" style="white-space:nowrap;">Save</button>
-          <button class="btn btn-ghost" onclick="sduiClearApiKey()" title="Clear">✕</button>
-        </div>
-      </div>
-
-      <div class="sdui-config-row">
-        <label>SDUI KB</label>
-        <div style="display:flex; gap:8px; align-items:center;">
-          <button class="btn btn-ghost" onclick="document.getElementById('sduiKbFile').click()">📄 Upload SDUI_README.md</button>
-          <input type="file" id="sduiKbFile" accept=".md,.txt" style="display:none" onchange="sduiUploadKB(event)">
-          <button class="btn btn-ghost" onclick="sduiResetKB()" title="Reset to default">Reset</button>
-          <span style="font-size:10px; color:var(--text-muted);" id="sduiKbInfo">Using default built-in spec</span>
-        </div>
-      </div>
-
-      <details class="sdui-details">
-        <summary>View/Edit System Prompt (Instructions)</summary>
-        <textarea class="sdui-textarea" id="sduiSystemPrompt" style="min-height:220px; font-size:11px;"></textarea>
-        <div style="display:flex; gap:8px; margin-top:8px;">
-          <button class="btn btn-ghost" onclick="sduiSaveSystemPrompt()">Save Prompt</button>
-          <button class="btn btn-ghost" onclick="sduiResetSystemPrompt()">Reset to Default</button>
-        </div>
-      </details>
-
-      <details class="sdui-details">
-        <summary>View Current Knowledge Base (SDUI Spec)</summary>
-        <pre id="sduiKbPreview">Loading...</pre>
-      </details>
-    </div>
-
-    <!-- Main workspace -->
-    <div class="sdui-grid">
-      <!-- LEFT: Input -->
-      <div class="sdui-card">
-        <div class="sdui-card-title">🖼 Input</div>
-
-        <div class="sdui-mode-toggle" id="sduiModeToggle">
-          <button class="sdui-mode-btn api active" data-mode="api">
-            <span class="mode-title">🔑 API Mode</span>
-            <span class="mode-desc">Plugin tự gọi Claude API → JSON trực tiếp. Cần API key.</span>
-          </button>
-          <button class="sdui-mode-btn prompt" data-mode="prompt">
-            <span class="mode-title">📋 Prompt-Based</span>
-            <span class="mode-desc">Copy prompt + ảnh qua Claude.ai/ChatGPT tự gen. Free, không key.</span>
-          </button>
-        </div>
-
-        <details class="sdui-details" style="margin-bottom: 12px;">
-          <summary>💡 How to copy image from Figma</summary>
-          <div style="font-size: 11px; line-height: 1.7; color: var(--text-dim); padding: 4px 0;">
-            <strong style="color:var(--text);">Option A — Copy as PNG (recommended):</strong><br>
-            Right-click layer/frame → <code style="color:var(--accent);">Copy/Paste as</code> → <code style="color:var(--accent);">Copy as PNG</code> → paste vào đây (Ctrl/Cmd+V)<br><br>
-            <strong style="color:var(--text);">Option B — Export:</strong><br>
-            Select frame → Export panel (right sidebar) → chọn PNG → drag file từ Figma vào dropzone<br><br>
-            <strong style="color:var(--text);">Option C — Screenshot:</strong><br>
-            macOS: <code style="color:var(--accent);">Shift+Ctrl+Cmd+4</code> (clipboard) rồi paste<br>
-            Windows: <code style="color:var(--accent);">Win+Shift+S</code> rồi paste
+        <!-- Global Flow Toggle (only for Tools → Rules / JSON) -->
+        <div class="flow-banner" id="flowBanner" style="display:none;">
+          <div>
+            <div class="flow-label">Global Default Flow</div>
+            <div style="font-size:11px; color:var(--text-muted); margin-top:4px;">Override all rules nếu không match</div>
           </div>
-        </details>
-
-        <div class="sdui-dropzone" id="sduiDropzone" onclick="document.getElementById('sduiImgFile').click()">
-          <div class="sdui-dropzone-icon">📸</div>
-          <div><strong>Click to upload</strong> or drag UI mockup here</div>
-          <div style="font-size:10px; color:var(--text-muted); margin-top:6px; line-height:1.6;">
-            PNG, JPG, WEBP (max ~5MB)<br>
-            <span style="color:var(--accent);">⌘V / Ctrl+V</span> to paste from clipboard
+          <div class="flow-toggle-wrap">
+            <span class="flow-name rn" id="labelRN">React Native</span>
+            <div class="toggle-track" id="globalToggle" onclick="toggleGlobal()">
+              <div class="toggle-thumb"></div>
+            </div>
+            <span class="flow-name native" id="labelNative">Native</span>
           </div>
         </div>
-        <input type="file" id="sduiImgFile" accept="image/*" style="display:none" onchange="sduiHandleImage(event)">
 
-        <div id="sduiFigmaImport" style="display:none; margin-top:8px;">
-          <div style="display:flex; gap:6px; align-items:stretch;">
-            <button class="btn btn-primary" id="sduiFigmaImportBtn" onclick="sduiImportFromFigma()" style="flex:1; font-size:12px; background:linear-gradient(135deg, var(--accent), var(--accent2)); font-weight:600;" title="Export currently selected Figma frame">
-              🎨 Import from Figma Selection
-            </button>
-            <select id="sduiFigmaScale" class="sdui-input" style="width:72px; flex:0 0 72px;" title="Export scale">
-              <option value="1">1x</option>
-              <option value="2" selected>2x</option>
-              <option value="3">3x</option>
+        <!-- Rendered markdown doc view -->
+        <div class="panel" id="panel-doc">
+          <div class="md-body" id="docContent"></div>
+        </div>
+
+      <!-- RULES PANEL -->
+      <div class="panel" id="panel-rules">
+        <div class="stats-bar" id="statsBar"></div>
+        <div class="section-title">Switch Rules</div>
+        <div class="filter-bar">
+          <button class="filter-chip active" onclick="filterRules('all', this)">All</button>
+          <button class="filter-chip" onclick="filterRules('rn', this)">RN Fallback</button>
+          <button class="filter-chip" onclick="filterRules('native', this)">Native Override</button>
+          <button class="filter-chip" onclick="filterRules('ios', this)">iOS</button>
+          <button class="filter-chip" onclick="filterRules('android', this)">Android</button>
+          <input class="filter-search" placeholder="Search device / refId..." oninput="searchRules(this.value)">
+        </div>
+        <div class="rules-list" id="rulesList"></div>
+        <div style="margin-top:16px;">
+          <button class="btn btn-primary" onclick="toggleAddForm()">+ Add Rule</button>
+        </div>
+        <div class="add-form-box" id="addForm">
+          <div class="section-title" style="margin-bottom:16px;">New Rule</div>
+          <div class="form-grid">
+            <div class="form-group">
+              <label>Platform</label>
+              <select class="form-select" id="f_platform">
+                <option value="">Any</option>
+                <option value="ios">iOS</option>
+                <option value="android">Android</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Platform Version</label>
+              <input class="form-input" id="f_platVer" placeholder="e.g. >= 17.0 or 16.0-17.5">
+            </div>
+            <div class="form-group">
+              <label>Package Version</label>
+              <input class="form-input" id="f_pkgVer" placeholder="e.g. >= 2.1.0 or 2.0.0-2.5.0">
+            </div>
+            <div class="form-group">
+              <label>Device Model</label>
+              <input class="form-input" id="f_device" placeholder="e.g. iPhone 14, Pixel 7">
+            </div>
+            <div class="form-group">
+              <label>refId</label>
+              <input class="form-input" id="f_refId" placeholder="e.g. ref_checkout_v2">
+            </div>
+            <div class="form-group">
+              <label>blockId</label>
+              <input class="form-input" id="f_blockId" placeholder="e.g. block_001">
+            </div>
+          </div>
+          <div class="form-group" style="margin-bottom:16px;">
+            <label>Target Flow</label>
+            <div class="segment-control" style="max-width:300px;">
+              <button class="segment-btn" id="seg_native" onclick="selectFlow('native')">⚙ Native</button>
+              <button class="segment-btn active-rn" id="seg_rn" onclick="selectFlow('rn')">⚛ React Native</button>
+            </div>
+          </div>
+          <div class="form-group" style="margin-bottom:16px;">
+            <label>Note (optional)</label>
+            <input class="form-input" id="f_note" placeholder="e.g. Native crash on this device/version — fallback to RN">
+          </div>
+          <div style="display:flex;gap:10px;">
+            <button class="btn btn-primary" onclick="addRule()">Save Rule</button>
+            <button class="btn btn-ghost" onclick="toggleAddForm()">Cancel</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- JSON PANEL -->
+      <div class="panel" id="panel-json">
+        <div class="section-title">JSON Config Output</div>
+        <div class="json-box">
+          <div class="json-header">
+            <span class="json-title">cornerstone-flow-config.json</span>
+            <button class="btn btn-ghost" onclick="copyJSON()" style="padding:6px 12px;">Copy</button>
+          </div>
+          <pre id="jsonOutput"></pre>
+        </div>
+      </div>
+
+      <!-- PLUGIN CONFIG PANEL -->
+      <div class="panel" id="panel-pluginconfig">
+        <div class="section-title">Figma Plugin Architect</div>
+        <div style="background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:24px; margin-bottom:20px;">
+          <p style="font-size: 11px; color: var(--text-dim); margin-bottom: 20px;">Choose a platform flavor. A ZIP with the correct plugin logic will be generated — unzip and load the <code>manifest.json</code> in Figma to use it.</p>
+
+          <div class="form-grid">
+            <div class="form-group" style="grid-column: span 2;">
+              <label>Platform Flavor</label>
+              <select class="form-select" id="flavor_select" onchange="selectFlavor(this.value)">
+                <option value="marketing_sdui">🎁 Marketing Platform — SDUI Native</option>
+                <option value="promotion_rn">💸 Promotion Hub — React Native</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label>Notes (optional)</label>
+              <input class="form-input" id="cfg_notes" placeholder="e.g. Campaign Spring 2026">
+            </div>
+          </div>
+          <button class="btn btn-primary" style="margin-top: 16px;" onclick="exportPluginConfig()">⬇ Export Plugin ZIP</button>
+        </div>
+      </div>
+
+      <!-- SDUI TEMPLATES PANEL -->
+      <div class="panel" id="panel-templates">
+        <div class="sdui-card" style="margin-bottom:20px;">
+          <div class="sdui-card-title">🧬 JSON Templates</div>
+          <div class="sdui-intro" style="margin-bottom:14px;">
+            <p>Xem preview UI từ JSON: lấy thẳng schema <strong>từ Builder</strong>, <strong>dán JSON</strong> bất kỳ, hoặc chọn một <strong>mẫu có sẵn</strong>.</p>
+          </div>
+
+          <div class="sdui-subhead">Nguồn JSON</div>
+          <div style="display:flex; gap:8px; margin-bottom:8px; flex-wrap:wrap;">
+            <button class="btn btn-ghost" onclick="sduiTplLoadBuilder()">⬅ Lấy JSON từ Builder</button>
+            <button class="btn btn-primary" onclick="sduiTplPreviewCustom()">👁 Preview JSON đang dán</button>
+          </div>
+          <textarea class="sdui-textarea" id="sduiTplCustom" placeholder="Dán JSON schema vào đây (vd Copy từ Builder) rồi bấm Preview…" style="min-height:90px; margin-bottom:16px;"></textarea>
+
+          <div class="sdui-subhead">Mẫu có sẵn</div>
+          <div class="sdui-tpl-chips" id="sduiTplChips"></div>
+          <div class="sdui-json-box" style="margin-top:10px;">
+            <div class="sdui-json-toolbar">
+              <span class="doc-title" id="sduiTplTitle" style="align-self:center; font-size:11px;">—</span>
+              <span style="flex:1"></span>
+              <button class="btn btn-ghost" onclick="sduiCopyTemplate()">📋 Copy</button>
+              <button class="btn btn-ghost" onclick="sduiDownloadTemplate()" title="Tải template về dạng .json">⬇ Download</button>
+            </div>
+            <pre id="sduiTplOutput"><div class="sdui-json-empty">Chọn một template ở trên</div></pre>
+          </div>
+          <div class="sdui-subhead" style="margin-top:16px; display:flex; align-items:center; gap:8px;">
+            👁 Live Preview <span style="flex:1"></span>
+            <button class="btn btn-ghost" style="font-size:10px; padding:4px 10px;" onclick="sduiExportPng('sduiTplPreview','sdui-template')">⬇ Export PNG</button>
+          </div>
+          <div class="sdui-preview-frame" id="sduiTplPreview"><div class="sdui-pv-empty">Chọn một template ở trên</div></div>
+        </div>
+      </div>
+
+      <!-- SDUI BUILDER PANEL -->
+      <div class="panel" id="panel-builder">
+        <div class="builder-2col">
+          <!-- COL 1: structure / tree -->
+          <div class="sdui-card builder-tree-card">
+            <div class="sdui-card-title">🧱 Component Builder <span style="flex:1"></span>
+              <button class="btn btn-ghost" style="font-size:10px; padding:4px 10px;" onclick="builderSetAllCollapsed(true)" title="Thu gọn tất cả">⊟ Collapse</button>
+              <button class="btn btn-ghost" style="font-size:10px; padding:4px 10px;" onclick="builderSetAllCollapsed(false)" title="Mở tất cả">⊞ Expand</button>
+              <button class="btn btn-ghost" style="font-size:10px; padding:4px 10px;" onclick="builderReset()">↺ Reset</button>
+            </div>
+            <details class="sdui-details">
+              <summary>📥 Import JSON schema</summary>
+              <textarea class="sdui-textarea" id="builderImportText" placeholder="Dán JSON schema (widget node tree: type/style/property/value) rồi bấm Build…" style="min-height:90px;"></textarea>
+              <div style="display:flex; gap:8px; margin-top:8px; flex-wrap:wrap;">
+                <button class="btn btn-primary" onclick="builderImport()">Build from JSON</button>
+                <button class="btn btn-ghost" onclick="document.getElementById('builderImportFile').click()">⬆ Upload .json</button>
+                <input type="file" id="builderImportFile" accept=".json,application/json" style="display:none" onchange="builderImportFile(event)">
+              </div>
+            </details>
+
+            <details class="sdui-details">
+              <summary>💾 Saved schemas (<span id="builderSavedCount">0</span>)</summary>
+              <div style="display:flex;align-items:center;gap:8px;margin:6px 0 8px;font-size:10px;font-family:var(--mono);">
+                <span id="builderCloudBadge"></span>
+              </div>
+              <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px;">
+                <button class="btn btn-primary" onclick="builderSaveCurrent()">💾 Save schema hiện tại</button>
+                <button class="btn btn-ghost" onclick="builderExportShared()" title="Tải toàn bộ thư viện ra file JSON (backup)">⬇ Export JSON</button>
+              </div>
+              <div id="builderSavedList"></div>
+              <p style="font-size:10px;color:var(--text-muted);margin-top:8px;line-height:1.5;">
+                Bấm <strong>Edit</strong> để sửa tên &amp; JSON schema đã lưu. Khi đã cấu hình Supabase, mọi thay đổi
+                lưu lên DB chung — người khác load lại là thấy. Chưa cấu hình thì lưu trên máy bạn.
+              </p>
+            </details>
+
+            <div class="sdui-intro" style="margin:14px 0;">
+              <p>Dựng UI bằng cách chọn component <strong>lồng nhau</strong> (container row/column → con trái/phải…). Preview &amp; JSON cập nhật <strong>ngay khi chỉnh</strong>; tự lưu nháp khi reload.</p>
+            </div>
+
+            <div id="builderTree" style="margin-top:8px;"></div>
+            <button class="btn btn-primary" style="margin-top:16px; width:100%; justify-content:center;" onclick="builderSubmit()">✓ Submit — chốt schema cuối</button>
+          </div>
+
+          <!-- COL 2: Preview (trên) + JSON (ngay dưới) -->
+          <div class="builder-col-mid">
+            <div class="sdui-card preview-card">
+              <div class="sdui-card-title">👁 Preview <span style="flex:1"></span>
+                <span style="font-size:10px; color:var(--text-muted); font-family:var(--mono); text-transform:none; letter-spacing:0;">click UI để sửa</span>
+                <button class="btn btn-ghost" onclick="sduiExportPng('builderPreview','sdui-builder')">⬇ PNG</button>
+              </div>
+              <div class="sdui-preview-frame" id="builderPreview"><div class="sdui-pv-empty">Preview sẽ hiện ở đây</div></div>
+            </div>
+            <div class="sdui-card builder-json-card">
+              <div class="sdui-card-title">📤 JSON Schema <span style="flex:1"></span>
+                <button class="btn btn-ghost" onclick="builderCopy()">📋 Copy</button>
+                <button class="btn btn-ghost" onclick="builderDownload()">⬇ JSON</button>
+              </div>
+              <div class="sdui-json-box"><pre id="builderOutput"><div class="sdui-json-empty">Bấm Generate để tạo schema</div></pre></div>
+            </div>
+          </div>
+
+          <!-- COL 3: Inspector (dock bên phải — hiện property khi click component) -->
+          <div class="builder-inspector" id="builderInspector">
+            <div class="builder-insp-titlebar">
+              <span>⚙ Properties</span>
+              <button class="builder-mini" onclick="builderCloseInspector()" title="Bỏ chọn">✕</button>
+            </div>
+            <div id="builderInspectorBody"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- COMING SOON (Image → JSON Generator) -->
+      <div class="panel" id="panel-coming">
+        <div class="coming-soon">
+          <div class="coming-soon-ico">🚧</div>
+          <div class="coming-soon-title">Image → JSON Generator</div>
+          <div class="coming-soon-tag">Coming soon</div>
+          <p class="coming-soon-desc">
+            Tính năng nhận ảnh UI và sinh <code>dataSchema</code> bằng AI đang được hoàn thiện cho chính xác hơn.
+            Trong lúc chờ, bạn có thể dùng <strong>Builder</strong> để dựng schema trực quan, hoặc tham khảo <strong>Templates</strong>.
+          </p>
+          <div style="display:flex; gap:10px; justify-content:center; margin-top:18px;">
+            <button class="btn btn-primary" onclick="goSection('sdui'); selectItemById('sdui','builder')">🧱 Mở Builder</button>
+            <button class="btn btn-ghost" onclick="goSection('sdui'); selectItemById('sdui','templates')">🧬 Xem Templates</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- SDUI GEN PANEL -->
+      <div class="panel" id="panel-sdui">
+
+        <!-- Setup bar -->
+        <div class="sdui-card" style="margin-bottom:20px;">
+          <div class="sdui-card-title">⚙ Setup <span style="flex:1"></span>
+            <span class="sdui-pill" id="sduiApiPill">API: Not Set</span>
+            <span class="sdui-pill" id="sduiKbPill">KB: Default</span>
+          </div>
+
+          <div class="sdui-config-row">
+            <label>Model</label>
+            <select class="sdui-input" id="sduiModel">
+              <option value="claude-opus-4-7">Claude Opus 4.7 (best, $$$)</option>
+              <option value="claude-opus-4-6">Claude Opus 4.6</option>
+              <option value="claude-sonnet-4-6" selected>Claude Sonnet 4.6 (recommended)</option>
+              <option value="claude-haiku-4-5-20251001">Claude Haiku 4.5 (fastest, cheapest)</option>
             </select>
           </div>
-          <div style="font-size:10px; color:var(--text-muted); margin-top:4px;" id="sduiFigmaImportHint">
-            💡 Chọn 1 frame/component trong Figma → click để import ảnh
+
+          <div class="sdui-config-row">
+            <label>API Key</label>
+            <div style="display:flex; gap:8px;">
+              <input type="password" class="sdui-input" id="sduiApiKey" placeholder="sk-ant-..." style="flex:1;">
+              <button class="btn btn-ghost" onclick="sduiSaveApiKey()" style="white-space:nowrap;">Save</button>
+              <button class="btn btn-ghost" onclick="sduiClearApiKey()" title="Clear">✕</button>
+            </div>
           </div>
-        </div>
 
-        <div style="display:flex; gap:6px; margin-top:8px;">
-          <button class="btn btn-ghost" onclick="sduiPasteFromClipboard()" style="flex:1; font-size:11px;" title="Paste image from clipboard">📋 Paste from Clipboard</button>
-          <button class="btn btn-ghost" onclick="document.getElementById('sduiImgUrl').classList.toggle('show-url')" style="font-size:11px;" title="Paste image URL">🔗 URL</button>
-        </div>
-        <input type="text" id="sduiImgUrl" class="sdui-input" style="margin-top:6px; display:none;" placeholder="Paste image URL and press Enter..." onkeydown="if(event.key==='Enter') sduiLoadFromUrl(this.value)">
+          <div class="sdui-config-row">
+            <label>SDUI KB</label>
+            <div style="display:flex; gap:8px; align-items:center;">
+              <button class="btn btn-ghost" onclick="document.getElementById('sduiKbFile').click()">📄 Upload SDUI_README.md</button>
+              <input type="file" id="sduiKbFile" accept=".md,.txt" style="display:none" onchange="sduiUploadKB(event)">
+              <button class="btn btn-ghost" onclick="sduiResetKB()" title="Reset to default">Reset</button>
+              <span style="font-size:10px; color:var(--text-muted);" id="sduiKbInfo">Using default built-in spec</span>
+            </div>
+          </div>
 
-        <div class="sdui-preview" id="sduiPreview">
-          <button class="sdui-preview-remove" onclick="sduiClearImage()">✕</button>
-          <img id="sduiPreviewImg" src="" alt="">
-        </div>
-
-        <div id="sduiSchemaWrap" style="display:none; margin-top:10px;">
           <details class="sdui-details">
-            <summary>🌳 Figma Schema Extracted (will be included in prompt)</summary>
-            <pre class="sdui-schema-box" id="sduiSchemaPreview"></pre>
+            <summary>View/Edit System Prompt (Instructions)</summary>
+            <textarea class="sdui-textarea" id="sduiSystemPrompt" style="min-height:220px; font-size:11px;"></textarea>
+            <div style="display:flex; gap:8px; margin-top:8px;">
+              <button class="btn btn-ghost" onclick="sduiSaveSystemPrompt()">Save Prompt</button>
+              <button class="btn btn-ghost" onclick="sduiResetSystemPrompt()">Reset to Default</button>
+            </div>
+          </details>
+
+          <details class="sdui-details">
+            <summary>View Current Knowledge Base (SDUI Spec)</summary>
+            <pre id="sduiKbPreview">Loading...</pre>
           </details>
         </div>
 
-        <div style="margin-top:16px;">
-          <label style="font-size:10px; color:var(--text-muted); text-transform:uppercase; letter-spacing:1px; display:block; margin-bottom:6px;">Format preset</label>
-          <div class="sdui-preset-chips" id="sduiPresets">
-            <div class="sdui-preset-chip active" data-preset="content_info">content_info</div>
-            <div class="sdui-preset-chip" data-preset="content_ranking">content_ranking</div>
-            <div class="sdui-preset-chip" data-preset="content">content</div>
-            <div class="sdui-preset-chip" data-preset="custom">custom</div>
-          </div>
-        </div>
+        <!-- Main workspace -->
+        <div class="sdui-grid">
+          <!-- LEFT: Input -->
+          <div class="sdui-card">
+            <div class="sdui-card-title">🖼 Input</div>
 
-        <div style="margin-top:12px;">
-          <label style="font-size:10px; color:var(--text-muted); text-transform:uppercase; letter-spacing:1px; display:block; margin-bottom:6px;">Context / Hints (optional)</label>
-          <textarea class="sdui-textarea" id="sduiContext" placeholder="VD: Thẻ chi tiêu tháng 4, text số lượng màu xanh lá #2FB350, có icon ở góc trên trái, maxItems 3..."></textarea>
-        </div>
+            <div class="sdui-mode-toggle" id="sduiModeToggle">
+              <button class="sdui-mode-btn api active" data-mode="api">
+                <span class="mode-title">🔑 API Mode</span>
+                <span class="mode-desc">Plugin tự gọi Claude API → JSON trực tiếp. Cần API key.</span>
+              </button>
+              <button class="sdui-mode-btn prompt" data-mode="prompt">
+                <span class="mode-title">📋 Prompt-Based</span>
+                <span class="mode-desc">Copy prompt + ảnh qua Claude.ai/ChatGPT tự gen. Free, không key.</span>
+              </button>
+            </div>
 
-        <!-- MODE 1: API -->
-        <div class="sdui-mode-block active" id="sduiModeApiBlock">
-          <div style="margin-top:14px; display:flex; gap:8px;">
-            <button class="btn btn-primary" id="sduiGenBtn" onclick="sduiGenerate()" style="flex:1;">✨ Generate dataSchema</button>
-          </div>
-          <div id="sduiGenStatus" style="margin-top:10px; font-size:11px; color:var(--text-dim); min-height:16px;"></div>
-        </div>
+            <details class="sdui-details" style="margin-bottom: 12px;">
+              <summary>💡 How to copy image from Figma</summary>
+              <div style="font-size: 11px; line-height: 1.7; color: var(--text-dim); padding: 4px 0;">
+                <strong style="color:var(--text);">Option A — Copy as PNG (recommended):</strong><br>
+                Right-click layer/frame → <code style="color:var(--accent);">Copy/Paste as</code> → <code style="color:var(--accent);">Copy as PNG</code> → paste vào đây (Ctrl/Cmd+V)<br><br>
+                <strong style="color:var(--text);">Option B — Export:</strong><br>
+                Select frame → Export panel (right sidebar) → chọn PNG → drag file từ Figma vào dropzone<br><br>
+                <strong style="color:var(--text);">Option C — Screenshot:</strong><br>
+                macOS: <code style="color:var(--accent);">Shift+Ctrl+Cmd+4</code> (clipboard) rồi paste<br>
+                Windows: <code style="color:var(--accent);">Win+Shift+S</code> rồi paste
+              </div>
+            </details>
 
-        <!-- MODE 2: Prompt-based -->
-        <div class="sdui-mode-block" id="sduiModePromptBlock">
-          <div style="margin-top:14px;">
-            <div class="sdui-step-row" id="sduiStep1">
-              <div class="sdui-step-num">1</div>
-              <div class="sdui-step-content">
-                <div class="sdui-step-title">Build &amp; copy prompt</div>
-                <div class="sdui-step-desc">Tạo prompt gồm: system instructions + SDUI spec + Figma schema + context. Prompt sẽ được copy vào clipboard.</div>
-                <button class="btn btn-primary" onclick="sduiBuildAndCopyPrompt()" style="margin-top:8px; font-size:11px;">📋 Build &amp; Copy Prompt</button>
+            <div class="sdui-dropzone" id="sduiDropzone" onclick="document.getElementById('sduiImgFile').click()">
+              <div class="sdui-dropzone-icon">📸</div>
+              <div><strong>Click to upload</strong> or drag UI mockup here</div>
+              <div style="font-size:10px; color:var(--text-muted); margin-top:6px; line-height:1.6;">
+                PNG, JPG, WEBP (max ~5MB)<br>
+                <span style="color:var(--accent);">⌘V / Ctrl+V</span> to paste from clipboard
               </div>
             </div>
-            <div class="sdui-step-row">
-              <div class="sdui-step-num">2</div>
-              <div class="sdui-step-content">
-                <div class="sdui-step-title">Paste vào Claude.ai / ChatGPT</div>
-                <div class="sdui-step-desc">
-                  Mở <a href="https://claude.ai" target="_blank" style="color:var(--accent);">claude.ai</a> → tạo chat mới → paste prompt → <strong style="color:var(--text);">attach ảnh PNG</strong> → gửi.
-                </div>
-                <div style="display:flex; gap:6px; margin-top:8px;">
-                  <button class="btn btn-ghost" onclick="sduiDownloadPreviewImage()" style="font-size:11px;">⬇ Download Image</button>
-                  <button class="btn btn-ghost" onclick="sduiOpenClaudeAI()" style="font-size:11px;">🌐 Open Claude.ai</button>
-                </div>
+            <input type="file" id="sduiImgFile" accept="image/*" style="display:none" onchange="sduiHandleImage(event)">
+
+            <div id="sduiFigmaImport" style="display:none; margin-top:8px;">
+              <div style="display:flex; gap:6px; align-items:stretch;">
+                <button class="btn btn-primary" id="sduiFigmaImportBtn" onclick="sduiImportFromFigma()" style="flex:1; font-size:12px; background:linear-gradient(135deg, var(--accent), var(--accent2)); font-weight:600;" title="Export currently selected Figma frame">
+                  🎨 Import from Figma Selection
+                </button>
+                <select id="sduiFigmaScale" class="sdui-input" style="width:72px; flex:0 0 72px;" title="Export scale">
+                  <option value="1">1x</option>
+                  <option value="2" selected>2x</option>
+                  <option value="3">3x</option>
+                </select>
+              </div>
+              <div style="font-size:10px; color:var(--text-muted); margin-top:4px;" id="sduiFigmaImportHint">
+                💡 Chọn 1 frame/component trong Figma → click để import ảnh
               </div>
             </div>
-            <div class="sdui-step-row">
-              <div class="sdui-step-num">3</div>
-              <div class="sdui-step-content">
-                <div class="sdui-step-title">Paste response về</div>
-                <div class="sdui-step-desc">Copy toàn bộ response của Claude → paste vào ô bên dưới → click Parse.</div>
-                <div class="sdui-paste-area">
-                  <textarea class="sdui-textarea" id="sduiPasteResponse" placeholder="Paste Claude's full response here (including ```json block)..."></textarea>
-                  <div style="display:flex; gap:6px; margin-top:8px;">
-                    <button class="btn btn-primary" onclick="sduiParsePastedResponse()" style="flex:1;">✓ Parse JSON Response</button>
-                    <button class="btn btn-ghost" onclick="sduiPasteFromClipboardToArea()" title="Auto paste from clipboard">📋 Paste</button>
+
+            <div style="display:flex; gap:6px; margin-top:8px;">
+              <button class="btn btn-ghost" onclick="sduiPasteFromClipboard()" style="flex:1; font-size:11px;" title="Paste image from clipboard">📋 Paste from Clipboard</button>
+              <button class="btn btn-ghost" onclick="document.getElementById('sduiImgUrl').classList.toggle('show-url')" style="font-size:11px;" title="Paste image URL">🔗 URL</button>
+            </div>
+            <input type="text" id="sduiImgUrl" class="sdui-input" style="margin-top:6px; display:none;" placeholder="Paste image URL and press Enter..." onkeydown="if(event.key==='Enter') sduiLoadFromUrl(this.value)">
+
+            <div class="sdui-preview" id="sduiPreview">
+              <button class="sdui-preview-remove" onclick="sduiClearImage()">✕</button>
+              <img id="sduiPreviewImg" src="" alt="">
+            </div>
+
+            <div id="sduiSchemaWrap" style="display:none; margin-top:10px;">
+              <details class="sdui-details">
+                <summary>🌳 Figma Schema Extracted (will be included in prompt)</summary>
+                <pre class="sdui-schema-box" id="sduiSchemaPreview"></pre>
+              </details>
+            </div>
+
+            <div style="margin-top:16px;">
+              <label style="font-size:10px; color:var(--text-muted); text-transform:uppercase; letter-spacing:1px; display:block; margin-bottom:6px;">Format preset</label>
+              <div class="sdui-preset-chips" id="sduiPresets">
+                <div class="sdui-preset-chip active" data-preset="content_info">content_info</div>
+                <div class="sdui-preset-chip" data-preset="content_ranking">content_ranking</div>
+                <div class="sdui-preset-chip" data-preset="content">content</div>
+                <div class="sdui-preset-chip" data-preset="custom">custom</div>
+              </div>
+            </div>
+
+            <div style="margin-top:12px;">
+              <label style="font-size:10px; color:var(--text-muted); text-transform:uppercase; letter-spacing:1px; display:block; margin-bottom:6px;">Context / Hints (optional)</label>
+              <textarea class="sdui-textarea" id="sduiContext" placeholder="VD: Thẻ chi tiêu tháng 4, text số lượng màu xanh lá #2FB350, có icon ở góc trên trái, maxItems 3..."></textarea>
+            </div>
+
+            <!-- MODE 1: API -->
+            <div class="sdui-mode-block active" id="sduiModeApiBlock">
+              <div style="margin-top:14px; display:flex; gap:8px;">
+                <button class="btn btn-primary" id="sduiGenBtn" onclick="sduiGenerate()" style="flex:1;">✨ Generate dataSchema</button>
+              </div>
+              <div id="sduiGenStatus" style="margin-top:10px; font-size:11px; color:var(--text-dim); min-height:16px;"></div>
+            </div>
+
+            <!-- MODE 2: Prompt-based -->
+            <div class="sdui-mode-block" id="sduiModePromptBlock">
+              <div style="margin-top:14px;">
+                <div class="sdui-step-row" id="sduiStep1">
+                  <div class="sdui-step-num">1</div>
+                  <div class="sdui-step-content">
+                    <div class="sdui-step-title">Build &amp; copy prompt</div>
+                    <div class="sdui-step-desc">Tạo prompt gồm: system instructions + SDUI spec + Figma schema + context. Prompt sẽ được copy vào clipboard.</div>
+                    <button class="btn btn-primary" onclick="sduiBuildAndCopyPrompt()" style="margin-top:8px; font-size:11px;">📋 Build &amp; Copy Prompt</button>
+                  </div>
+                </div>
+                <div class="sdui-step-row">
+                  <div class="sdui-step-num">2</div>
+                  <div class="sdui-step-content">
+                    <div class="sdui-step-title">Paste vào Claude.ai / ChatGPT</div>
+                    <div class="sdui-step-desc">
+                      Mở <a href="https://claude.ai" target="_blank" style="color:var(--accent);">claude.ai</a> → tạo chat mới → paste prompt → <strong style="color:var(--text);">attach ảnh PNG</strong> → gửi.
+                    </div>
+                    <div style="display:flex; gap:6px; margin-top:8px;">
+                      <button class="btn btn-ghost" onclick="sduiDownloadPreviewImage()" style="font-size:11px;">⬇ Download Image</button>
+                      <button class="btn btn-ghost" onclick="sduiOpenClaudeAI()" style="font-size:11px;">🌐 Open Claude.ai</button>
+                    </div>
+                  </div>
+                </div>
+                <div class="sdui-step-row">
+                  <div class="sdui-step-num">3</div>
+                  <div class="sdui-step-content">
+                    <div class="sdui-step-title">Paste response về</div>
+                    <div class="sdui-step-desc">Copy toàn bộ response của Claude → paste vào ô bên dưới → click Parse.</div>
+                    <div class="sdui-paste-area">
+                      <textarea class="sdui-textarea" id="sduiPasteResponse" placeholder="Paste Claude's full response here (including ```json block)..."></textarea>
+                      <div style="display:flex; gap:6px; margin-top:8px;">
+                        <button class="btn btn-primary" onclick="sduiParsePastedResponse()" style="flex:1;">✓ Parse JSON Response</button>
+                        <button class="btn btn-ghost" onclick="sduiPasteFromClipboardToArea()" title="Auto paste from clipboard">📋 Paste</button>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
+              <div id="sduiPromptStatus" style="margin-top:10px; font-size:11px; color:var(--text-dim); min-height:16px;"></div>
             </div>
           </div>
-          <div id="sduiPromptStatus" style="margin-top:10px; font-size:11px; color:var(--text-dim); min-height:16px;"></div>
+
+          <!-- RIGHT: Output + History -->
+          <div>
+            <div class="sdui-card" style="margin-bottom:16px;">
+              <div class="sdui-card-title">📤 Output
+                <span style="flex:1"></span>
+                <button class="sdui-view-tab active" data-view="json" onclick="sduiToggleOutputView('json')">{ } JSON</button>
+                <button class="sdui-view-tab" data-view="preview" onclick="sduiToggleOutputView('preview')">👁 Preview</button>
+                <button class="sdui-view-tab" onclick="sduiToggleOutputView('preview'); sduiExportPng('sduiOutPreview','sdui-output')" title="Render preview thành ảnh PNG">⬇ PNG</button>
+              </div>
+              <div id="sduiOutputJsonWrap">
+                <div class="sdui-format-tabs">
+                  <button class="sdui-format-tab" data-format="raw">Raw value</button>
+                  <button class="sdui-format-tab" data-format="wrap">"dataSchema": { ... }</button>
+                  <button class="sdui-format-tab active" data-format="full">Full dataSchema</button>
+                </div>
+                <div class="sdui-json-box">
+                  <div class="sdui-json-toolbar">
+                    <button class="btn btn-ghost" onclick="sduiCopyOutput()">📋 Copy</button>
+                    <button class="btn btn-ghost" onclick="sduiDownloadOutput()">⬇ Download</button>
+                    <button class="btn btn-ghost" onclick="sduiFormatOutput()">{ } Format</button>
+                    <span style="flex:1"></span>
+                    <span id="sduiCharCount" style="font-size:10px; color:var(--text-muted); align-self:center;">0 chars</span>
+                  </div>
+                  <div id="sduiOutput"><div class="sdui-json-empty">Generated dataSchema will appear here</div></div>
+                </div>
+              </div>
+              <div class="sdui-preview-frame" id="sduiOutPreview" style="display:none;"><div class="sdui-pv-empty">Chưa có schema để preview</div></div>
+            </div>
+
+            <div class="sdui-card">
+              <div class="sdui-card-title">🕘 History <span style="flex:1"></span>
+                <button class="btn btn-ghost" onclick="sduiClearHistory()" style="padding:4px 10px; font-size:10px;">Clear All</button>
+              </div>
+              <div class="sdui-history" id="sduiHistory">
+                <div class="sdui-json-empty">No history yet</div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
-      <!-- RIGHT: Output + History -->
-      <div>
-        <div class="sdui-card" style="margin-bottom:16px;">
-          <div class="sdui-card-title">📤 Output JSON</div>
-          <div class="sdui-format-tabs">
-            <button class="sdui-format-tab" data-format="raw">Raw value</button>
-            <button class="sdui-format-tab" data-format="wrap">"dataSchema": { ... }</button>
-            <button class="sdui-format-tab active" data-format="full">Full dataSchema</button>
-          </div>
-          <div class="sdui-json-box">
-            <div class="sdui-json-toolbar">
-              <button class="btn btn-ghost" onclick="sduiCopyOutput()">📋 Copy</button>
-              <button class="btn btn-ghost" onclick="sduiDownloadOutput()">⬇ Download</button>
-              <button class="btn btn-ghost" onclick="sduiFormatOutput()">{ } Format</button>
-              <span style="flex:1"></span>
-              <span id="sduiCharCount" style="font-size:10px; color:var(--text-muted); align-self:center;">0 chars</span>
-            </div>
-            <div id="sduiOutput"><div class="sdui-json-empty">Generated dataSchema will appear here</div></div>
-          </div>
-        </div>
-
-        <div class="sdui-card">
-          <div class="sdui-card-title">🕘 History <span style="flex:1"></span>
-            <button class="btn btn-ghost" onclick="sduiClearHistory()" style="padding:4px 10px; font-size:10px;">Clear All</button>
-          </div>
-          <div class="sdui-history" id="sduiHistory">
-            <div class="sdui-json-empty">No history yet</div>
-          </div>
-        </div>
       </div>
-    </div>
+    </main>
   </div>
 
 </div>
@@ -402,6 +554,12 @@
 <!-- Toast -->
 <div class="toast" id="toast"></div>
 
-<script src="js/app.js"></script>
+<script>
+  (function () {
+    var v = '?v=' + Date.now();
+    document.write('<script src="js/supabase-config.js' + v + '"><\/script>');
+    document.write('<script src="js/app.js' + v + '"><\/script>');
+  })();
+</script>
 </body>
 </html>

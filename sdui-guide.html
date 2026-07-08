@@ -1,0 +1,399 @@
+<h1>📦 Hướng dẫn tạo nội dung SDUI Widget</h1>
+<blockquote>
+<p>🎯 <strong>Tài liệu này dành cho ai?</strong>
+Team <strong>Backend (BE)</strong>, <strong>Product Owner (PO)</strong>, <strong>Vận hành</strong>, và bất kỳ ai cần tạo/cập nhật
+nội dung hiển thị bằng SDUI Widget.</p>
+<p>Phần kỹ thuật chi tiết (cho dev) nằm ở <a href="./sdui-json-schema.md">SDUI JSON Schema</a>.</p>
+</blockquote>
+<hr>
+<h2>1. SDUI Widget là gì?</h2>
+<p><strong>SDUI</strong> = <em>Server-Driven UI</em> = &quot;giao diện do server điều khiển&quot;.</p>
+<blockquote>
+<p>💡 <strong>Hình dung đơn giản:</strong> Thay vì lập trình viên phải code sẵn từng giao diện rồi chờ
+release app mới, thì <strong>server gửi xuống một &quot;bản vẽ&quot;</strong> (dạng JSON) mô tả: chỗ này là chữ gì,
+chỗ kia là hình nào, nút bấm dẫn đi đâu… App đọc bản vẽ đó và <strong>tự dựng giao diện</strong>.</p>
+<p>Giống như chơi <strong>LEGO</strong>: bạn ghép các khối có sẵn (chữ, hình, nút…) theo ý muốn,
+không cần đúc lại khối mới.</p>
+</blockquote>
+<p><strong>Lợi ích:</strong> đổi nội dung / bố cục <strong>không cần update app</strong> — chỉ cần đổi data ở server.</p>
+<hr>
+<h2>2. Một widget được lắp từ những &quot;khối&quot; nào?</h2>
+<p>Có <strong>6 khối</strong> cơ bản. Mọi giao diện đều ghép từ chúng:</p>
+<table>
+<thead>
+<tr>
+<th>Khối (tên kỹ thuật)</th>
+<th>Là gì</th>
+<th>Hình dung</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Khung chứa</strong> (<code>container</code>)</td>
+<td>Hộp để xếp các khối khác vào trong</td>
+<td>Cái khay/thẻ chứa nội dung</td>
+</tr>
+<tr>
+<td><strong>Chữ</strong> (<code>text</code>)</td>
+<td>Một đoạn văn bản</td>
+<td>&quot;Giảm 50.000đ&quot;, &quot;Highlands Coffee&quot;</td>
+</tr>
+<tr>
+<td><strong>Hình ảnh</strong> (<code>image</code>)</td>
+<td>Một tấm ảnh / logo / icon</td>
+<td>Logo thương hiệu</td>
+</tr>
+<tr>
+<td><strong>Nút bấm</strong> (<code>button</code>)</td>
+<td>Nút có thể nhấn</td>
+<td>Nút &quot;Thu thập&quot;</td>
+</tr>
+<tr>
+<td><strong>Nhãn</strong> (<code>tag</code>)</td>
+<td>Chip nhỏ làm nổi bật</td>
+<td>&quot;HOT&quot;, &quot;MỚI&quot;</td>
+</tr>
+<tr>
+<td><strong>Khoảng trống</strong> (<code>spacer</code>)</td>
+<td>Khoảng đệm co giãn để đẩy các khối ra xa nhau</td>
+<td>Phần trống đẩy nút sang phải</td>
+</tr>
+</tbody></table>
+<blockquote>
+<p>ℹ️ <strong>INFO:</strong> Một <strong>khung chứa</strong> có thể lồng nhiều khung chứa khác → tạo ra bố cục phức tạp
+(thẻ trong thẻ). Đây là cách dựng những card đẹp như khuyến mãi, insight chi tiêu…</p>
+</blockquote>
+<hr>
+<h2>3. Cách sắp xếp các khối (layout)</h2>
+<p>Mỗi <strong>khung chứa</strong> quyết định các khối bên trong nó xếp như thế nào:</p>
+<table>
+<thead>
+<tr>
+<th>Kiểu xếp (<code>layout</code>)</th>
+<th>Nghĩa là</th>
+<th>Khi nào dùng</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>column</code></td>
+<td>Xếp <strong>dọc</strong> từ trên xuống</td>
+<td>Tiêu đề trên, mô tả dưới</td>
+</tr>
+<tr>
+<td><code>row</code></td>
+<td>Xếp <strong>ngang</strong> từ trái qua</td>
+<td>Logo · chữ · nút trên một hàng</td>
+</tr>
+<tr>
+<td><code>scrollRow</code></td>
+<td>Xếp ngang và <strong>vuốt ngang được</strong></td>
+<td>Dãy card khuyến mãi vuốt qua lại</td>
+</tr>
+<tr>
+<td><code>scrollColumn</code></td>
+<td>Xếp dọc và <strong>cuộn dọc được</strong></td>
+<td>Danh sách dài</td>
+</tr>
+</tbody></table>
+<p>Ngoài ra có <strong>căn lề</strong> (<code>alignment</code>): canh trái / giữa / phải (hoặc trên / giữa / dưới).</p>
+<blockquote>
+<p>💡 <strong>Ví dụ hình dung — 1 card khuyến mãi:</strong></p>
+<pre><code>┌─────────────────────────────────────┐
+│ (logo)  Highlands Coffee             │   ← hàng ngang (row)
+│         Giảm 50.000đ      [Thu thập] │
+└─────────────────────────────────────┘
+</code></pre>
+<p>Card này = 1 khung chứa kiểu <code>row</code>, bên trong có: 1 hình + 1 khung chứa dọc (2 dòng chữ) + 1 nút.</p>
+</blockquote>
+<hr>
+<h2>4. Mỗi khối khai báo những gì?</h2>
+<p>Dưới đây là các thông tin (thuộc tính) thường dùng, giải thích bằng tiếng Việt:</p>
+<h3>Chữ (text)</h3>
+<table>
+<thead>
+<tr>
+<th>Thuộc tính</th>
+<th>Ý nghĩa</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Nội dung</td>
+<td>Đoạn chữ hiển thị</td>
+</tr>
+<tr>
+<td>Kiểu chữ (<code>typography</code>)</td>
+<td>Cỡ/độ đậm theo bộ Design System (vd tiêu đề, mô tả)</td>
+</tr>
+<tr>
+<td>Màu chữ</td>
+<td>Mã màu, vd <code>#303233</code></td>
+</tr>
+<tr>
+<td>Số dòng tối đa</td>
+<td>Quá dài sẽ cắt bớt (…)</td>
+</tr>
+<tr>
+<td>Căn lề</td>
+<td>Trái / giữa / phải</td>
+</tr>
+</tbody></table>
+<h3>Hình ảnh (image)</h3>
+<table>
+<thead>
+<tr>
+<th>Thuộc tính</th>
+<th>Ý nghĩa</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>URL ảnh</td>
+<td>Đường dẫn ảnh</td>
+</tr>
+<tr>
+<td>Cách lấp đầy</td>
+<td><code>fit</code> (vừa khung) hoặc <code>fill</code> (lấp đầy, có thể cắt)</td>
+</tr>
+<tr>
+<td>Bo góc</td>
+<td>Bo tròn góc ảnh (vd làm avatar tròn)</td>
+</tr>
+</tbody></table>
+<h3>Nút bấm (button)</h3>
+<table>
+<thead>
+<tr>
+<th>Thuộc tính</th>
+<th>Ý nghĩa</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Tiêu đề</td>
+<td>Chữ trên nút, vd &quot;Thu thập&quot;</td>
+</tr>
+<tr>
+<td>Hành động (<code>actions</code>)</td>
+<td>Bấm vào thì làm gì: mở màn hình nào / gọi API nào</td>
+</tr>
+<tr>
+<td>Kiểu nút</td>
+<td>primary / outline / text … (style hiển thị)</td>
+</tr>
+</tbody></table>
+<h3>Khung chứa (container)</h3>
+<table>
+<thead>
+<tr>
+<th>Thuộc tính</th>
+<th>Ý nghĩa</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Kiểu xếp</td>
+<td>dọc / ngang / cuộn (xem §3)</td>
+</tr>
+<tr>
+<td>Khoảng cách</td>
+<td>Cách nhau bao nhiêu giữa các khối con</td>
+</tr>
+<tr>
+<td>Nền, bo góc, viền, padding</td>
+<td>Trang trí cho cái thẻ</td>
+</tr>
+</tbody></table>
+<blockquote>
+<p>ℹ️ <strong>Trang trí dùng chung (mọi khối đều có):</strong> màu nền, bo góc, viền, padding (lề trong),
+chiều rộng/cao. Màu luôn ghi dạng mã hex <code>#RRGGBB</code>.</p>
+</blockquote>
+<hr>
+<h2>5. Đo lường / Tracking (quan trọng cho PO &amp; BE)</h2>
+<p>Mỗi khối có thể gắn thông tin tracking để đo hiển thị (impression) và tương tác.</p>
+<p>Có <strong>2 cấp</strong>, phân biệt bằng <code>containerType</code>:</p>
+<table>
+<thead>
+<tr>
+<th>Cấp</th>
+<th><code>containerType</code></th>
+<th>Gắn ở đâu</th>
+<th>Ý nghĩa</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Cả widget</strong></td>
+<td><code>&quot;widget&quot;</code></td>
+<td>Khung chứa ngoài cùng</td>
+<td>Đo &quot;widget này được nhìn thấy&quot;</td>
+</tr>
+<tr>
+<td><strong>Từng item</strong></td>
+<td><code>&quot;item&quot;</code></td>
+<td>Mỗi card con</td>
+<td>Đo &quot;card này được nhìn thấy / được bấm&quot;</td>
+</tr>
+</tbody></table>
+<blockquote>
+<p>⚠️ <strong>LƯU Ý cho BE:</strong> Đặt đúng cấp rất quan trọng cho báo cáo.</p>
+<ul>
+<li>Khung <strong>ngoài cùng</strong> → <code>containerType: &quot;widget&quot;</code>.</li>
+<li>Mỗi <strong>card con</strong> → <code>containerType: &quot;item&quot;</code> (kèm thông tin <code>itemTracking</code> riêng như vị trí, item_id).</li>
+</ul>
+<p>Phần <code>tracking</code>/<code>trackify</code> cấp widget khai 1 lần ở ngoài; card con <strong>tự kế thừa</strong>, chỉ cần khai
+thêm <code>itemTracking</code> của riêng nó.</p>
+</blockquote>
+<hr>
+<h2>6. Hết hạn nội dung (<code>expire_time</code>)</h2>
+<p>Mỗi card có thể đặt <strong>thời điểm hết hạn</strong> (timestamp mili-giây).</p>
+<ul>
+<li>Tới giờ đó → card <strong>tự động biến mất</strong> khỏi widget.</li>
+<li>Các card khác <strong>vẫn hiển thị bình thường</strong> (chỉ ẩn card hết hạn).</li>
+<li>Không đặt (hoặc đặt <code>-1</code>) → <strong>không bao giờ hết hạn</strong>.</li>
+</ul>
+<blockquote>
+<p>💡 Dùng cho ưu đãi có thời hạn: hết hạn là tự ẩn, không cần can thiệp thủ công.</p>
+</blockquote>
+<hr>
+<h2>7. Cho phép bấm vào (action)</h2>
+<p>Không chỉ <strong>nút</strong> mới bấm được. Có thể gắn hành động (<code>onTap</code>) lên:</p>
+<ul>
+<li><strong>Cả một card</strong> (khung chứa) → bấm đâu cũng vào.</li>
+<li><strong>Một icon/hình</strong> → vd icon &quot;xem thêm&quot; ở góc.</li>
+</ul>
+<p>Hành động thường là: <strong>mở một màn hình</strong> (REDIRECT) hoặc <strong>gọi một API</strong> (CALL_API).</p>
+<hr>
+<h2>8. ✅ Checklist trước khi gửi data — ⚠️ Lỗi hay gặp</h2>
+<blockquote>
+<p>✅ <strong>CHECKLIST</strong></p>
+<ul>
+<li><input disabled="" type="checkbox"> Có <code>type: &quot;template_widget&quot;</code> và <code>templateType: &quot;SDUI_WIDGET&quot;</code> ở ngoài cùng.</li>
+<li><input disabled="" type="checkbox"> Khung ngoài cùng có <code>containerType: &quot;widget&quot;</code>, mỗi card con có <code>containerType: &quot;item&quot;</code>.</li>
+<li><input disabled="" type="checkbox"> Mọi ảnh có URL hợp lệ; mọi màu ghi dạng <code>#RRGGBB</code>.</li>
+<li><input disabled="" type="checkbox"> Card có thời hạn thì đặt <code>expire_time</code>.</li>
+<li><input disabled="" type="checkbox"> Nút/card cần bấm được thì có <code>actions</code>/<code>onTap</code> trỏ đúng nơi.</li>
+</ul>
+</blockquote>
+<blockquote>
+<p>⚠️ <strong>LỖI THƯỜNG GẶP NHẤT — sai dấu nháy ở biến</strong>
+Khi dùng biến template, <strong>giá trị là chữ thì để trong nháy, là khối thông tin (object) thì KHÔNG nháy.</strong></p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>Sai ❌</th>
+<th>Đúng ✅</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Cấu hình nút</td>
+<td><code>&quot;property&quot;: &quot;$cta&quot;</code></td>
+<td><code>&quot;property&quot;: $cta</code></td>
+</tr>
+<tr>
+<td>Hành động</td>
+<td><code>&quot;onTap&quot;: &quot;$cta&quot;</code></td>
+<td><code>&quot;onTap&quot;: $cta</code></td>
+</tr>
+<tr>
+<td>URL ảnh (là chữ)</td>
+<td><code>&quot;value&quot;: $image</code></td>
+<td><code>&quot;value&quot;: &quot;$image&quot;</code></td>
+</tr>
+</tbody></table>
+<p>👉 Đặt sai có thể làm <strong>mất hành động của nút</strong>, hoặc nặng hơn là <strong>không hiển thị được widget</strong>.</p>
+</blockquote>
+<hr>
+<h2>9. Màu sắc &amp; kiểu chữ</h2>
+<ul>
+<li><strong>Màu:</strong> mã hex, ví dụ <code>#FFFFFF</code> (trắng), <code>#303233</code> (đen text), <code>#727272</code> (xám phụ).</li>
+<li><strong>Kiểu chữ (typography):</strong> dùng <strong>token của Design System</strong>, không tự đặt cỡ tùy ý.
+Một số token đã dùng thực tế: <code>headerSSemibold</code>, <code>headerDefaultBold</code>, <code>labelXsMedium</code>,
+<code>labelSMedium</code>, <code>descriptionDefaultRegular</code>, <code>descriptionXsRegular</code>, <code>actionSBold</code>.</li>
+</ul>
+<blockquote>
+<p>ℹ️ Cần danh sách token đầy đủ và bảng màu chuẩn → liên hệ <strong>team Design / Native</strong>.</p>
+</blockquote>
+<hr>
+<h2>10. Các mẫu layout có sẵn</h2>
+<table>
+<thead>
+<tr>
+<th>Mẫu</th>
+<th>Mô tả</th>
+<th>Dùng cho</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Horizontal Full</strong></td>
+<td>Dãy card vuốt ngang: logo + 2 dòng chữ + nút trên cùng 1 hàng</td>
+<td>Khuyến mãi gọn</td>
+</tr>
+<tr>
+<td><strong>Horizontal No-Desc</strong></td>
+<td>Card vuốt ngang: logo + tên bên trái, tiêu đề + mô tả + nút bên phải</td>
+<td>Khuyến mãi có mô tả</td>
+</tr>
+<tr>
+<td><strong>Insight</strong></td>
+<td>Tiêu đề + icon &quot;xem thêm&quot; ở trên, rồi dãy card chỉ số vuốt ngang; bấm card mở chi tiết</td>
+<td>Insight chi tiêu, gợi ý</td>
+</tr>
+</tbody></table>
+<blockquote>
+<p>👉 File mẫu JSON cụ thể: hỏi team Native để lấy template (<code>json_horizontal_full</code>,
+<code>json_non_des</code>, <code>json_insight</code>).</p>
+</blockquote>
+<hr>
+<h2>11. Thuật ngữ nhanh (cho người mới)</h2>
+<table>
+<thead>
+<tr>
+<th>Từ</th>
+<th>Nghĩa dễ hiểu</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>SDUI</strong></td>
+<td>Giao diện do server gửi xuống bằng &quot;bản vẽ&quot; JSON</td>
+</tr>
+<tr>
+<td><strong>Widget</strong></td>
+<td>Một khối giao diện trên màn hình (vd dãy card khuyến mãi)</td>
+</tr>
+<tr>
+<td><strong>Node / khối</strong></td>
+<td>Một thành phần nhỏ: chữ, hình, nút…</td>
+</tr>
+<tr>
+<td><strong>Container / khung chứa</strong></td>
+<td>Hộp để xếp các khối khác vào</td>
+</tr>
+<tr>
+<td><strong>Layout</strong></td>
+<td>Cách sắp xếp (dọc / ngang / cuộn)</td>
+</tr>
+<tr>
+<td><strong>Property</strong></td>
+<td>Cấu hình của một khối (màu, cỡ chữ, hành động…)</td>
+</tr>
+<tr>
+<td><strong>Impression</strong></td>
+<td>Lần widget/card được người dùng nhìn thấy (để đo lường)</td>
+</tr>
+<tr>
+<td><strong>Tracking</strong></td>
+<td>Thông tin gắn kèm để thống kê hiển thị &amp; tương tác</td>
+</tr>
+<tr>
+<td><strong>Expire time</strong></td>
+<td>Thời điểm card tự hết hạn và ẩn đi</td>
+</tr>
+<tr>
+<td><strong>CTA / action</strong></td>
+<td>Hành động khi bấm (mở màn hình / gọi API)</td>
+</tr>
+<tr>
+<td><strong>Template variable</strong> (<code>$...</code>)</td>
+<td>Chỗ trống để backend điền nội dung thật lúc chạy</td>
+</tr>
+</tbody></table>
+<hr>
+<h2>12. Dành cho Developer</h2>
+<p>Chi tiết kỹ thuật (kiểu dữ liệu chính xác, toàn bộ field, cách parse, ví dụ JSON đầy đủ,
+quy tắc validate) xem tại 👉 <strong><a href="./sdui-json-schema.md">SDUI JSON Schema (technical)</a></strong>.</p>

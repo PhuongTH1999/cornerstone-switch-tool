@@ -1,1 +1,4 @@
 .vercel
+.vercel-token
+.gitlab-token
+node_modules

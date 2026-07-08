@@ -7,8 +7,11 @@
     "watch": "esbuild src/code.ts --bundle --outfile=dist/code.js --target=es6 --watch",
     "type-check": "tsc --noEmit",
     "start": "python3 -m http.server 8085",
+    "dev": "node server.js",
+    "sync-changelog": "node -e \"require('http').request({host:'localhost',port:process.env.PORT||8085,path:'/api/sync-changelog',method:'POST'},r=>r.pipe(process.stdout)).end()\"",
     "tunnel": "ssh -o StrictHostKeyChecking=no -R 80:localhost:8085 serveo.net",
-    "deloy": "npx vercel --prod"
+    "deloy": "npx vercel --prod --token=$(cat .vercel-token)",
+    "deploy": "npx vercel --prod --token=$(cat .vercel-token)"
   },
   "devDependencies": {
     "@figma/plugin-typings": "*",
