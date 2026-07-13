@@ -1,21 +1,35 @@
 {
-  "name": "figma-plugins",
+  "name": "cornerstone",
   "version": "1.0.0",
-  "description": "Figma plugin — extract & normalize design nodes to LLM-friendly schema for React Native code generation",
+  "description": "Cornerstone — Flow rules, SDUI builder, and Figma plugin management",
+  "type": "module",
   "scripts": {
-    "build": "esbuild src/code.ts --bundle --outfile=dist/code.js --target=es6",
-    "watch": "esbuild src/code.ts --bundle --outfile=dist/code.js --target=es6 --watch",
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
     "type-check": "tsc --noEmit",
+    "plugin:build": "esbuild src/code.ts --bundle --outfile=dist/code.js --target=es6",
+    "plugin:watch": "esbuild src/code.ts --bundle --outfile=dist/code.js --target=es6 --watch",
     "start": "python3 -m http.server 8085",
-    "dev": "node server.js",
-    "sync-changelog": "node -e \"require('http').request({host:'localhost',port:process.env.PORT||8085,path:'/api/sync-changelog',method:'POST'},r=>r.pipe(process.stdout)).end()\"",
     "tunnel": "ssh -o StrictHostKeyChecking=no -R 80:localhost:8085 serveo.net",
-    "deloy": "npx vercel --prod --token=$(cat .vercel-token)",
-    "deploy": "npx vercel --prod --token=$(cat .vercel-token)"
+    "deploy": "npx vercel --prod"
+  },
+  "dependencies": {
+    "axios": "^1.6.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-markdown": "^10.1.0",
+    "react-router-dom": "^6.20.0",
+    "remark-gfm": "^4.0.1"
   },
   "devDependencies": {
     "@figma/plugin-typings": "*",
+    "@types/react": "^18.2.0",
+    "@types/react-dom": "^18.2.0",
+    "@vitejs/plugin-react": "^4.2.0",
     "esbuild": "^0.20.0",
-    "typescript": "^5.4.0"
+    "terser": "^5.49.0",
+    "typescript": "^5.4.0",
+    "vite": "^5.0.0"
   }
 }

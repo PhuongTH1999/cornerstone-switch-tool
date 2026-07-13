@@ -1,6 +1,5 @@
 # Changelog — Highlights
 
-> Tự sinh từ changelog GitLab khi bấm **🔄 Sync**. Bản đầy đủ (mọi commit) ở tab **Dev (GitLab)**.
 
 ## 1.0.4-cns-rc.9 — 22/06/2026 · 🆕 mới nhất
 - ✨ Update service_id

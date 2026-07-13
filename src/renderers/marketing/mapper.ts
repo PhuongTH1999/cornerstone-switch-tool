@@ -1,139 +1,145 @@
 import { EnrichedNode } from '../../core/types';
-import { SDUINode, SDUIModifier, SDUIStyle } from './types';
 
-// ─────────────────────────────────────────────
-// Map EnrichedNode → SDUI Marketing schema node
-// ─────────────────────────────────────────────
+interface SDUINode {
+  type: string;
+  style: Record<string, any>;
+  property: Record<string, any>;
+  value: any;
+}
 
 export function mapNode(node: EnrichedNode): SDUINode {
+  // Button node
   if (node.role === 'button') {
-    const rawMod = buildModifier(node);
-    const modifier: SDUIModifier = {};
-    if (rawMod.alignment) modifier.alignment = rawMod.alignment;
-    if (rawMod.weight) modifier.weight = rawMod.weight;
     return {
-      componentType: 'CTA_BUTTON',
-      modifier: Object.keys(modifier).length > 0 ? modifier : undefined,
+      type: 'button',
+      style: buildStyle(node),
+      property: {
+        ctaType: 'BUTTON',
+        color: node.style?.backgroundColor || '#303233',
+      },
+      value: {
+        title: node.name || 'Button',
+        type: 'primary',
+      },
     };
   }
 
+  // Image/Icon node
   if (node.role === 'image' || node.type === 'VECTOR') {
-    const modifier = buildModifier(node);
-    const size = node.layout?.width ? Math.round(node.layout.width) : undefined;
     return {
-      componentType: 'ICON',
-      field: node.name,
-      iconSize: size,
-      modifier: Object.keys(modifier).length > 0 ? modifier : undefined,
+      type: 'image',
+      style: buildStyle(node),
+      property: {
+        contentMode: 'fill',
+      },
+      value: node.name || '',
     };
   }
 
-  if (node.role === 'list') {
+  // Text node
+  if (node.type === 'TEXT' || node.role === 'heading' || node.role === 'subheading' || node.role === 'caption') {
     return {
-      componentType: 'ITEM_LIST',
-      field: 'items',
-      modifier: buildModifier(node),
+      type: 'text',
+      style: buildStyle(node),
+      property: buildTextProperty(node),
+      value: node.name || '',
     };
   }
 
-  if (node.type === 'TEXT' || node.role === 'heading' || node.role === 'subheading' || node.role === 'caption' || node.role === 'body') {
-    const modifier = buildModifier(node);
-    // Remove layout-specific props not applicable to TEXT
-    delete modifier.width;
-    delete modifier.height;
-    delete modifier.padding;
-    delete modifier.backgroundColor;
-    delete modifier.cornerRadius;
-    delete modifier.border;
+  // Container/Layout node (default)
+  let children = node.children.map(child => mapNode(child as EnrichedNode));
 
-    return {
-      componentType: 'TEXT',
-      field: node.name,
-      modifier: Object.keys(modifier).length > 0 ? modifier : undefined,
-      style: buildTextStyle(node),
-    };
+  // Icon container optimization: if all children are images, keep only first
+  const isIconContainer = node.layout?.width === node.layout?.height &&
+                         node.layout?.width && node.layout?.width <= 32;
+  const allImagesChildren = children.every(c => c.type === 'image');
+  if (isIconContainer && allImagesChildren && children.length > 1) {
+    children = [children[0]];
   }
 
-  // Default: layout container
-  const modifier = buildModifier(node);
-  const children = node.children.map(child => mapNode(child as EnrichedNode));
   return {
-    layout: node.layout?.flexDirection || 'column',
-    modifier: Object.keys(modifier).length > 0 ? modifier : undefined,
-    children: children.length > 0 ? children : undefined,
+    type: 'container',
+    style: buildStyle(node),
+    property: buildProperty(node),
+    value: {
+      children: children.length > 0 ? children : undefined,
+    },
   };
 }
 
-// ─────────────────────────────────────────────
-// Modifier builder
-// ─────────────────────────────────────────────
+function buildStyle(node: EnrichedNode): Record<string, any> {
+  const style: Record<string, any> = {};
+  const { layout, style: nodeStyle } = node;
 
-function buildModifier(node: EnrichedNode): SDUIModifier {
-  const result: SDUIModifier = {};
-  const { layout, style } = node;
+  if (nodeStyle?.backgroundColor) style.backgroundColor = nodeStyle.backgroundColor;
+  if (nodeStyle?.borderRadius && nodeStyle.borderRadius > 0) {
+    style.cornerRadius = nodeStyle.borderRadius;
+  }
 
-  if (layout?.width !== undefined) result.width = Math.round(layout.width);
-  if (layout?.height !== undefined) result.height = Math.round(layout.height);
-  if (layout?.fillMaxWidth) result.fillMaxWidth = true;
-  if (layout?.fillMaxHeight) result.fillMaxHeight = true;
+  if (layout?.width) style.width = Math.round(layout.width);
+  if (layout?.height) style.height = Math.round(layout.height);
 
   if (layout?.padding) {
     const { top, bottom, left, right } = layout.padding;
-    if (top === bottom && left === right && top === left && top > 0) {
-      result.padding = top;
-    } else if (top > 0 || bottom > 0 || left > 0 || right > 0) {
-      result.padding = {};
-      if (top > 0) result.padding.top = top;
-      if (bottom > 0) result.padding.bottom = bottom;
-      if (left > 0) result.padding.left = left;
-      if (right > 0) result.padding.right = right;
+    if (top === bottom && left === right && top === left) {
+      style.padding = { all: top };
+    } else {
+      style.padding = {};
+      if (top > 0) style.padding.top = top;
+      if (bottom > 0) style.padding.bottom = bottom;
+      if (left > 0) style.padding.left = left;
+      if (right > 0) style.padding.right = right;
     }
   }
 
-  if (layout?.alignItems) {
-    const a = layout.alignItems;
-    result.alignment = a === 'flex-start' ? 'start' : a === 'flex-end' ? 'end' : a;
-  }
-  if (layout?.justifyContent) {
-    const a = layout.justifyContent;
-    result.arrangement = a === 'flex-start' ? 'start' : a === 'flex-end' ? 'end' : a === 'space-between' ? 'spaceBetween' : a;
-  }
+  if (layout?.fillMaxWidth) style.fillMaxWidth = true;
+  if (layout?.fillMaxHeight) style.fillMaxHeight = true;
 
-  if (style?.backgroundColor) result.backgroundColor = style.backgroundColor;
-  if (style?.borderRadius && style.borderRadius > 0) result.cornerRadius = style.borderRadius;
-  if (style?.borderColor && style?.borderWidth && style.borderWidth > 0) {
-    result.border = { width: style.borderWidth, color: style.borderColor };
-  }
-
-  return result;
+  return style;
 }
 
-// ─────────────────────────────────────────────
-// Text style builder
-// ─────────────────────────────────────────────
+function buildProperty(node: EnrichedNode): Record<string, any> {
+  const property: Record<string, any> = {};
+  const { layout } = node;
 
-function buildTextStyle(node: EnrichedNode): SDUIStyle {
-  if (!node.text) return {};
-  const { fontSize, color, fontWeight } = node.text;
-  const result: SDUIStyle = {};
+  // Layout direction
+  if (layout?.flexDirection) {
+    property.layout = layout.flexDirection === 'row' ? 'row' : 'column';
+  }
 
+  // Spacing
+  if (layout?.gap !== undefined) property.spacing = Math.round(layout.gap);
+
+  // Alignment - force start for small icon containers
+  const isSmallContainer = layout?.width === layout?.height && layout?.width && layout?.width <= 32;
+  if (isSmallContainer) {
+    property.alignment = 'start';
+  } else if (layout?.alignItems) {
+    const align = layout.alignItems;
+    property.alignment = align === 'flex-start' ? 'start' : align === 'flex-end' ? 'end' : align;
+  }
+
+  return property;
+}
+
+function buildTextProperty(node: EnrichedNode): Record<string, any> {
+  const property: Record<string, any> = {};
+  const { text } = node;
+
+  if (!text) return property;
+
+  const { fontSize, color, fontWeight } = text;
+
+  // Map typography
   let typography = 'descriptionDefaultRegular';
-  if (fontSize >= 18) typography = 'headerSSemibold';
-  else if (fontSize >= 16) typography = 'actionSBold';
-  else if (fontSize >= 14) typography = 'descriptionDefaultRegular';
+  if (fontSize && fontSize >= 18) typography = 'headerSSemibold';
+  else if (fontSize && fontSize >= 16) typography = 'actionSBold';
+  else if (fontSize && fontSize >= 14) typography = 'descriptionDefaultRegular';
   else typography = 'labelXsMedium';
 
-  result.typography = typography;
-  if (color) result.color = color;
-  if (fontWeight) result.fontWeight = mapFontWeight(fontWeight);
+  property.typography = typography;
+  if (color) property.color = color;
+  property.lineLimit = 1;
 
-  return result;
-}
-
-function mapFontWeight(style: string): string | undefined {
-  const map: Record<string, string> = {
-    Thin: '100', ExtraLight: '200', Light: '300', Regular: '400',
-    Medium: '500', SemiBold: '600', Bold: '700', ExtraBold: '800', Black: '900',
-  };
-  return map[style];
+  return property;
 }
