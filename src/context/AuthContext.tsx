@@ -37,6 +37,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         localStorage.removeItem('cornerstone_user')
         localStorage.removeItem('cornerstone_access_token')
       }
+    } else if (!import.meta.env.PROD) {
+      // Dev mode: auto-login with mock user
+      const mockUser: User = {
+        id: 'admin-user',
+        username: 'admin',
+        email: 'admin@cornerstone.local',
+        role: 'admin',
+      }
+      setUser(mockUser)
+      localStorage.setItem('cornerstone_user', JSON.stringify(mockUser))
+      localStorage.setItem('cornerstone_access_token', 'mock-token-dev')
     }
 
     setIsLoading(false)

@@ -39,6 +39,7 @@ export default function Navbar() {
 
         <Link to="/dashboard" className="navbar-item">📊 Dashboard</Link>
         <Link to="/sdui" className="navbar-item">🔧 SDUI</Link>
+        <Link to="/tools" className="navbar-item">🛠️ Flow Tools</Link>
       </div>
 
       {/* Center: Spacer */}
