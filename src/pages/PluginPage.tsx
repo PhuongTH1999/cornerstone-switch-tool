@@ -1,6 +1,5 @@
 import { useState } from 'react'
-import Navbar from '../components/Navbar'
-import '../styles/features.css'
+import '../styles/features.scss'
 
 export default function PluginPage() {
   const [flavor, setFlavor] = useState('marketing_sdui')
@@ -8,7 +7,6 @@ export default function PluginPage() {
 
   return (
     <div className="feature-container">
-      <Navbar />
 
       <main className="feature-content">
         <div className="feature-header">

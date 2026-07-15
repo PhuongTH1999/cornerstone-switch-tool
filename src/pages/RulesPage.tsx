@@ -1,13 +1,11 @@
 import { useState } from 'react'
-import Navbar from '../components/Navbar'
-import '../styles/features.css'
+import '../styles/features.scss'
 
 export default function RulesPage() {
   const [rules, setRules] = useState<any[]>([])
 
   return (
     <div className="feature-container">
-      <Navbar />
 
       <main className="feature-content">
         <div className="feature-header">

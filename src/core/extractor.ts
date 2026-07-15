@@ -26,65 +26,77 @@ export function extractNode(node: SceneNode): RawNode {
 // ─────────────────────────────────────────────
 
 function getLayout(node: SceneNode): LayoutInfo {
-  let fillMaxWidth = false;
-  let fillMaxHeight = false;
-  let isFixedWidth = false;
-  let isFixedHeight = false;
+  try {
+    let fillMaxWidth = false;
+    let fillMaxHeight = false;
+    let isFixedWidth = false;
+    let isFixedHeight = false;
 
-  const n = node as any;
-  if ('layoutSizingHorizontal' in n) {
-    if (n.layoutSizingHorizontal === 'FILL') fillMaxWidth = true;
-    if (n.layoutSizingHorizontal === 'FIXED') isFixedWidth = true;
-    if (n.layoutSizingVertical === 'FILL') fillMaxHeight = true;
-    if (n.layoutSizingVertical === 'FIXED') isFixedHeight = true;
-  } else {
-    if (n.layoutAlign === 'STRETCH') {
-      if (n.parent?.layoutMode === 'VERTICAL') fillMaxWidth = true;
-      if (n.parent?.layoutMode === 'HORIZONTAL') fillMaxHeight = true;
+    const n = node as any;
+    if ('layoutSizingHorizontal' in n) {
+      if (n.layoutSizingHorizontal === 'FILL') fillMaxWidth = true;
+      if (n.layoutSizingHorizontal === 'FIXED') isFixedWidth = true;
+      if (n.layoutSizingVertical === 'FILL') fillMaxHeight = true;
+      if (n.layoutSizingVertical === 'FIXED') isFixedHeight = true;
+    } else {
+      if (n.layoutAlign === 'STRETCH') {
+        if (n.parent?.layoutMode === 'VERTICAL') fillMaxWidth = true;
+        if (n.parent?.layoutMode === 'HORIZONTAL') fillMaxHeight = true;
+      }
+      if (n.layoutGrow === 1) {
+        if (n.parent?.layoutMode === 'HORIZONTAL') fillMaxWidth = true;
+        if (n.parent?.layoutMode === 'VERTICAL') fillMaxHeight = true;
+      }
+      isFixedWidth = !fillMaxWidth;
+      isFixedHeight = !fillMaxHeight;
     }
-    if (n.layoutGrow === 1) {
-      if (n.parent?.layoutMode === 'HORIZONTAL') fillMaxWidth = true;
-      if (n.parent?.layoutMode === 'VERTICAL') fillMaxHeight = true;
+
+    // TEXT and CTA_BUTTON should hug content — no hardcoded dimensions
+    if (node.type === 'TEXT') {
+      isFixedWidth = false;
+      isFixedHeight = false;
+    } else if (/\bbtn\b|button|\bcta\b/.test((node.name || '').toLowerCase())) {
+      isFixedWidth = false;
+      isFixedHeight = false;
     }
-    isFixedWidth = !fillMaxWidth;
-    isFixedHeight = !fillMaxHeight;
-  }
 
-  // TEXT and CTA_BUTTON should hug content — no hardcoded dimensions
-  if (node.type === 'TEXT') {
-    isFixedWidth = false;
-    isFixedHeight = false;
-  } else if (/\bbtn\b|button|\bcta\b/.test(node.name.toLowerCase())) {
-    isFixedWidth = false;
-    isFixedHeight = false;
-  }
+    if ('layoutMode' in node && node.layoutMode !== 'NONE') {
+      // For containers with auto-layout, extract padding
+      const padding = {
+        top: typeof node.paddingTop === 'number' ? node.paddingTop : 0,
+        bottom: typeof node.paddingBottom === 'number' ? node.paddingBottom : 0,
+        left: typeof node.paddingLeft === 'number' ? node.paddingLeft : 0,
+        right: typeof node.paddingRight === 'number' ? node.paddingRight : 0,
+      };
 
-  if ('layoutMode' in node && node.layoutMode !== 'NONE') {
+      return {
+        flexDirection: node.layoutMode === 'HORIZONTAL' ? 'row' : 'column',
+        gap: typeof node.itemSpacing === 'number' ? node.itemSpacing : 0,
+        padding: (padding.top || padding.bottom || padding.left || padding.right) ? padding : undefined,
+        alignItems: mapAlignment(n.counterAxisAlignItems || ''),
+        justifyContent: mapAlignment(n.primaryAxisAlignItems || ''),
+        // Don't hardcode width on containers with fillMaxWidth
+        width: (fillMaxWidth || fillMaxHeight) ? undefined : (isFixedWidth ? node.width : undefined),
+        height: (fillMaxWidth || fillMaxHeight) ? undefined : (isFixedHeight ? node.height : undefined),
+        fillMaxWidth: fillMaxWidth ? true : undefined,
+        fillMaxHeight: fillMaxHeight ? true : undefined,
+      };
+    }
     return {
-      flexDirection: node.layoutMode === 'HORIZONTAL' ? 'row' : 'column',
-      gap: node.itemSpacing,
-      padding: {
-        top: node.paddingTop,
-        bottom: node.paddingBottom,
-        left: node.paddingLeft,
-        right: node.paddingRight,
-      },
-      alignItems: mapAlignment(node.counterAxisAlignItems),
-      justifyContent: mapAlignment(node.primaryAxisAlignItems),
+      x: node.x,
+      y: node.y,
       width: isFixedWidth ? node.width : undefined,
       height: isFixedHeight ? node.height : undefined,
       fillMaxWidth: fillMaxWidth ? true : undefined,
       fillMaxHeight: fillMaxHeight ? true : undefined,
     };
+  } catch (err) {
+    console.warn('Failed to extract layout:', err);
+    return {
+      width: node.width,
+      height: node.height,
+    };
   }
-  return {
-    x: node.x,
-    y: node.y,
-    width: isFixedWidth ? node.width : undefined,
-    height: isFixedHeight ? node.height : undefined,
-    fillMaxWidth: fillMaxWidth ? true : undefined,
-    fillMaxHeight: fillMaxHeight ? true : undefined,
-  };
 }
 
 function mapAlignment(align: string): string {
@@ -125,14 +137,26 @@ function extractColor(fills: readonly Paint[]): string | null {
   const fill = fills.find(f => f.visible !== false);
   if (!fill || fill.type !== 'SOLID') return null;
 
-  const { r, g, b } = fill.color;
-  const alpha = fill.opacity ?? 1;
+  try {
+    // Safety check: ensure color is object with r, g, b
+    if (!fill.color || typeof fill.color !== 'object') return null;
+    const color = fill.color as any;
+    if (typeof color.r !== 'number' || typeof color.g !== 'number' || typeof color.b !== 'number') {
+      return null;
+    }
 
-  if (alpha < 1) {
-    return `rgba(${Math.round(r * 255)}, ${Math.round(g * 255)}, ${Math.round(b * 255)}, ${alpha.toFixed(2)})`;
+    const { r, g, b } = color;
+    const alpha = typeof fill.opacity === 'number' ? fill.opacity : 1;
+
+    if (alpha < 1) {
+      return `rgba(${Math.round(r * 255)}, ${Math.round(g * 255)}, ${Math.round(b * 255)}, ${alpha.toFixed(2)})`;
+    }
+    const toHex = (v: number) => Math.round(v * 255).toString(16).padStart(2, '0');
+    return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
+  } catch (err) {
+    console.warn('Failed to extract color:', err);
+    return null;
   }
-  const toHex = (v: number) => Math.round(v * 255).toString(16).padStart(2, '0');
-  return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
 }
 
 // ─────────────────────────────────────────────
@@ -141,17 +165,23 @@ function extractColor(fills: readonly Paint[]): string | null {
 
 function getTextInfo(node: SceneNode): TextInfo | null {
   if (node.type !== 'TEXT') return null;
-  const fills = node.fills as Paint[];
-  const fontSize = typeof node.fontSize === 'number' ? node.fontSize : 14;
-  const fontName = typeof node.fontName !== 'symbol' ? node.fontName : null;
-  const lineHeight = typeof node.lineHeight !== 'symbol' ? node.lineHeight : undefined;
 
-  return {
-    characters: node.characters,
-    fontSize,
-    fontWeight: fontName?.style,
-    lineHeight,
-    textAlign: node.textAlignHorizontal?.toLowerCase(),
-    color: extractColor(fills),
-  };
+  try {
+    const fills = (node.fills || []) as Paint[];
+    const fontSize = typeof node.fontSize === 'number' ? node.fontSize : 14;
+    const fontName = typeof node.fontName !== 'symbol' ? node.fontName : null;
+    const lineHeight = typeof node.lineHeight !== 'symbol' ? node.lineHeight : undefined;
+
+    return {
+      characters: node.characters || '',
+      fontSize,
+      fontWeight: fontName?.style,
+      lineHeight,
+      textAlign: node.textAlignHorizontal?.toLowerCase(),
+      color: extractColor(fills),
+    };
+  } catch (err) {
+    console.warn('Failed to extract text info:', err);
+    return null;
+  }
 }

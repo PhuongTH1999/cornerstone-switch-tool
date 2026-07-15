@@ -663,6 +663,13 @@
     };
   }
 
+  // ─── Placeholder Image Generator ───
+  function sduiGetPlaceholderImage(width, height) {
+    // Use a default image from assets instead of SVG placeholder
+    // This is a hardcoded template image that looks clean and professional
+    return '/assets/widget/template_image.png';
+  }
+
   function sduiRenderNode(node, dialect) {
     if (!node || typeof node !== 'object') return null;
 
@@ -687,15 +694,29 @@
       }
       if (node.type === 'image') {
         const el = sduiEl('img');
-        el.src = (typeof node.value === 'string') ? node.value : '';
+        const imgWidth = st.width || 48;
+        const imgHeight = st.height || 48;
+
+        // Determine if value is a valid URL or just a label
+        let imgUrl = sduiGetPlaceholderImage(imgWidth, imgHeight);
+        if (typeof node.value === 'string') {
+          const val = node.value.trim();
+          // Check if it's a URL (starts with http, https, data, or //)
+          if (val.match(/^(https?:|data:|\/\/)/i)) {
+            imgUrl = val;
+          }
+          // Else it's a label like "image 41" - use placeholder
+        }
+
+        el.src = imgUrl;
         el.referrerPolicy = 'no-referrer';
         el.style.objectFit = (pr.contentMode === 'fill') ? 'cover' : 'contain';
-        el.style.width = (st.width != null ? st.width + 'px' : '48px');
-        el.style.height = (st.height != null ? st.height + 'px' : '48px');
+        el.style.width = imgWidth + 'px';
+        el.style.height = imgHeight + 'px';
         if (st.cornerRadius != null) el.style.borderRadius = st.cornerRadius + 'px';
         else if (pr.cornerRadius != null) el.style.borderRadius = pr.cornerRadius + 'px';
         el.style.background = '#eee'; el.style.flexShrink = '0';
-        el.onerror = function () { this.style.display = 'flex'; this.alt = '🖼'; };
+        el.onerror = function () { this.src = sduiGetPlaceholderImage(imgWidth, imgHeight); this.style.background = 'transparent'; };
         return el;
       }
       if (node.type === 'button') {
@@ -730,20 +751,26 @@
         return el;
       }
       if (ct === 'ICON') {
-        const el = sduiEl('div'); const sz = node.iconSize || 24;
-        el.textContent = '🖼'; el.title = node.field || 'icon';
+        const el = sduiEl('img'); const sz = node.iconSize || 24;
+        el.src = sduiGetPlaceholderImage(sz, sz);
+        el.title = node.field || 'icon';
         el.style.width = sz + 'px'; el.style.height = sz + 'px';
-        el.style.display = 'flex'; el.style.alignItems = 'center'; el.style.justifyContent = 'center';
-        el.style.fontSize = Math.round(sz * 0.7) + 'px'; el.style.flexShrink = '0';
-        el.style.background = '#f0f0f3'; el.style.borderRadius = '6px';
+        el.style.display = 'flex'; el.style.flexShrink = '0';
+        el.style.borderRadius = '6px';
+        el.style.objectFit = 'contain';
+        el.onerror = function () { this.src = sduiGetPlaceholderImage(sz, sz); };
         sduiApplyBox(el, mod);
         return el;
       }
       if (ct === 'IMAGE') {
-        const el = sduiEl('div'); el.textContent = '🖼 ' + (node.field || 'image');
-        el.style.minHeight = '60px'; el.style.background = '#f0f0f3'; el.style.borderRadius = '8px';
-        el.style.display = 'flex'; el.style.alignItems = 'center'; el.style.justifyContent = 'center';
-        el.style.color = '#999'; el.style.fontSize = '12px';
+        const el = sduiEl('img');
+        el.src = sduiGetPlaceholderImage(200, 120);
+        el.title = node.field || 'image';
+        el.style.minHeight = '60px'; el.style.width = '100%'; el.style.maxWidth = '100%';
+        el.style.borderRadius = '8px';
+        el.style.objectFit = 'cover';
+        el.style.background = '#f0f0f3';
+        el.onerror = function () { this.src = sduiGetPlaceholderImage(200, 120); };
         sduiApplyBox(el, mod); return el;
       }
       if (ct === 'CTA_BUTTON') {
@@ -1311,12 +1338,29 @@
   // Parse a full schema object → builder tree (returns null if not a widget node tree)
   function builderParseSchemaToTree(parsed) {
     let root = parsed;
-    if (parsed && parsed.dataSchema) {
-      const ds = parsed.dataSchema, k = Object.keys(ds).find(x => x.startsWith('content'));
+
+    // Unwrap lazy_loads structure (from Figma extraction)
+    if (root && root.lazy_loads && Array.isArray(root.lazy_loads) && root.lazy_loads.length > 0) {
+      const lazyLoad = root.lazy_loads[0];
+      if (lazyLoad && lazyLoad.data && Array.isArray(lazyLoad.data)) {
+        root = lazyLoad.data[0]; // Get first server_driven_widget → template_widget
+      }
+    }
+
+    // Unwrap dataSchema (from AI generation)
+    if (root && root.dataSchema) {
+      const ds = root.dataSchema, k = Object.keys(ds).find(x => x.startsWith('content'));
       if (k && ds[k] && ds[k].value) root = ds[k].value;
     }
-    if (root && root.type === 'template_widget') root = Array.isArray(root.data) ? root.data[0] : root.data;
+
+    // Unwrap template_widget
+    if (root && root.type === 'template_widget') {
+      root = Array.isArray(root.data) ? root.data[0] : root.data;
+    }
+
+    // Handle array of components (compact format)
     if (Array.isArray(root)) root = root[0];
+
     const ok = ['container', 'text', 'image', 'button', 'tag', 'spacer'];
     if (!root || !ok.includes(root.type)) return null;
     const tree = schemaToBuilderNode(root);
@@ -2921,12 +2965,23 @@ Trả về JSON hợp lệ theo đúng spec SDUI. Bọc trong \`\`\`json ... \`\
         throw new Error('Failed to fetch plugin source files. Make sure you are serving the root folder correctly.');
       }
 
+      // Validate manifest.json is actually JSON, not HTML error
+      const manifestCt = manifestRes.headers.get('content-type') || '';
+      if (!manifestCt.includes('application/json') && !manifestCt.includes('text/plain')) {
+        throw new Error('manifest.json served with wrong content-type: ' + manifestCt + '. Expected application/json');
+      }
+
       const manifestRaw = await manifestRes.text();
       let uiHtml = await uiRes.text();
-      const codeJs = await codeRes.blob(); // Fetch as blob for pure binary integrity
+      const codeJs = await codeRes.blob();
 
       // 1. Modify Manifest
-      const manifest = JSON.parse(manifestRaw);
+      let manifest;
+      try {
+        manifest = JSON.parse(manifestRaw);
+      } catch (e) {
+        throw new Error('manifest.json format invalid (expected JSON). Received: ' + manifestRaw.substring(0, 100) + '...');
+      }
       manifest.name = currentFlavor === 'marketing_sdui' ? 'SDUI Extractor (Marketing)' : 'RN Extractor (Promotion)';
       manifest.id = 'extr-' + currentFlavor.replace('_', '-');
 

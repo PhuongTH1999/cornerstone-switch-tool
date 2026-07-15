@@ -1,4 +1,6 @@
 import { EnrichedNode } from '../../core/types';
+import { TypographyMapper } from '../sdui/typography';
+import { FigmaSDUIParser } from '../sdui/figmaParser';
 
 interface SDUINode {
   type: string;
@@ -7,7 +9,23 @@ interface SDUINode {
   value: any;
 }
 
+/**
+ * Map Figma extracted node to SDUI component
+ * Uses FigmaSDUIParser for primary parsing, with additional optimizations
+ */
 export function mapNode(node: EnrichedNode): SDUINode {
+  // Use Figma parser for primary extraction
+  const parsed = FigmaSDUIParser.parseNode(node);
+
+  // Additional marketing-specific optimizations
+  return optimizeForMarketing(parsed as SDUINode);
+}
+
+/**
+ * Legacy mapNode implementation (kept for backward compatibility)
+ * Consider deprecating in favor of FigmaSDUIParser
+ */
+export function mapNodeLegacy(node: EnrichedNode): SDUINode {
   // Button node
   if (node.role === 'button') {
     return {
@@ -47,7 +65,7 @@ export function mapNode(node: EnrichedNode): SDUINode {
   }
 
   // Container/Layout node (default)
-  let children = node.children.map(child => mapNode(child as EnrichedNode));
+  let children = node.children.map((child: any) => mapNode(child as EnrichedNode));
 
   // Icon container optimization: if all children are images, keep only first
   const isIconContainer = node.layout?.width === node.layout?.height &&
@@ -64,7 +82,7 @@ export function mapNode(node: EnrichedNode): SDUINode {
     value: {
       children: children.length > 0 ? children : undefined,
     },
-  };
+  } as any;
 }
 
 function buildStyle(node: EnrichedNode): Record<string, any> {
@@ -130,16 +148,64 @@ function buildTextProperty(node: EnrichedNode): Record<string, any> {
 
   const { fontSize, color, fontWeight } = text;
 
-  // Map typography
-  let typography = 'descriptionDefaultRegular';
-  if (fontSize && fontSize >= 18) typography = 'headerSSemibold';
-  else if (fontSize && fontSize >= 16) typography = 'actionSBold';
-  else if (fontSize && fontSize >= 14) typography = 'descriptionDefaultRegular';
-  else typography = 'labelXsMedium';
+  // Map typography using typography mapper
+  property.typography = TypographyMapper.mapFontToTypography(
+    fontSize,
+    fontWeight,
+    node.role
+  );
 
-  property.typography = typography;
   if (color) property.color = color;
-  property.lineLimit = 1;
+
+  // Set lineLimit based on context (heading vs body text)
+  const isHeading = node.role === 'heading' || node.role === 'subheading';
+  property.lineLimit = isHeading ? 1 : -1; // -1 = unlimited per spec
 
   return property;
+}
+
+/**
+ * Apply marketing-specific optimizations to parsed SDUI component
+ */
+function optimizeForMarketing(component: SDUINode): SDUINode {
+  // Text nodes should NOT have layout/spacing properties
+  if (component.type === 'text') {
+    const cleaned = {
+      typography: component.property?.typography,
+      color: component.property?.color,
+      lineLimit: component.property?.lineLimit,
+    };
+    // Remove undefined values
+    const filtered: Record<string, any> = {};
+    Object.keys(cleaned).forEach(key => {
+      if (cleaned[key as keyof typeof cleaned] !== undefined) {
+        filtered[key] = cleaned[key as keyof typeof cleaned];
+      }
+    });
+    component.property = filtered;
+    console.log('✅ Text cleaned:', component.property);
+  }
+
+  // Ensure responsive behavior for marketing cards
+  if (component.type === 'container' && component.style && !component.style.fillMaxWidth) {
+    // If no explicit width, make it responsive
+    if (!component.style.width) {
+      component.style.fillMaxWidth = true;
+    }
+  }
+
+  // Optimize icon containers (common in marketing)
+  if (component.type === 'container' && component.value?.children) {
+    const children = component.value.children;
+    const isIconContainer =
+      component.style?.width === component.style?.height &&
+      component.style?.width &&
+      component.style.width <= 32;
+
+    if (isIconContainer && children.every((c) => c.type === 'image') && children.length > 1) {
+      component.value.children = [children[0]];
+    }
+  }
+
+  return component;
 }

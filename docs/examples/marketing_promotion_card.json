@@ -1,0 +1,95 @@
+{
+  "lazy_loads": [
+    {
+      "type": "server_driven_widget",
+      "block_id": "marketing_sdui_promo_001",
+      "data": [
+        {
+          "type": "template_widget",
+          "templateType": "SDUI_WIDGET",
+          "data": [
+            {
+              "type": "container",
+              "style": {
+                "backgroundColor": "#FFFFFF",
+                "cornerRadius": 12,
+                "padding": {
+                  "all": 12
+                },
+                "fillMaxWidth": true
+              },
+              "property": {
+                "layout": "row",
+                "spacing": 12,
+                "alignment": "center"
+              },
+              "value": {
+                "children": [
+                  {
+                    "type": "image",
+                    "style": {
+                      "width": 52,
+                      "height": 52,
+                      "cornerRadius": 26
+                    },
+                    "property": {
+                      "contentMode": "fill"
+                    },
+                    "value": "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTIiIGhlaWdodD0iNTIiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjUyIiBoZWlnaHQ9IjUyIiBmaWxsPSIjZjBmMGYzIi8+PGNpcmNsZSBjeD0iMjYiIGN5PSIxNiIgcj0iMTAiIGZpbGw9IiNhNTAwNjQiLz48cGF0aCBkPSJNIDEyIDM2IEwgNDAgMzYiIHN0cm9rZT0iI2E1MDA2NCIgc3Ryb2tlLXdpZHRoPSIyIiBmaWxsPSJub25lIi8+PC9zdmc+"
+                  },
+                  {
+                    "type": "container",
+                    "style": {
+                      "fillMaxWidth": true
+                    },
+                    "property": {
+                      "layout": "column",
+                      "spacing": 2
+                    },
+                    "value": {
+                      "children": [
+                        {
+                          "type": "text",
+                          "style": {},
+                          "property": {
+                            "typography": "headerSSemibold",
+                            "color": "#303233",
+                            "lineLimit": 1
+                          },
+                          "value": "Mega Sale Up to 50%"
+                        },
+                        {
+                          "type": "text",
+                          "style": {},
+                          "property": {
+                            "typography": "descriptionDefaultRegular",
+                            "color": "#727272",
+                            "lineLimit": 2
+                          },
+                          "value": "Limited time offer on selected products"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "type": "button",
+                    "style": {},
+                    "property": {
+                      "ctaType": "BUTTON",
+                      "color": "#A50064"
+                    },
+                    "value": {
+                      "title": "Collect",
+                      "type": "primary"
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "first_loads": []
+}

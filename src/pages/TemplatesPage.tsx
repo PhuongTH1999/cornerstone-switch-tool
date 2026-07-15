@@ -1,6 +1,5 @@
 import { useState } from 'react'
-import Navbar from '../components/Navbar'
-import '../styles/features.css'
+import '../styles/features.scss'
 
 interface Template {
   id: string
@@ -29,7 +28,6 @@ export default function TemplatesPage() {
 
   return (
     <div className="feature-container">
-      <Navbar />
 
       <main className="feature-content">
         <div className="feature-header">

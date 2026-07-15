@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import axios from 'axios'
-import '../styles/login.css'
+import '../styles/login.scss'
 
 declare global {
   interface Window {

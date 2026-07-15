@@ -283,6 +283,10 @@
       <p class="hint">Select nodes in Figma, extract properties, and generate an LLM-ready SDUI prompt.</p>
     </div>
 
+    <div style="padding: 8px 0; font-size: 11px; color: var(--text-muted);">
+      📦 Output format: <strong>template_widget</strong> (SDUI native format)
+    </div>
+
     <div class="row">
       <button id="btn-extract">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
@@ -338,11 +342,17 @@
     const checkSvg = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>`;
     const copySvg = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>`;
 
+
     btnExtract.addEventListener('click', () => {
       status.innerHTML = `${spinnerSvg} <span>Extracting...</span>`;
       status.className = '';
       btnExtract.disabled = true;
-      parent.postMessage({ pluginMessage: { type: 'EXTRACT' } }, '*');
+      // Send config before extraction
+      parent.postMessage({ pluginMessage: { type: 'SET_CONFIG', config: window.PLUGIN_CONFIG || {} } }, '*');
+      // Delay to ensure SET_CONFIG is processed first
+      setTimeout(() => {
+        parent.postMessage({ pluginMessage: { type: 'EXTRACT' } }, '*');
+      }, 100);
     });
 
     btnCopy.addEventListener('click', () => {
@@ -375,12 +385,13 @@
         let flavorLabel = window.PLUGIN_CONFIG.flavor;
         if (flavorLabel === 'marketing_sdui') flavorLabel = "Marketing SDUI";
         if (flavorLabel === 'promotion_rn') flavorLabel = "Promotion RN";
-        
+
+        // Send config on load
+        parent.postMessage({ pluginMessage: { type: 'SET_CONFIG', config: window.PLUGIN_CONFIG || {} } }, '*');
+
         const badge = document.getElementById('profileBadge');
         badge.innerHTML = `⚙️ Profile: ${flavorLabel}`;
         badge.style.display = "inline-block";
-        
-        parent.postMessage({ pluginMessage: { type: 'SET_CONFIG', config: window.PLUGIN_CONFIG } }, '*');
       }
     });
 

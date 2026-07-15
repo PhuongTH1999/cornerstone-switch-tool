@@ -1,9 +1,7 @@
-import Navbar from '../components/Navbar'
 
 export default function ToolsPage() {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100vh' }}>
-      <Navbar />
       <iframe
         src="/index.html?embed=true#/tools/rules"
         style={{

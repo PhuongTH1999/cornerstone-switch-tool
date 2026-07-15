@@ -2,8 +2,7 @@ import { useState, useEffect } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
-import Navbar from '../components/Navbar'
-import '../styles/docs.css'
+import '../styles/docs.scss'
 
 interface DocFile {
   name: string
@@ -57,7 +56,6 @@ export default function DocsPage() {
 
   return (
     <div className="docs-container">
-      <Navbar />
 
       <div className="docs-body">
         <aside className={`docs-sidebar ${sidebarOpen ? 'open' : ''}`}>

@@ -1,7 +1,6 @@
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
-import Navbar from '../components/Navbar'
-import '../styles/dashboard.css'
+import '../styles/dashboard.scss'
 
 export default function DashboardPage() {
   const { user } = useAuth()
@@ -9,7 +8,6 @@ export default function DashboardPage() {
 
   return (
     <div className="dashboard-container">
-      <Navbar />
       <main className="dashboard-content">
         <div className="welcome-section">
           <h1>Welcome, {user?.username}! 👋</h1>

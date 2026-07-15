@@ -1,8 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useAuth } from '../context/AuthContext'
-import Navbar from '../components/Navbar'
 import axios from 'axios'
-import '../styles/admin.css'
+import '../styles/admin.scss'
 
 interface UserItem {
   id: string
@@ -102,7 +101,6 @@ export default function AdminPanel() {
   if (user?.role !== 'owner') {
     return (
       <div className="admin-container">
-        <Navbar />
         <div className="admin-content">
           <div className="access-denied">
             <h1>❌ Access Denied</h1>
@@ -115,7 +113,6 @@ export default function AdminPanel() {
 
   return (
     <div className="admin-container">
-      <Navbar />
 
       {/* Success Message Toast */}
       {successMessage && (

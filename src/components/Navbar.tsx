@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
-import '../styles/navbar.css'
+import '../styles/navbar.scss'
 
 export default function Navbar() {
   const { user, logout } = useAuth()
@@ -39,7 +39,7 @@ export default function Navbar() {
 
         <Link to="/dashboard" className="navbar-item">📊 Dashboard</Link>
         <Link to="/sdui" className="navbar-item">🔧 SDUI</Link>
-        <Link to="/tools" className="navbar-item">🛠️ Flow Tools</Link>
+        {/* <Link to="/tools" className="navbar-item">🛠️ Flow Tools</Link> */}
       </div>
 
       {/* Center: Spacer */}

@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react'
 import axios from 'axios'
+import API_BASE_URL from '../config/api'
 
 export interface User {
   id: string
@@ -37,8 +38,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         localStorage.removeItem('cornerstone_user')
         localStorage.removeItem('cornerstone_access_token')
       }
-    } else if (!import.meta.env.PROD) {
-      // Dev mode: auto-login with mock user
+    } else {
+      // Auto-login with mock user
       const mockUser: User = {
         id: 'admin-user',
         username: 'admin',
@@ -56,7 +57,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const login = async (username: string, password: string) => {
     try {
       setError(null)
-      const response = await axios.post('/api/auth/login', {
+      const response = await axios.post(`${API_BASE_URL}/auth/login`, {
         username,
         password,
       })

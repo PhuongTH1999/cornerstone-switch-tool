@@ -1,7 +1,6 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import Navbar from '../components/Navbar'
-import '../styles/introduction.css'
+import '../styles/introduction.scss'
 
 interface TemplateItem {
   icon: string
@@ -28,7 +27,6 @@ export default function IntroductionPage() {
 
   return (
     <div className="intro-container">
-      <Navbar />
 
       <main className="intro-main">
         {/* Hero Section */}

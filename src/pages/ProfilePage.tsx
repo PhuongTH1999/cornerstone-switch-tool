@@ -1,7 +1,6 @@
 import { useState } from 'react'
 import { useAuth } from '../context/AuthContext'
-import Navbar from '../components/Navbar'
-import '../styles/profile.css'
+import '../styles/profile.scss'
 
 export default function ProfilePage() {
   const { user } = useAuth()
@@ -23,7 +22,6 @@ export default function ProfilePage() {
 
   return (
     <div className="profile-container">
-      <Navbar />
 
       <main className="profile-content">
         <div className="profile-header">
