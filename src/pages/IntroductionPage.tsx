@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import { usePackageVersions } from '../hooks/usePackageVersions'
 import '../styles/introduction.scss'
 
 interface TemplateItem {
@@ -13,6 +14,7 @@ interface TemplateItem {
 export default function IntroductionPage() {
   const navigate = useNavigate()
   const [selectedTemplate, setSelectedTemplate] = useState<TemplateItem | null>(null)
+  const { latest, loading: loadingVersion } = usePackageVersions()
 
   const handleFeatureClick = (feature: string) => {
     const routes: Record<string, string> = {
@@ -50,7 +52,9 @@ export default function IntroductionPage() {
 
           <div className="hero-stats">
             <div className="stat-card">
-              <div className="stat-value">1.0.4-rc.9</div>
+              <div className="stat-value stat-version">
+                {loadingVersion ? '…' : latest?.version ?? 'N/A'}
+              </div>
               <div className="stat-label">Phiên bản mới nhất</div>
             </div>
             <div className="stat-card">

@@ -116,12 +116,19 @@
   padding: 20px;
   border-radius: 12px;
   text-align: center;
+  min-width: 0;
 }
 
 .stat-value {
   font-size: 28px;
   font-weight: 700;
   margin-bottom: 6px;
+
+  /* Version lấy từ API dài hơn (vd 1.0.4-cns-rc.14) — co chữ để giữ layout 3 cột */
+  &.stat-version {
+    font-size: clamp(15px, 1.7vw, 24px);
+    word-break: break-word;
+  }
 }
 
 .stat-label {

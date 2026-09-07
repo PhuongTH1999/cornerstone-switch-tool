@@ -2,20 +2,23 @@ import { useState, useEffect } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
+import ChangelogView from '../components/ChangelogView'
 import '../styles/docs.scss'
 
 interface DocFile {
   name: string
   title: string
-  path: string
+  path?: string
   category: string
+  /** Tab lấy dữ liệu từ API thay vì file markdown tĩnh */
+  remote?: boolean
 }
 
 const docFiles: DocFile[] = [
   { name: 'introduction', title: '📖 Guides', path: 'introduction.md', category: 'Getting Started' },
   { name: 'api', title: '🔌 APIs', path: 'api.md', category: 'Development' },
   { name: 'INTEGRATION', title: '🏗️ Architecture', path: 'INTEGRATION.md', category: 'Development' },
-  { name: 'changelog', title: '📝 ChangeLog', path: 'changelog.md', category: 'References' },
+  { name: 'changelog', title: '📝 ChangeLog', category: 'References', remote: true },
 ]
 
 export default function DocsPage() {
@@ -27,10 +30,18 @@ export default function DocsPage() {
 
   useEffect(() => {
     const loadDoc = async () => {
+      const doc = docFiles.find(d => d.name === selectedDoc)
+      if (doc?.remote) {
+        // Nội dung do component riêng tự fetch từ API
+        setContent('')
+        setLoading(false)
+        setSearchParams({ doc: selectedDoc })
+        return
+      }
+
       setLoading(true)
       try {
-        const doc = docFiles.find(d => d.name === selectedDoc)
-        if (doc) {
+        if (doc?.path) {
           const response = await fetch(`/docs/${doc.path}`)
           const text = await response.text()
           setContent(text)
@@ -96,7 +107,9 @@ export default function DocsPage() {
           </div>
 
           <div className="docs-content">
-            {loading ? (
+            {currentDoc?.remote ? (
+              <ChangelogView />
+            ) : loading ? (
               <div className="docs-loading">Loading...</div>
             ) : (
               <div className="markdown-body">
