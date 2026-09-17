@@ -1,8 +1,8 @@
-const API_BASE_URL = import.meta.env.VITE_API_URL || '/api'
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://be-platform-bincountit1.fly.dev/api'
 
 /** Registry API phục vụ danh sách version + changelog của package */
 export const REGISTRY_API_URL =
-  import.meta.env.VITE_REGISTRY_API_URL || 'http://10.40.116.23:3000/api'
+  import.meta.env.VITE_REGISTRY_API_URL || API_BASE_URL
 
 /** Package mặc định hiển thị ở tab ChangeLog */
 export const CHANGELOG_PACKAGE = {

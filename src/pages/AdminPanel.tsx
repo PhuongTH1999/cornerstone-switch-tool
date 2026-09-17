@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useAuth } from '../context/AuthContext'
 import axios from 'axios'
+import API_BASE_URL from '../config/api'
 import '../styles/admin.scss'
 
 interface UserItem {
@@ -24,7 +25,7 @@ export default function AdminPanel() {
 
   const fetchAllUsers = async () => {
     try {
-      const res = await axios.get('/api/admin/users')
+      const res = await axios.get(`${API_BASE_URL}/admin/users`)
       const fetchedUsers = res.data.users || []
 
       // Transform database users to UI format
@@ -49,7 +50,7 @@ export default function AdminPanel() {
     if (!newUserEmail) return
 
     try {
-      await axios.post('/api/admin/update-user-role', {
+      await axios.post(`${API_BASE_URL}/admin/update-user-role`, {
         user_id: newUserEmail,
         new_role: selectedRole,
         notes: 'Added by owner',
@@ -78,7 +79,7 @@ export default function AdminPanel() {
 
   const handleUpdateRole = async (userId: string, newRole: string) => {
     try {
-      await axios.post('/api/admin/update-user-role', {
+      await axios.post(`${API_BASE_URL}/admin/update-user-role`, {
         user_id: userId,
         new_role: newRole,
       })

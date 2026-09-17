@@ -8,7 +8,7 @@ export default defineConfig({
     open: true,
     proxy: {
       '/api': {
-        target: 'http://localhost:8080',
+        target: 'https://be-platform-bincountit1.fly.dev',
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api/, '/api'),
       },
