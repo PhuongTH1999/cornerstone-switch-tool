@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useAuth } from '../context/AuthContext'
-import axios from 'axios'
+import { apiClient as axios, requestErrorMessage } from '../lib/http'
 import API_BASE_URL from '../config/api'
 import '../styles/admin.scss'
 
@@ -17,13 +17,15 @@ export default function AdminPanel() {
   const [isLoading, setIsLoading] = useState(true)
   const [newUserEmail, setNewUserEmail] = useState('')
   const [selectedRole, setSelectedRole] = useState('guest')
+  const [mutating, setMutating] = useState(false)
   const [successMessage, setSuccessMessage] = useState('')
 
   useEffect(() => {
-    fetchAllUsers()
-  }, [])
+    if (user?.role === 'owner') void fetchAllUsers()
+  }, [user?.role])
 
   const fetchAllUsers = async () => {
+    setIsLoading(true)
     try {
       const res = await axios.get(`${API_BASE_URL}/admin/users`)
       const fetchedUsers = res.data.users || []
@@ -47,7 +49,8 @@ export default function AdminPanel() {
 
   const handleAddUser = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!newUserEmail) return
+    if (!newUserEmail || mutating) return
+    setMutating(true)
 
     try {
       await axios.post(`${API_BASE_URL}/admin/update-user-role`, {
@@ -68,16 +71,19 @@ export default function AdminPanel() {
         role: selectedRole,
       }
 
-      setUsers([...users, newUser])
+      setUsers(current => [...current, newUser])
       setNewUserEmail('')
       setSelectedRole('guest')
     } catch (err: any) {
-      setSuccessMessage(`❌ Error: ${err.response?.data?.error || 'Failed to add user'}`)
-      setTimeout(() => setSuccessMessage(''), 3000)
+      console.error(requestErrorMessage(err))
+    } finally {
+      setMutating(false)
     }
   }
 
   const handleUpdateRole = async (userId: string, newRole: string) => {
+    if (mutating) return
+    setMutating(true)
     try {
       await axios.post(`${API_BASE_URL}/admin/update-user-role`, {
         user_id: userId,
@@ -86,7 +92,7 @@ export default function AdminPanel() {
 
       // Update local list
       setUsers(
-        users.map((u) =>
+        current => current.map((u) =>
           u.id === userId ? { ...u, role: newRole } : u
         )
       )
@@ -94,8 +100,9 @@ export default function AdminPanel() {
       setSuccessMessage(`✅ Role updated!`)
       setTimeout(() => setSuccessMessage(''), 2000)
     } catch (err: any) {
-      setSuccessMessage(`❌ Error: ${err.response?.data?.error || 'Failed to update role'}`)
-      setTimeout(() => setSuccessMessage(''), 3000)
+      console.error(requestErrorMessage(err))
+    } finally {
+      setMutating(false)
     }
   }
 
@@ -157,8 +164,8 @@ export default function AdminPanel() {
                 </select>
               </div>
 
-              <button type="submit" className="btn btn-primary">
-                Add User
+              <button type="submit" className="btn btn-primary" disabled={mutating}>
+                {mutating ? 'Saving…' : 'Add User'}
               </button>
             </form>
           </div>
@@ -197,6 +204,7 @@ export default function AdminPanel() {
                         <td>
                           <div className="role-dropdown">
                             <select
+                              disabled={mutating}
                               value={u.role}
                               onChange={(e) => handleUpdateRole(u.id, e.target.value)}
                               className="role-select"

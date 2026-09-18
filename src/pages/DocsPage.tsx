@@ -1,3 +1,4 @@
+import { request } from '../lib/http'
 import { useState, useEffect } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import ReactMarkdown from 'react-markdown'
@@ -42,7 +43,7 @@ export default function DocsPage() {
       setLoading(true)
       try {
         if (doc?.path) {
-          const response = await fetch(`/docs/${doc.path}`)
+          const response = await request(`/docs/${doc.path}`)
           const text = await response.text()
           setContent(text)
           setSearchParams({ doc: selectedDoc })

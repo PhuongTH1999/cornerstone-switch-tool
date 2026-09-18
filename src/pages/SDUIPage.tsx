@@ -1,3 +1,4 @@
+import SDUIDocumentation from '../components/SDUIDocumentation'
 import { ChangeEvent, useEffect, useRef, useState } from 'react'
 import type { CSSProperties, ReactNode } from 'react'
 import '../styles/sdui.scss'
@@ -186,7 +187,7 @@ function BuilderInspector({ node, onField, onStyle, onProperty, onApplyToAll }: 
 }
 
 export default function SDUIPage() {
-  const [activeTab, setActiveTab] = useState<'builder' | 'templates'>('templates')
+  const [activeTab, setActiveTab] = useState<'builder' | 'templates' | 'document'>('templates')
   const [status, setStatus] = useState('')
   const [schemaName, setSchemaName] = useState('Untitled schema')
   const [editingSchema, setEditingSchema] = useState<SavedSchema | null>(null)
@@ -459,7 +460,9 @@ export default function SDUIPage() {
       <nav className="sdui-tabs" aria-label="SDUI workspace">
         <button className={activeTab === 'templates' ? 'active' : ''} onClick={() => setActiveTab('templates')}>Schema library</button>
         <button className={activeTab === 'builder' ? 'active' : ''} onClick={() => setActiveTab('builder')}>Editor {dirty && baseline ? '•' : ''}</button>
+        <button className={activeTab === 'document' ? 'active' : ''} onClick={() => setActiveTab('document')}>Document</button>
       </nav>
+      {activeTab === 'document' && <SDUIDocumentation />}
       {status && <div className="sdui-feedback" role="status" aria-live="polite">{status}</div>}
       {activeTab === 'templates' && <section className="sdui-card sdui-wide-card">
         <div className="sdui-library-heading"><div><h2>SDUI Templates</h2><p className="sdui-muted">The same template library is available on Home. Open a template to edit it.</p></div><div className="sdui-library-actions"><button className="sdui-quiet" onClick={() => { setShowImport(!showImport); setImportError('') }}><SDUIIcon kind="import" /> Import schema</button><button className="sdui-primary" onClick={newSchema}><SDUIIcon kind="plus" /> Create template</button></div></div>

@@ -1,3 +1,4 @@
+import { request } from '../lib/http'
 
 import { ChangeEvent, FormEvent, useEffect, useMemo, useRef, useState } from 'react'
 import JSZip from 'jszip'
@@ -159,7 +160,7 @@ export default function ToolsPage() {
 
   const exportPlugin = async () => {
     try {
-      const [manifestResponse, uiResponse, codeResponse] = await Promise.all([fetch('/manifest.json'), fetch('/ui.html'), fetch('/dist/code.js')])
+      const [manifestResponse, uiResponse, codeResponse] = await Promise.all([request('/manifest.json'), request('/ui.html'), request('/dist/code.js')])
       if (!manifestResponse.ok || !uiResponse.ok || !codeResponse.ok) throw new Error('Plugin source files are unavailable. Run the plugin build first.')
       const manifest = await manifestResponse.json()
       const ui = await uiResponse.text()

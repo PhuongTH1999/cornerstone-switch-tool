@@ -1,3 +1,5 @@
+import { notifyRequestError } from '../lib/requestFeedback'
+import { request } from '../lib/http'
 import { useCallback, useEffect, useState } from 'react'
 import API_BASE_URL from '../config/api'
 
@@ -20,6 +22,7 @@ function requestHeaders(json = false) {
 }
 
 async function readResponse(response: Response) {
+  if (response.status === 204 || response.status === 205) return null
   const contentType = response.headers.get('content-type') || ''
   const body = contentType.includes('json') ? await response.json() : await response.text()
   if (!response.ok) {
@@ -56,14 +59,14 @@ function normalizeList(payload: any): SavedSchema[] {
 }
 
 export async function listSDUITemplates() {
-  return normalizeList(await readResponse(await fetch(TEMPLATES_URL, { headers: requestHeaders() })))
+  return normalizeList(await readResponse(await request(TEMPLATES_URL, { headers: requestHeaders() })))
 }
 
 export async function getSDUITemplate(id: string): Promise<SavedSchema> {
   const url = `${TEMPLATES_URL}/${encodeURIComponent(id)}`
   const [detail, rawJson] = await Promise.all([
-    readResponse(await fetch(url, { headers: requestHeaders() })),
-    readResponse(await fetch(`${url}/json`, { headers: requestHeaders() })),
+    request(url, { headers: requestHeaders() }).then(readResponse),
+    request(`${url}/json`, { headers: requestHeaders() }).then(readResponse),
   ])
   const template = normalizeTemplate(detail)
   return { ...template, id: template.id || id, tree: schemaJson(rawJson) }
@@ -71,18 +74,18 @@ export async function getSDUITemplate(id: string): Promise<SavedSchema> {
 
 export async function createSDUITemplate(name: string, tree: unknown): Promise<SavedSchema> {
   const payload = { name, schema: tree }
-  const template = normalizeTemplate(await readResponse(await fetch(TEMPLATES_URL, { method: 'POST', headers: requestHeaders(true), body: JSON.stringify(payload) })))
+  const template = normalizeTemplate(await readResponse(await request(TEMPLATES_URL, { method: 'POST', headers: requestHeaders(true), body: JSON.stringify(payload) })))
   return { ...template, name: template.name || name, tree: template.tree ?? tree }
 }
 
 export async function updateSDUITemplate(id: string, name: string, tree: unknown): Promise<SavedSchema> {
   const payload = { name, schema: tree }
-  const template = normalizeTemplate(await readResponse(await fetch(`${TEMPLATES_URL}/${encodeURIComponent(id)}`, { method: 'PUT', headers: requestHeaders(true), body: JSON.stringify(payload) })))
+  const template = normalizeTemplate(await readResponse(await request(`${TEMPLATES_URL}/${encodeURIComponent(id)}`, { method: 'PUT', headers: requestHeaders(true), body: JSON.stringify(payload) })))
   return { ...template, id: template.id || id, name: template.name || name, tree: template.tree ?? tree }
 }
 
 export async function deleteSDUITemplate(id: string) {
-  await readResponse(await fetch(`${TEMPLATES_URL}/${encodeURIComponent(id)}`, { method: 'DELETE', headers: requestHeaders() }))
+  await readResponse(await request(`${TEMPLATES_URL}/${encodeURIComponent(id)}`, { method: 'DELETE', headers: requestHeaders() }))
 }
 
 export function useSDUITemplates() {
@@ -92,7 +95,10 @@ export function useSDUITemplates() {
   const refresh = useCallback(async () => {
     setCloudStatus('loading')
     try { setSavedSchemas(await listSDUITemplates()); setCloudStatus('connected'); setError('') }
-    catch (reason) { setCloudStatus('error'); setError(reason instanceof Error ? reason.message : 'Could not load templates') }
+    catch (reason) {
+      const message = reason instanceof Error ? reason.message : 'Could not load templates'
+      setCloudStatus('error'); setError(message); notifyRequestError(message)
+    }
   }, [])
   useEffect(() => {
     const reload = () => { void refresh() }

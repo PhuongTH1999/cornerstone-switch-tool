@@ -1,3 +1,4 @@
+import RequestFeedback from './components/RequestFeedback'
 import { Routes, Route, Navigate } from 'react-router-dom'
 import { AuthProvider, useAuth } from './context/AuthContext'
 import LoginPage from './pages/LoginPage'
@@ -43,6 +44,7 @@ function AppContent() {
 export default function App() {
   return (
     <AuthProvider>
+      <RequestFeedback />
       <AppContent />
     </AuthProvider>
   )

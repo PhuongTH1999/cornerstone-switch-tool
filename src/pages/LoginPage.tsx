@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
-import axios from 'axios'
+import { apiClient as axios, requestErrorMessage } from '../lib/http'
 import API_BASE_URL from '../config/api'
 import '../styles/login.scss'
 
@@ -104,7 +104,7 @@ export default function LoginPage() {
       }, 100)
     } catch (err: any) {
       console.error('Google login error:', err)
-      setError(err.response?.data?.error || 'Google login failed')
+      setError(requestErrorMessage(err))
     } finally {
       setIsLoading(false)
     }
@@ -162,6 +162,8 @@ export default function LoginPage() {
         <div
           id="google-signin-button"
           style={{
+            pointerEvents: isLoading ? 'none' : 'auto',
+            opacity: isLoading ? 0.6 : 1,
             display: 'flex',
             justifyContent: 'center',
             minHeight: '44px',

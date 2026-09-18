@@ -1,12 +1,12 @@
 import React, { createContext, useContext, useState, useEffect } from 'react'
-import axios from 'axios'
+import { apiClient as axios, requestErrorMessage } from '../lib/http'
 import API_BASE_URL from '../config/api'
 
 export interface User {
   id: string
   username: string
   email: string
-  role: 'admin' | 'guest'
+  role: 'owner' | 'admin' | 'guest'
   created_at?: string
 }
 
@@ -74,7 +74,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       setUser(userData)
     } catch (err: any) {
-      const message = err.response?.data?.error || 'Login failed'
+      const message = requestErrorMessage(err)
       setError(message)
       throw new Error(message)
     }

@@ -1,3 +1,5 @@
+import { notifyRequestError } from '../lib/requestFeedback'
+import { request } from '../lib/http'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { CHANGELOG_PACKAGE, REGISTRY_API_URL } from '../config/api'
 
@@ -35,7 +37,7 @@ export function usePackageVersions() {
     setLoading(true)
     setError('')
     try {
-      const response = await fetch(`${REGISTRY_API_URL}/packages/${scope}/${name}/versions`)
+      const response = await request(`${REGISTRY_API_URL}/packages/${scope}/${name}/versions`)
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}`)
       }
@@ -45,7 +47,9 @@ export function usePackageVersions() {
       }
       setData(json)
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Không tải được dữ liệu version')
+      const message = err instanceof Error ? err.message : 'Không tải được dữ liệu version'
+      setError(message)
+      notifyRequestError(message)
       setData(null)
     } finally {
       setLoading(false)
