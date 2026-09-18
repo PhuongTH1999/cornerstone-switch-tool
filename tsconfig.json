@@ -22,5 +22,5 @@
     ]
   },
   "include": ["src/**/*"],
-  "exclude": ["node_modules", "dist", "backend-go"]
+  "exclude": ["node_modules", "dist"]
 }

@@ -2,6 +2,9 @@ import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { usePackageVersions } from '../hooks/usePackageVersions'
 import '../styles/introduction.scss'
+import '../styles/sdui.scss'
+import { useSDUITemplates, templateKey } from '../hooks/useSDUITemplates'
+import SDUIIcon from '../components/SDUIIcon'
 
 interface TemplateItem {
   icon: string
@@ -13,6 +16,7 @@ interface TemplateItem {
 
 export default function IntroductionPage() {
   const navigate = useNavigate()
+  const { savedSchemas, cloudStatus } = useSDUITemplates()
   const [selectedTemplate, setSelectedTemplate] = useState<TemplateItem | null>(null)
   const { latest, loading: loadingVersion } = usePackageVersions()
 
@@ -122,7 +126,7 @@ export default function IntroductionPage() {
               <div className="feature-box" onClick={() => handleFeatureClick('sdui')} style={{ cursor: 'pointer' }}>
                 <div className="feature-number">03</div>
                 <h3>🎨 SDUI Builder</h3>
-                <p>Tạo & quản lý dataSchema cho Server-Driven UI. Bao gồm builder trực quan, templates có sẵn, và AI generator.</p>
+                <p>Tạo & quản lý dataSchema cho Server-Driven UI. Chỉnh sửa trực quan, import JSON và đồng bộ thư viện templates.</p>
               </div>
 
               <div className="feature-box" onClick={() => handleFeatureClick('tools')} style={{ cursor: 'pointer' }}>
@@ -239,46 +243,13 @@ export default function IntroductionPage() {
               </div>
             </div>
 
-            {/* 📦 SDUI Templates */}
             <div>
-              <h3 style={{ fontSize: '18px', marginBottom: '24px' }}>📦 SDUI Templates</h3>
-              <p style={{ color: 'var(--text-muted)', marginBottom: '24px', fontSize: '14px' }}>
-                SDUI hỗ trợ 3 template chuyên dụng cho Server-Driven UI rendering:
-              </p>
-              <div style={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-                gap: '16px'
-              }}>
-                {[
-                  { icon: '💡', name: 'Insight Widget', desc: 'Hiển thị insights & data', file: 'template_insight.png', folder: 'widget' },
-                  { icon: '📲', name: 'Promotion Horizontal Full', desc: 'Promo full-width horizontal', file: 'Horizontal_Full.png', folder: "sdui" },
-                  { icon: '🎁', name: 'Promotion Non-Des', desc: 'Promo không mô tả', file: "Horizontal_non_des.png", folder: "sdui" }
-                ].map((item) => (
-                  <div
-                    key={item.name}
-                    onClick={() => item.file && setSelectedTemplate(item)}
-                    style={{
-                      background: 'var(--surface)',
-                      border: '1px solid var(--border)',
-                      borderRadius: '12px',
-                      padding: '16px',
-                      textAlign: 'center',
-                      cursor: item.file ? 'pointer' : 'default',
-                      transition: 'all 0.2s ease',
-                    }}
-                    onMouseEnter={(e) => item.file && (e.currentTarget.style.borderColor = 'var(--primary)', e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.1)')}
-                    onMouseLeave={(e) => (e.currentTarget.style.borderColor = 'var(--border)', e.currentTarget.style.boxShadow = 'none')}
-                  >
-                    <div style={{ fontSize: '32px', marginBottom: '8px' }}>{item.icon}</div>
-                    <h4 style={{ margin: '0 0 8px 0', fontSize: '14px', fontWeight: 600, color: 'var(--text)' }}>{item.name}</h4>
-                    <p style={{ margin: 0, fontSize: '12px', color: 'var(--text-muted)' }}>
-                      {item.desc}
-                    </p>
-                    {item.file && <div style={{ marginTop: '8px', fontSize: '14px' }}>👁️</div>}
-                  </div>
-                ))}
-              </div>
+              <div className="sdui-library-heading"><div><h3>SDUI Templates</h3><p className="sdui-muted">Thư viện dùng chung với SDUI Editor. Chọn template để mở và chỉnh sửa.</p></div><Link className="sdui-quiet" to="/sdui">Manage templates →</Link></div>
+              {cloudStatus === 'loading' ? <p role="status">Đang tải templates…</p> : <>
+                {cloudStatus === 'error' && <p className="sdui-muted">Không tải được SDUI Templates từ API.</p>}
+                <div className="sdui-template-grid">{savedSchemas.map((item, index) => <Link key={item.id || index} className="sdui-template saved-template" to={`/sdui?template=${encodeURIComponent(templateKey(item))}`}><span className="sdui-template-icon"><SDUIIcon name={item.name} /></span><strong>{item.name}</strong><small>{item.ts ? new Date(item.ts).toLocaleDateString() : 'Saved template'}</small><b><SDUIIcon kind="edit" /> Edit template</b></Link>)}</div>
+                {!savedSchemas.length && <p className="sdui-empty">Chưa có template. <Link to="/sdui">Import hoặc tạo template đầu tiên →</Link></p>}
+              </>}
             </div>
           </div>
         </section>

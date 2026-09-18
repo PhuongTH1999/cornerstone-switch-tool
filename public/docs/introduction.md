@@ -65,11 +65,9 @@ Native view hiện tại hỗ trợ các định dạng **CNS-built** sau:
 
 ## Tech Stack
 
-### 🖥️ Backend (Go)
-- **Go 1.20+** + **Gin Framework**
-- **REST API** với JWT authentication
-- **Supabase PostgreSQL** database
-- **Row Level Security (RLS)** policies
+### 🖥️ Backend riêng
+- Backend được phát triển và triển khai ở repository riêng.
+- Frontend kết nối REST API qua cấu hình trong `src/config/api.ts`.
 
 ### ⚛️ Frontend (React)
 - **React 18** + **TypeScript**
@@ -77,41 +75,24 @@ Native view hiện tại hỗ trợ các định dạng **CNS-built** sau:
 - **Context API** cho state management
 - **Vite** cho fast builds
 
-### 🗄️ Database
-- **PostgreSQL** (Supabase)
-- **PostgREST API** cho auto-generated endpoints
-- **RLS Policies** cho security
-- **Real-time subscriptions**
-
 ---
 
 ## Bắt đầu nhanh
 
-### 1. Setup Backend (3 phút)
-```bash
-cd backend-go
-cp .env.example .env
-# Edit .env với Supabase credentials
-go mod download
-make run
-```
-✅ Server chạy trên `http://localhost:8080`
+Chạy tại thư mục gốc của frontend:
 
-### 2. Setup Frontend (3 phút)
 ```bash
-cd ..
-cp .env.example .env
 npm install
 npm run dev
 ```
-✅ Frontend chạy trên `http://localhost:5173`
 
-### 3. Đăng nhập & Test (1 phút)
-```
-Username: admin
-Password: admin
-```
-✅ Xem Dashboard và khám phá tất cả tính năng
+Frontend chạy trên `http://localhost:5173`. Mặc định khi phát triển, Vite proxy
+`/api` tới backend riêng tại `http://localhost:3000` (cấu hình trong `vite.config.ts`).
+Có thể đặt `VITE_API_URL` trong `.env.local` để dùng API khác; URL cần bao gồm `/api`.
+
+Bản production mặc định gọi backend AWS Lambda cấu hình trong `src/config/api.ts`.
+Xem `SETUP_GUIDE.md` để biết cách cấu hình và build frontend.
+Đăng nhập bằng tài khoản được cấp bởi backend hiện tại.
 
 ---
 
