@@ -139,7 +139,7 @@
 .sdui-import { margin-bottom: 16px; }
 .sdui-page summary { cursor: pointer; padding: 10px 0; color: var(--text-secondary); font-size: 12px; }
 .sdui-import .builder-import-button { margin-top: 10px; }
-.figma-canvas-panel .figma-canvas { display: flex; min-height: 470px; align-items: center; justify-content: center; padding: 36px 20px; background-color: var(--bg-secondary); }
+.figma-canvas-panel .figma-canvas { display: flex; min-height: 350px; align-items: center; justify-content: center; padding: 36px 20px; background-color: var(--bg-secondary); }
 .preview-viewport { max-width: 100%; min-height: 0; padding: 0; border: 0; background: transparent; box-shadow: none; transition: width .2s ease; }
 .preview-viewport > .schema-preview-container { width: 100%; max-width: none; margin: 0; font-family: -apple-system, 'Segoe UI', Roboto, sans-serif; }
 .preview-size-control { display: flex; align-items: center; gap: 7px; margin-left: auto; color: var(--text-muted); font: 12px var(--font-ui); text-transform: uppercase; }
