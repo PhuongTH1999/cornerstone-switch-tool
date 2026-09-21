@@ -1,0 +1,493 @@
+{
+  "type": "template_widget",
+  "templateType": "SDUI_WIDGET",
+  "data": [
+    {
+      "type": "container",
+      "style": {
+        "backgroundColor": "#ffffff",
+        "padding": {
+          "all": 12
+        }
+      },
+      "property": {
+        "layout": "column",
+        "spacing": 14
+      },
+      "value": {
+        "children": [
+          {
+            "type": "text",
+            "style": {},
+            "property": {
+              "typography": "descriptionDefaultRegular",
+              "color": "#4b4b4b",
+              "lineLimit": 1
+            },
+            "value": "Mô tả ngắn"
+          },
+          {
+            "type": "container",
+            "style": {},
+            "property": {
+              "layout": "scrollRow",
+              "spacing": 8,
+              "alignment": "top"
+            },
+            "value": {
+              "children": [
+                {
+                  "type": "container",
+                  "style": {
+                    "width": 142,
+                    "height": 140,
+                    "padding": {
+                      "all": 8
+                    },
+                    "backgroundColor": "#ffffff",
+                    "cornerRadius": 12,
+                    "border": {
+                      "width": 1,
+                      "color": "#e5e5e5"
+                    }
+                  },
+                  "property": {
+                    "layout": "column",
+                    "arrangement": "spaceBetween",
+                    "id": "voucher_1"
+                  },
+                  "value": {
+                    "children": [
+                      {
+                        "type": "container",
+                        "style": {},
+                        "property": {
+                          "layout": "column",
+                          "spacing": 6
+                        },
+                        "value": {
+                          "children": [
+                            {
+                              "type": "container",
+                              "style": {},
+                              "property": {
+                                "layout": "row",
+                                "spacing": 4,
+                                "alignment": "center"
+                              },
+                              "value": {
+                                "children": [
+                                  {
+                                    "type": "image",
+                                    "style": {
+                                      "width": 28,
+                                      "height": 28,
+                                      "cornerRadius": 14
+                                    },
+                                    "property": {
+                                      "contentMode": "fit"
+                                    },
+                                    "value": "/assets/sdui/brand-placeholder.svg"
+                                  },
+                                  {
+                                    "type": "text",
+                                    "style": {},
+                                    "property": {
+                                      "typography": "labelSMedium",
+                                      "color": "#4b4b4b",
+                                      "lineLimit": 1
+                                    },
+                                    "value": "Brand/Service",
+                                    "modifier": {
+                                      "weight": 1
+                                    }
+                                  }
+                                ]
+                              }
+                            },
+                            {
+                              "type": "container",
+                              "style": {},
+                              "property": {
+                                "layout": "column",
+                                "spacing": 0
+                              },
+                              "value": {
+                                "children": [
+                                  {
+                                    "type": "text",
+                                    "style": {},
+                                    "property": {
+                                      "typography": "actionSBold",
+                                      "color": "#303233",
+                                      "lineLimit": 1
+                                    },
+                                    "value": "Gift prefix"
+                                  },
+                                  {
+                                    "type": "text",
+                                    "style": {},
+                                    "property": {
+                                      "typography": "descriptionXsRegular",
+                                      "color": "#727272",
+                                      "lineLimit": 1
+                                    },
+                                    "value": "Gift suffix"
+                                  }
+                                ]
+                              }
+                            }
+                          ]
+                        }
+                      },
+                      {
+                        "type": "container",
+                        "style": {},
+                        "property": {
+                          "layout": "row",
+                          "arrangement": "spaceBetween",
+                          "alignment": "center"
+                        },
+                        "value": {
+                          "children": [
+                            {
+                              "type": "text",
+                              "style": {},
+                              "property": {
+                                "typography": "descriptionXsRegular",
+                                "color": "#c6c6c6",
+                                "lineLimit": 1
+                              },
+                              "value": "{x}km"
+                            },
+                            {
+                              "type": "button",
+                              "style": {
+                                "width": 72,
+                                "height": 28,
+                                "cornerRadius": 9,
+                                "padding": {
+                                  "all": 0
+                                }
+                              },
+                              "property": {
+                                "ctaType": "BUTTON",
+                                "color": "#ff1493"
+                              },
+                              "value": {
+                                "title": "Button",
+                                "type": "outline"
+                              }
+                            }
+                          ]
+                        }
+                      }
+                    ]
+                  }
+                },
+                {
+                  "type": "container",
+                  "style": {
+                    "width": 142,
+                    "height": 140,
+                    "padding": {
+                      "all": 8
+                    },
+                    "backgroundColor": "#ffffff",
+                    "cornerRadius": 12,
+                    "border": {
+                      "width": 1,
+                      "color": "#e5e5e5"
+                    }
+                  },
+                  "property": {
+                    "layout": "column",
+                    "arrangement": "spaceBetween",
+                    "id": "voucher_2"
+                  },
+                  "value": {
+                    "children": [
+                      {
+                        "type": "container",
+                        "style": {},
+                        "property": {
+                          "layout": "column",
+                          "spacing": 6
+                        },
+                        "value": {
+                          "children": [
+                            {
+                              "type": "container",
+                              "style": {},
+                              "property": {
+                                "layout": "row",
+                                "spacing": 4,
+                                "alignment": "center"
+                              },
+                              "value": {
+                                "children": [
+                                  {
+                                    "type": "image",
+                                    "style": {
+                                      "width": 28,
+                                      "height": 28,
+                                      "cornerRadius": 14
+                                    },
+                                    "property": {
+                                      "contentMode": "fit"
+                                    },
+                                    "value": "/assets/sdui/brand-placeholder.svg"
+                                  },
+                                  {
+                                    "type": "text",
+                                    "style": {},
+                                    "property": {
+                                      "typography": "labelSMedium",
+                                      "color": "#4b4b4b",
+                                      "lineLimit": 1
+                                    },
+                                    "value": "Brand/Service",
+                                    "modifier": {
+                                      "weight": 1
+                                    }
+                                  }
+                                ]
+                              }
+                            },
+                            {
+                              "type": "container",
+                              "style": {},
+                              "property": {
+                                "layout": "column",
+                                "spacing": 0
+                              },
+                              "value": {
+                                "children": [
+                                  {
+                                    "type": "text",
+                                    "style": {},
+                                    "property": {
+                                      "typography": "actionSBold",
+                                      "color": "#303233",
+                                      "lineLimit": 1
+                                    },
+                                    "value": "Gift prefix"
+                                  },
+                                  {
+                                    "type": "text",
+                                    "style": {},
+                                    "property": {
+                                      "typography": "descriptionXsRegular",
+                                      "color": "#727272",
+                                      "lineLimit": 1
+                                    },
+                                    "value": "Gift suffix"
+                                  }
+                                ]
+                              }
+                            }
+                          ]
+                        }
+                      },
+                      {
+                        "type": "container",
+                        "style": {},
+                        "property": {
+                          "layout": "row",
+                          "arrangement": "spaceBetween",
+                          "alignment": "center"
+                        },
+                        "value": {
+                          "children": [
+                            {
+                              "type": "text",
+                              "style": {},
+                              "property": {
+                                "typography": "descriptionXsRegular",
+                                "color": "#c6c6c6",
+                                "lineLimit": 1
+                              },
+                              "value": "{x}km"
+                            },
+                            {
+                              "type": "button",
+                              "style": {
+                                "width": 72,
+                                "height": 28,
+                                "cornerRadius": 9,
+                                "padding": {
+                                  "all": 0
+                                }
+                              },
+                              "property": {
+                                "ctaType": "BUTTON",
+                                "color": "#ff1493"
+                              },
+                              "value": {
+                                "title": "Button",
+                                "type": "outline"
+                              }
+                            }
+                          ]
+                        }
+                      }
+                    ]
+                  }
+                },
+                {
+                  "type": "container",
+                  "style": {
+                    "width": 142,
+                    "height": 140,
+                    "padding": {
+                      "all": 8
+                    },
+                    "backgroundColor": "#ffffff",
+                    "cornerRadius": 12,
+                    "border": {
+                      "width": 1,
+                      "color": "#e5e5e5"
+                    }
+                  },
+                  "property": {
+                    "layout": "column",
+                    "arrangement": "spaceBetween",
+                    "id": "voucher_3"
+                  },
+                  "value": {
+                    "children": [
+                      {
+                        "type": "container",
+                        "style": {},
+                        "property": {
+                          "layout": "column",
+                          "spacing": 6
+                        },
+                        "value": {
+                          "children": [
+                            {
+                              "type": "container",
+                              "style": {},
+                              "property": {
+                                "layout": "row",
+                                "spacing": 4,
+                                "alignment": "center"
+                              },
+                              "value": {
+                                "children": [
+                                  {
+                                    "type": "image",
+                                    "style": {
+                                      "width": 28,
+                                      "height": 28,
+                                      "cornerRadius": 14
+                                    },
+                                    "property": {
+                                      "contentMode": "fit"
+                                    },
+                                    "value": "/assets/sdui/brand-placeholder.svg"
+                                  },
+                                  {
+                                    "type": "text",
+                                    "style": {},
+                                    "property": {
+                                      "typography": "labelSMedium",
+                                      "color": "#4b4b4b",
+                                      "lineLimit": 1
+                                    },
+                                    "value": "Brand/Service",
+                                    "modifier": {
+                                      "weight": 1
+                                    }
+                                  }
+                                ]
+                              }
+                            },
+                            {
+                              "type": "container",
+                              "style": {},
+                              "property": {
+                                "layout": "column",
+                                "spacing": 0
+                              },
+                              "value": {
+                                "children": [
+                                  {
+                                    "type": "text",
+                                    "style": {},
+                                    "property": {
+                                      "typography": "actionSBold",
+                                      "color": "#303233",
+                                      "lineLimit": 1
+                                    },
+                                    "value": "Gift prefix"
+                                  },
+                                  {
+                                    "type": "text",
+                                    "style": {},
+                                    "property": {
+                                      "typography": "descriptionXsRegular",
+                                      "color": "#727272",
+                                      "lineLimit": 1
+                                    },
+                                    "value": "Gift suffix"
+                                  }
+                                ]
+                              }
+                            }
+                          ]
+                        }
+                      },
+                      {
+                        "type": "container",
+                        "style": {},
+                        "property": {
+                          "layout": "row",
+                          "arrangement": "spaceBetween",
+                          "alignment": "center"
+                        },
+                        "value": {
+                          "children": [
+                            {
+                              "type": "text",
+                              "style": {},
+                              "property": {
+                                "typography": "descriptionXsRegular",
+                                "color": "#c6c6c6",
+                                "lineLimit": 1
+                              },
+                              "value": "{x}km"
+                            },
+                            {
+                              "type": "button",
+                              "style": {
+                                "width": 72,
+                                "height": 28,
+                                "cornerRadius": 9,
+                                "padding": {
+                                  "all": 0
+                                }
+                              },
+                              "property": {
+                                "ctaType": "BUTTON",
+                                "color": "#ff1493"
+                              },
+                              "value": {
+                                "title": "Button",
+                                "type": "outline"
+                              }
+                            }
+                          ]
+                        }
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

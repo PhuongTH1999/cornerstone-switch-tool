@@ -1,3 +1,8 @@
+import SDUIPreviewImage from '../components/SDUIPreviewImage'
+import { resolveExportAssets } from '../lib/exportAssets'
+import { copyText } from '../lib/clipboard'
+import { IMAGE_PLACEHOLDER, resolveSDUIDesignTokens } from '../lib/designTokens'
+import FigmaMigration from '../components/FigmaMigration'
 import SDUIDocumentation from '../components/SDUIDocumentation'
 import { ChangeEvent, useEffect, useRef, useState } from 'react'
 import type { CSSProperties, ReactNode } from 'react'
@@ -102,7 +107,7 @@ function renderPreviewNode(rawNode: any, key?: string | number, selectedNodeId?:
     const children = node.children || value.children || []
     const alignment = node.alignment || property.alignment || modifier.alignment
     const arrangement = property.arrangement || modifier.arrangement
-    const nodeBox = { ...style, backgroundColor: style.backgroundColor || node.bg, width: node.width ?? style.width, height: node.height ?? style.height, padding: node.padding ?? style.padding, cornerRadius: node.radius ?? style.cornerRadius, border: style.border || node.border }
+    const nodeBox = { ...style, backgroundColor: node.bg ?? style.backgroundColor, width: node.width ?? style.width, height: node.height ?? style.height, padding: node.padding ?? style.padding, cornerRadius: node.radius ?? style.cornerRadius, border: style.border || node.border }
     const styleProps: CSSProperties = { display: 'flex', flexDirection: row ? 'row' : 'column', gap: node.spacing ?? property.spacing, justifyContent: flexAlignment[arrangement] || 'flex-start', alignItems: flexAlignment[alignment] || (row ? 'center' : 'stretch'), ...(scroll ? (row ? { overflowX: 'auto', flexWrap: 'nowrap' } : { overflowY: 'auto' }) : {}), ...boxStyle(nodeBox), ...boxStyle(modifier) }
     return <div key={key} className={`schema-preview-container ${selectedNodeId === node.id ? 'preview-node-selected' : ''}`} data-node-id={node.id} onClick={(event) => { if (node.id && onSelect) { event.stopPropagation(); onSelect(node.id) } }} style={styleProps}>{children.map((child: any, index: number) => <div key={child._id || child.id || index} className={`preview-node-shell ${selectedNodeId === child.id ? 'preview-node-shell-selected' : ''}`} data-node-id={child.id} onClick={(event) => { if (child.id && onSelect) { event.stopPropagation(); onSelect(child.id) } }} style={fillStyle(child, row)}>{renderPreviewNode(child, child._id || child.id || index, selectedNodeId, onSelect)}</div>)}</div>
   }
@@ -111,7 +116,7 @@ function renderPreviewNode(rawNode: any, key?: string | number, selectedNodeId?:
     const componentType = node.componentType
     if (componentType === 'ITEM_LIST') return <div key={key} className="schema-preview-list" style={{ width: '100%', ...boxStyle(modifier) }}>{Array.from({ length: Math.min(node.maxItems || 2, 3) }, (_, index) => renderPreviewNode(node.itemTemplate, `${key}-${index}`))}</div>
     if (componentType === 'TEXT') return <div key={key} className="schema-preview-text" style={{ ...typography[style.typography] || typography.descriptionDefaultRegular, color: style.color || '#222', fontWeight: style.fontWeight, fontStyle: 'italic', opacity: .85, ...boxStyle(modifier) }}>{`{${node.field || 'text'}}`}</div>
-    if (componentType === 'ICON' || componentType === 'IMAGE') return <img key={key} className="schema-preview-image" src="/assets/widget/template_image.png" alt={node.field || 'image'} style={{ width: componentType === 'ICON' ? node.iconSize || 24 : '100%', height: componentType === 'ICON' ? node.iconSize || 24 : 80, objectFit: 'cover', ...boxStyle(modifier) }} />
+    if (componentType === 'ICON' || componentType === 'IMAGE') return <img key={key} className="schema-preview-image" src={IMAGE_PLACEHOLDER} alt={node.field || 'image'} style={{ width: componentType === 'ICON' ? node.iconSize || 24 : '100%', height: componentType === 'ICON' ? node.iconSize || 24 : 80, objectFit: 'cover', ...boxStyle(modifier) }} />
     if (componentType === 'CTA_BUTTON') return <PreviewButton key={key} title="Action" type="primary" style={modifier} />
     if (componentType === 'TAG') return <PreviewTag key={key} value={`{${node.field || 'tag'}}`} type={style.tagType} />
   }
@@ -119,7 +124,7 @@ function renderPreviewNode(rawNode: any, key?: string | number, selectedNodeId?:
   if (node.type === undefined && (node.layout || node.children)) return <div key={key}>{renderPreviewNode({ type: 'container', property: { ...modifier, layout: node.layout, spacing: modifier.spacing }, value: { children: node.children }, style: modifier }, key)}</div>
   if (node.body || node.footer || node.header) return <div key={key} className="schema-preview-sections">{['header', 'body', 'footer'].map((section) => node[section] ? renderPreviewNode(node[section], `${key}-${section}`) : null)}</div>
   if (node.type === 'text') return <div key={key} className="schema-preview-text" style={{ ...(typography[property.typography] || typography.descriptionDefaultRegular), color: property.color || '#222', textAlign: property.textAlignment || node.textAlignment, ...(property.lineLimit ? { display: '-webkit-box', WebkitLineClamp: property.lineLimit, WebkitBoxOrient: 'vertical', overflow: 'hidden' } : {}), ...boxStyle({ ...style, width: node.width ?? style.width, height: node.height ?? style.height }) }}>{typeof node.value === 'string' ? node.value : ''}</div>
-  if (node.type === 'image') return <img key={key} className="schema-preview-image" src={node.url || (typeof node.value === 'string' && /^(https?:|data:|\/\/)/i.test(node.value) ? node.value : '/assets/widget/template_image.png')} onError={(event) => { event.currentTarget.onerror = null; event.currentTarget.src = '/assets/widget/template_image.png' }} alt="" style={{ width: node.width || style.width || 48, height: node.height || style.height || 48, aspectRatio: property.aspectRatio, objectFit: (node.contentMode || property.contentMode) === 'fill' ? 'cover' : (node.contentMode || property.contentMode) === 'center' ? 'none' : 'contain', background: property.tintColor || '#eee', flexShrink: 0, ...boxStyle({ ...style, width: node.width ?? style.width, height: node.height ?? style.height, border: style.border || node.border }) }} />
+  if (node.type === 'image') return <SDUIPreviewImage key={key} src={node.url || (typeof node.value === 'string' && /^(https?:|data:|\/\/)/i.test(node.value) ? node.value : IMAGE_PLACEHOLDER)} alt="" style={{ width: node.width || style.width || 48, height: node.height || style.height || 48, aspectRatio: property.aspectRatio, objectFit: (node.contentMode || property.contentMode) === 'fill' ? 'cover' : (node.contentMode || property.contentMode) === 'center' ? 'none' : 'contain', background: property.tintColor || '#eee', flexShrink: 0, ...boxStyle({ ...style, width: node.width ?? style.width, height: node.height ?? style.height, border: style.border || node.border }) }} />
   if (node.type === 'button') return <PreviewButton key={key} title={node.title || value.title || 'Button'} type={node.buttonType || value.type || property.type || 'primary'} style={{ ...property, ...style }} iconLeft={node.iconLeft || value.iconLeft} iconRight={node.iconRight || value.iconRight} />
   if (node.type === 'tag') return <PreviewTag key={key} value={typeof node.value === 'string' ? node.value : 'TAG'} type={property.tagType} style={property} />
   if (node.type === 'spacer') return <div key={key} style={{ flex: 1, minWidth: property.minLength, minHeight: property.minLength }} />
@@ -128,7 +133,7 @@ function renderPreviewNode(rawNode: any, key?: string | number, selectedNodeId?:
 
 function PreviewButton({ title, type, style, iconLeft, iconRight }: { title: string; type: string; style?: any; iconLeft?: string; iconRight?: string }) {
   const colors: Record<string, CSSProperties> = { primary: { background: '#a50064', color: '#fff', borderColor: '#a50064' }, secondary: { background: '#f0f0f3', color: '#333', borderColor: '#f0f0f3' }, tonal: { background: '#fce4f1', color: '#a50064', borderColor: '#fce4f1' }, outline: { background: 'transparent', color: style?.color || '#a50064', borderColor: style?.color || '#a50064' }, danger: { background: '#e53935', color: '#fff', borderColor: '#e53935' }, text: { background: 'transparent', color: style?.color || '#a50064', borderColor: 'transparent' }, disabled: { background: '#eaeaea', color: '#aaa', borderColor: '#eaeaea' } }
-  return <button disabled={type === 'disabled'} className="schema-preview-button" style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '7px 14px', borderRadius: 8, fontSize: 12, fontWeight: 600, border: '1px solid transparent', flexShrink: 0, ...(colors[type] || colors.primary) }}>{iconLeft && <img src={iconLeft} alt="" width="14" height="14" />}{title}{iconRight && <img src={iconRight} alt="" width="14" height="14" />}</button>
+  return <button disabled={type === 'disabled'} className="schema-preview-button" style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '7px 14px', borderRadius: 8, fontSize: 12, fontWeight: 600, border: '1px solid transparent', flexShrink: 0, ...(colors[type] || colors.primary), justifyContent: 'center', ...boxStyle(style) }}>{iconLeft && <img src={iconLeft} alt="" width="14" height="14" />}{title}{iconRight && <img src={iconRight} alt="" width="14" height="14" />}</button>
 }
 
 function PreviewTag({ value, type, style }: { value: string; type?: string; style?: any }) {
@@ -160,7 +165,7 @@ function SchemaTreeNode({ node, selected, onSelect }: { node: BuilderNode; selec
 const countBuilderNodes = (node: BuilderNode): number => 1 + (node.children || []).reduce((total, child) => total + countBuilderNodes(child), 0)
 
 function normalizeBuilderTree(tree: any): BuilderNode | null {
-  const root = unwrapSchema(tree)
+  const root = unwrapSchema(resolveSDUIDesignTokens(tree))
   if (!root || typeof root !== 'object' || !['container', 'text', 'image', 'button', 'tag', 'spacer'].includes(root.type)) return null
   let nextId = 1
   const convert = (node: any): BuilderNode => {
@@ -187,7 +192,7 @@ function BuilderInspector({ node, onField, onStyle, onProperty, onApplyToAll }: 
 }
 
 export default function SDUIPage() {
-  const [activeTab, setActiveTab] = useState<'builder' | 'templates' | 'document'>('templates')
+  const [activeTab, setActiveTab] = useState<'builder' | 'templates' | 'document' | 'migration'>('templates')
   const [status, setStatus] = useState('')
   const [schemaName, setSchemaName] = useState('Untitled schema')
   const [editingSchema, setEditingSchema] = useState<SavedSchema | null>(null)
@@ -213,9 +218,15 @@ export default function SDUIPage() {
   const [showQr, setShowQr] = useState(false)
   const [qrGenerating, setQrGenerating] = useState(false)
 
+  const [copyFeedback, setCopyFeedback] = useState('')
+  useEffect(() => {
+    if (!copyFeedback) return
+    const timer = window.setTimeout(() => setCopyFeedback(''), 4000)
+    return () => window.clearTimeout(timer)
+  }, [copyFeedback])
   const copy = async (value: string, label: string) => {
-    try { await navigator.clipboard.writeText(value); setStatus(label) }
-    catch { setStatus('Could not copy. Download the JSON instead.') }
+    try { await copyText(value); setStatus(label); setCopyFeedback('Đã sao chép!') }
+    catch { const message = 'Không thể sao chép. Hãy dùng Download để tải JSON.'; setStatus(message); setCopyFeedback(message) }
   }
   const download = (value: string, name: string) => {
     const link = document.createElement('a')
@@ -226,10 +237,10 @@ export default function SDUIPage() {
   const findBuilderNode = (node: BuilderNode, id: number): BuilderNode | null => node.id === id ? node : (node.children || []).reduce<BuilderNode | null>((found, child) => found || findBuilderNode(child, id), null)
   const updateBuilderTree = (node: BuilderNode, id: number, update: (target: BuilderNode) => BuilderNode): BuilderNode => node.id === id ? update(node) : { ...node, children: node.children?.map((child) => updateBuilderTree(child, id, update)) }
   const toSchemaNode = (node: BuilderNode): any => ({ ...(node.source || {}), type: node.type, style: { ...(node.nativeStyle || {}), ...(node.bg ? { backgroundColor: node.bg } : {}), ...(node.padding != null ? { padding: typeof node.padding === 'number' ? { all: node.padding } : node.padding } : {}), ...(node.radius != null ? { cornerRadius: node.radius } : {}), ...(node.width != null ? { width: node.width } : {}), ...(node.height != null ? { height: node.height } : {}), ...(node.border ? { border: node.border } : {}), ...(node.fillMaxWidth ? { fillMaxWidth: true } : {}), ...(node.fillMaxHeight ? { fillMaxHeight: true } : {}) }, property: { ...(node.nativeProperty || {}), ...(node.layout ? { layout: node.layout } : {}), ...(node.spacing != null ? { spacing: node.spacing } : {}), ...(node.alignment ? { alignment: node.alignment } : {}), ...(node.textAlignment ? { textAlignment: node.textAlignment } : {}), ...(node.contentMode ? { contentMode: node.contentMode } : {}), ...(node.type === 'button' ? { type: undefined, ctaType: node.ctaType || node.nativeProperty?.ctaType || 'BUTTON' } : {}), id: node.name }, modifier: { ...(node.source?.modifier || {}), ...(node.weight != null ? { weight: node.weight } : {}) }, value: node.type === 'container' ? { ...(node.source?.value && typeof node.source.value === 'object' ? node.source.value : {}), children: (node.children || []).map(toSchemaNode) } : node.type === 'image' ? node.url || '' : node.type === 'button' ? { ...(node.source?.value && typeof node.source.value === 'object' ? node.source.value : {}), title: node.title || 'Button', type: node.buttonType || 'primary', ...(node.iconLeft ? { iconLeft: node.iconLeft } : {}), ...(node.iconRight ? { iconRight: node.iconRight } : {}) } : node.value || '' })
-  const generatedSchema = { type: 'template_widget', templateType: 'SDUI_WIDGET', data: [toSchemaNode(builderRoot)] }
+  const generatedSchema = resolveExportAssets({ type: 'template_widget', templateType: 'SDUI_WIDGET', data: [toSchemaNode(builderRoot)] }, import.meta.env.VITE_PUBLIC_ASSET_URL || window.location.origin)
   const builderSchema = JSON.stringify(generatedSchema, null, 2)
   const templateJsonUrl = editingSchema?.id
-    ? `${API_BASE_URL.replace(/\/+$/, '')}/cornerstone-package/sdui/templates/${encodeURIComponent(editingSchema.id)}/json`
+    ? new URL(`${API_BASE_URL.replace(/\/+$/, '')}/cornerstone-package/sdui/templates/${encodeURIComponent(editingSchema.id)}/json`, window.location.origin).href
     : ''
   const generateQr = async () => {
     if (!templateJsonUrl) { setStatus('Save this template before generating its QR code.'); return }
@@ -249,7 +260,7 @@ export default function SDUIPage() {
     link.download = `${schemaName.trim().replace(/[^a-z0-9_-]+/gi, '-') || 'sdui-template'}-qr.png`
     link.click()
   }
-  const copyBuilderSchema = () => { setBuilderJsonInput(builderSchema); copy(builderSchema, 'Builder JSON copied') }
+  const copyBuilderSchema = () => { void copy(builderSchema, 'Builder JSON copied') }
   const importBuilder = () => {
     try { const parsed = JSON.parse(builderJsonInput); const imported = normalizeBuilderTree(parsed); if (!imported) throw new Error('invalid'); setNativePreviewJson(Array.isArray(parsed) ? parsed : [parsed]); setBuilderRoot(imported); setSelectedNode(imported.id); setExpandedNodes(new Set([imported.id])); setStatus('Builder imported and preview updated') } catch { setStatus('Builder import expects a valid SDUI tree') }
   }
@@ -461,7 +472,16 @@ export default function SDUIPage() {
         <button className={activeTab === 'templates' ? 'active' : ''} onClick={() => setActiveTab('templates')}>Schema library</button>
         <button className={activeTab === 'builder' ? 'active' : ''} onClick={() => setActiveTab('builder')}>Editor {dirty && baseline ? '•' : ''}</button>
         <button className={activeTab === 'document' ? 'active' : ''} onClick={() => setActiveTab('document')}>Document</button>
+        <button className={activeTab === 'migration' ? 'active' : ''} onClick={() => setActiveTab('migration')}>Figma migration</button>
       </nav>
+      {activeTab === 'migration' && <FigmaMigration onImport={result => {
+        const tree = normalizeBuilderTree(result.template)
+        if (!tree || !canReplaceDraft()) return
+        setBuilderRoot(tree); setSchemaName(result.name); setEditingSchema(null); setBaseline('')
+        setNativePreviewJson([result.template]); setSelectedNode(tree.id); setExpandedNodes(new Set([tree.id]))
+        setBuilderJsonInput(''); setPreviewWidth(360); setActiveTab('builder')
+        setStatus(`Figma migrated. ${result.warnings.length} warnings reviewed. Check preview before saving.`)
+      }} />}
       {activeTab === 'document' && <SDUIDocumentation />}
       {status && <div className="sdui-feedback" role="status" aria-live="polite">{status}</div>}
       {activeTab === 'templates' && <section className="sdui-card sdui-wide-card">
@@ -499,7 +519,8 @@ export default function SDUIPage() {
               <p className="native-preview-hint">Click a component to edit its properties. Visual fields update here immediately; actions and feature codes are reflected in Generated schema.</p>
             </section>
             <section className="sdui-card sdui-generated-panel">
-              <div className="sdui-generated-header"><div><div className="sdui-card-title">Generated schema <span>LIVE OUTPUT</span></div><p className="sdui-muted">Inspector changes are serialized here before saving.</p></div><div className="preview-actions"><button className="sdui-quiet" onClick={copyBuilderSchema}>Copy</button><button className="sdui-quiet" onClick={() => download(builderSchema, 'sdui-schema.json')}>Download</button><button className="sdui-quiet" disabled={!editingSchema?.id || dirty || qrGenerating} title={!editingSchema?.id ? 'Save the template first' : dirty ? 'Save changes before generating QR' : 'Generate QR for the JSON endpoint'} onClick={() => void generateQr()}>{qrGenerating ? 'Generating…' : 'QR code'}</button><button className="sdui-native-export" onClick={downloadNativeMockData}>Export Native</button></div></div>
+              <div className="sdui-generated-header"><div><div className="sdui-card-title">Generated schema <span>LIVE OUTPUT</span></div><p className="sdui-muted">Inspector changes are serialized here before saving.</p></div><div className="preview-actions"><button type="button" className="sdui-quiet" onClick={copyBuilderSchema}>Copy</button><button className="sdui-quiet" onClick={() => download(builderSchema, 'sdui-schema.json')}>Download</button><button className="sdui-quiet" disabled={!editingSchema?.id || dirty || qrGenerating} title={!editingSchema?.id ? 'Save the template first' : dirty ? 'Save changes before generating QR' : 'Generate QR for the JSON endpoint'} onClick={() => void generateQr()}>{qrGenerating ? 'Generating…' : 'QR code'}</button><button className="sdui-native-export" onClick={downloadNativeMockData}>Export Native</button></div></div>
+              {copyFeedback && <p role="status" aria-live="polite" className="sdui-copy-feedback">{copyFeedback}</p>}
               <div className="sdui-output-tabs" role="tablist" aria-label="Generated schema format"><button role="tab" aria-selected={outputView === 'tree'} className={outputView === 'tree' ? 'active' : ''} onClick={() => setOutputView('tree')}>Component tree</button><button role="tab" aria-selected={outputView === 'json'} className={outputView === 'json' ? 'active' : ''} onClick={() => setOutputView('json')}>Raw JSON</button></div>
               {outputView === 'tree' ? <div className="schema-component-tree"><div className="schema-tree-meta"><span>template_widget</span><span>SDUI_WIDGET</span><span>{countBuilderNodes(builderRoot)} components</span></div><SchemaTreeNode node={builderRoot} selected={selectedNode} onSelect={selectBuilderNode} /></div> : <pre className="builder-schema builder-schema-expanded">{builderSchema}</pre>}
             </section>
@@ -507,7 +528,7 @@ export default function SDUIPage() {
           <BuilderInspector node={selectedBuilderNode} onField={setBuilderField} onStyle={setBuilderStyle} onProperty={setBuilderProperty} onApplyToAll={applySelectedAppearanceToAll} />
         </fieldset>
       </>}
-      {showQr && <div className="sdui-modal-backdrop" role="presentation" onMouseDown={event => { if (event.target === event.currentTarget) setShowQr(false) }}><section className="sdui-qr-modal" role="dialog" aria-modal="true" aria-labelledby="sdui-qr-title"><button className="sdui-modal-close" aria-label="Close QR dialog" onClick={() => setShowQr(false)}>×</button><div><span className="sdui-kicker">Live template JSON</span><h2 id="sdui-qr-title">{schemaName}</h2><p>Scan to open the latest saved SDUI JSON from the Templates API.</p></div><div className="sdui-qr-image">{qrDataUrl && <img src={qrDataUrl} alt={`QR code for ${schemaName}`} />}</div><code className="sdui-qr-url">{templateJsonUrl}</code><div className="sdui-qr-actions"><button className="sdui-quiet" onClick={() => void copy(templateJsonUrl, 'QR URL copied')}>Copy URL</button><button className="sdui-primary" onClick={downloadQr}>Download PNG</button></div></section></div>}
+      {showQr && <div className="sdui-modal-backdrop" role="presentation" onMouseDown={event => { if (event.target === event.currentTarget) setShowQr(false) }}><section className="sdui-qr-modal" role="dialog" aria-modal="true" aria-labelledby="sdui-qr-title"><button className="sdui-modal-close" aria-label="Close QR dialog" onClick={() => setShowQr(false)}>×</button><div><span className="sdui-kicker">Live template JSON</span><h2 id="sdui-qr-title">{schemaName}</h2><p>Scan to open the latest saved SDUI JSON from the Templates API.</p>{templateJsonUrl && ['localhost', '127.0.0.1', '[::1]'].includes(new URL(templateJsonUrl).hostname) && <p>Để quét từ điện thoại, hãy mở tool bằng IP LAN hoặc domain tunnel rồi tạo lại QR. localhost chỉ truy cập được trên máy đang chạy tool.</p>}</div><div className="sdui-qr-image">{qrDataUrl && <img src={qrDataUrl} alt={`QR code for ${schemaName}`} />}</div>{copyFeedback && <p role="status">{copyFeedback}</p>}<code className="sdui-qr-url">{templateJsonUrl}</code><div className="sdui-qr-actions"><button className="sdui-quiet" onClick={() => void copy(templateJsonUrl, 'QR URL copied')}>Copy URL</button><button className="sdui-primary" onClick={downloadQr}>Download PNG</button></div></section></div>}
     </main>
   )
 }

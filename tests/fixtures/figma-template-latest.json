@@ -1,0 +1,474 @@
+{
+  "meta": {
+    "screenName": "TemplateScreen",
+    "version": "1.0.0",
+    "description": "https://www.figma.com/design/3hdK9leWpwUP4fQJ7Po9qu/Template?node-id=7008-1830",
+    "root": true
+  },
+  "components": [
+    {
+      "type": "DecentralizeTagBaseHubPromotion",
+      "figma": {
+        "componentSetKey": "12f230a78ecf20a75d2ff19d7dc0ee342b19d51a"
+      },
+      "props": {
+        "type": "string",
+        "viTraSau": "string"
+      },
+      "styles": {
+        "backgroundColor": "Colors.black_03",
+        "borderRadius": "Radius.XS",
+        "overflow": "hidden",
+        "paddingLeft": "Spacing.XXS",
+        "paddingRight": "Spacing.XXS",
+        "paddingTop": 1,
+        "paddingBottom": 1,
+        "gap": "Spacing.XXS",
+        "flexDirection": "row",
+        "alignItems": "center",
+        "alignSelf": "flex-start"
+      },
+      "children": [
+        {
+          "type": "Text",
+          "props": {
+            "typography": "label_xs_medium",
+            "children": "{viTraSau}",
+            "color": "Colors.black_14"
+          }
+        }
+      ]
+    },
+    {
+      "type": "ActionBaseNewHubPromotion",
+      "figma": {
+        "componentSetKey": "b340d53bb7c1758aa3409209e50ac41adb6295a9"
+      },
+      "props": {},
+      "styles": {
+        "gap": "Spacing.S",
+        "flexDirection": "row",
+        "alignItems": "center",
+        "justifyContent": "flex-end",
+        "alignSelf": "stretch"
+      },
+      "children": [
+        {
+          "type": "Button",
+          "props": {
+            "title": "Làm nhiệm vụ",
+            "size": "small",
+            "type": "outline",
+            "full": false
+          }
+        }
+      ]
+    }
+  ],
+  "overlays": {},
+  "header": {
+    "type": "Header",
+    "props": {
+      "useBack": false,
+      "headerType": "none"
+    }
+  },
+  "body": {
+    "scrollable": true,
+    "style": {
+      "backgroundColor": "Colors.black_01",
+      "borderRadius": "Radius.M",
+      "paddingLeft": "Spacing.M",
+      "paddingRight": "Spacing.M",
+      "paddingTop": "Spacing.M",
+      "paddingBottom": "Spacing.M"
+    },
+    "children": [
+      {
+        "type": "Title",
+        "props": {
+          "description": "Mô tả ngắn",
+          "title": "Card Title",
+          "size": "medium",
+          "showRightAction": true,
+          "type": "card",
+          "useMargin": false
+        },
+        "styles": {
+          "alignSelf": "stretch"
+        }
+      },
+      {
+        "type": "ScrollView",
+        "props": {
+          "horizontal": true,
+          "showsHorizontalScrollIndicator": false,
+          "contentContainerStyle": {
+            "gap": "Spacing.S",
+            "flexDirection": "row"
+          }
+        },
+        "children": [
+          {
+            "type": "View",
+            "styles": {
+              "backgroundColor": "Colors.black_01",
+              "borderColor": "Colors.black_04",
+              "borderWidth": 1,
+              "borderRadius": "Radius.M",
+              "paddingLeft": "Spacing.S",
+              "paddingRight": "Spacing.S",
+              "paddingTop": "Spacing.S",
+              "paddingBottom": "Spacing.S",
+              "gap": "Spacing.S",
+              "width": 140,
+              "height": 138
+            },
+            "children": [
+              {
+                "type": "View",
+                "styles": {
+                  "gap": "Spacing.XS",
+                  "alignSelf": "stretch",
+                  "height": 86
+                },
+                "children": [
+                  {
+                    "type": "View",
+                    "styles": {
+                      "gap": "Spacing.XS",
+                      "flexDirection": "row",
+                      "alignItems": "center",
+                      "alignSelf": "stretch"
+                    },
+                    "children": [
+                      {
+                        "type": "Image",
+                        "props": {
+                          "source": {
+                            "uri": "/api/projects/b6b2d70a-b169-41d2-949c-d7c85c0d8adc/files/designs/assets/fig-7bbba84d073e844c.png"
+                          }
+                        },
+                        "styles": {
+                          "width": 28,
+                          "height": 28
+                        }
+                      },
+                      {
+                        "type": "Text",
+                        "props": {
+                          "typography": "label_s_medium",
+                          "children": "Tàu hoả",
+                          "numberOfLines": 1,
+                          "ellipsizeMode": "tail",
+                          "color": "Colors.black_15"
+                        },
+                        "styles": {
+                          "flex": 1
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "type": "View",
+                    "styles": {
+                      "alignSelf": "stretch"
+                    },
+                    "children": [
+                      {
+                        "type": "Text",
+                        "props": {
+                          "typography": "action_s_bold",
+                          "children": "Mua 2 tặng 1",
+                          "numberOfLines": 1,
+                          "ellipsizeMode": "tail",
+                          "color": "Colors.black_17"
+                        },
+                        "styles": {
+                          "alignSelf": "stretch",
+                          "textAlignVertical": "center"
+                        }
+                      },
+                      {
+                        "type": "Text",
+                        "props": {
+                          "typography": "description_xs_regular",
+                          "children": "Khi đặt vé về miền Tây",
+                          "numberOfLines": 1,
+                          "ellipsizeMode": "tail",
+                          "color": "Colors.black_12"
+                        },
+                        "styles": {
+                          "alignSelf": "stretch"
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "type": "DecentralizeTagBaseHubPromotion",
+                    "props": {
+                      "type": "Ví trả sau",
+                      "viTraSau": "Ví trả sau"
+                    },
+                    "figma": {
+                      "componentSetKey": "12f230a78ecf20a75d2ff19d7dc0ee342b19d51a"
+                    }
+                  }
+                ]
+              },
+              {
+                "type": "ActionBaseNewHubPromotion",
+                "props": {},
+                "figma": {
+                  "componentSetKey": "b340d53bb7c1758aa3409209e50ac41adb6295a9"
+                }
+              }
+            ]
+          },
+          {
+            "type": "View",
+            "styles": {
+              "backgroundColor": "Colors.black_01",
+              "borderColor": "Colors.black_04",
+              "borderWidth": 1,
+              "borderRadius": "Radius.M",
+              "paddingLeft": "Spacing.S",
+              "paddingRight": "Spacing.S",
+              "paddingTop": "Spacing.S",
+              "paddingBottom": "Spacing.S",
+              "gap": "Spacing.S",
+              "width": 140,
+              "height": 138
+            },
+            "children": [
+              {
+                "type": "View",
+                "styles": {
+                  "gap": "Spacing.XS",
+                  "alignSelf": "stretch",
+                  "height": 86
+                },
+                "children": [
+                  {
+                    "type": "View",
+                    "styles": {
+                      "gap": "Spacing.XS",
+                      "flexDirection": "row",
+                      "alignItems": "center",
+                      "alignSelf": "stretch"
+                    },
+                    "children": [
+                      {
+                        "type": "Image",
+                        "props": {
+                          "source": {
+                            "uri": "/api/projects/b6b2d70a-b169-41d2-949c-d7c85c0d8adc/files/designs/assets/fig-7bbba84d073e844c.png"
+                          }
+                        },
+                        "styles": {
+                          "width": 28,
+                          "height": 28
+                        }
+                      },
+                      {
+                        "type": "Text",
+                        "props": {
+                          "typography": "label_s_medium",
+                          "children": "Tàu hoả",
+                          "numberOfLines": 1,
+                          "ellipsizeMode": "tail",
+                          "color": "Colors.black_15"
+                        },
+                        "styles": {
+                          "flex": 1
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "type": "View",
+                    "styles": {
+                      "alignSelf": "stretch"
+                    },
+                    "children": [
+                      {
+                        "type": "Text",
+                        "props": {
+                          "typography": "action_s_bold",
+                          "children": "Giảm 50%",
+                          "numberOfLines": 1,
+                          "ellipsizeMode": "tail",
+                          "color": "Colors.black_17"
+                        },
+                        "styles": {
+                          "alignSelf": "stretch",
+                          "textAlignVertical": "center"
+                        }
+                      },
+                      {
+                        "type": "Text",
+                        "props": {
+                          "typography": "description_xs_regular",
+                          "children": "Áp dụng mọi hoá đơn",
+                          "numberOfLines": 1,
+                          "ellipsizeMode": "tail",
+                          "color": "Colors.black_12"
+                        },
+                        "styles": {
+                          "alignSelf": "stretch"
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "type": "DecentralizeTagBaseHubPromotion",
+                    "props": {
+                      "type": "Thẻ quốc tế",
+                      "viTraSau": "Thẻ quốc tế"
+                    },
+                    "figma": {
+                      "componentSetKey": "12f230a78ecf20a75d2ff19d7dc0ee342b19d51a"
+                    }
+                  }
+                ]
+              },
+              {
+                "type": "ActionBaseNewHubPromotion",
+                "props": {},
+                "figma": {
+                  "componentSetKey": "b340d53bb7c1758aa3409209e50ac41adb6295a9"
+                }
+              }
+            ]
+          },
+          {
+            "type": "View",
+            "styles": {
+              "backgroundColor": "Colors.black_01",
+              "borderColor": "Colors.black_04",
+              "borderWidth": 1,
+              "borderRadius": "Radius.M",
+              "paddingLeft": "Spacing.S",
+              "paddingRight": "Spacing.S",
+              "paddingTop": "Spacing.S",
+              "paddingBottom": "Spacing.S",
+              "gap": "Spacing.S",
+              "width": 140,
+              "height": 138
+            },
+            "children": [
+              {
+                "type": "View",
+                "styles": {
+                  "gap": "Spacing.XS",
+                  "alignSelf": "stretch",
+                  "height": 86
+                },
+                "children": [
+                  {
+                    "type": "View",
+                    "styles": {
+                      "gap": "Spacing.XS",
+                      "flexDirection": "row",
+                      "alignItems": "center",
+                      "alignSelf": "stretch"
+                    },
+                    "children": [
+                      {
+                        "type": "Image",
+                        "props": {
+                          "source": {
+                            "uri": "/api/projects/b6b2d70a-b169-41d2-949c-d7c85c0d8adc/files/designs/assets/fig-6a3805394ae2b82c.png"
+                          }
+                        },
+                        "styles": {
+                          "width": 28,
+                          "height": 28
+                        }
+                      },
+                      {
+                        "type": "Text",
+                        "props": {
+                          "typography": "label_s_medium",
+                          "children": "Quỹ nhóm",
+                          "numberOfLines": 1,
+                          "ellipsizeMode": "tail",
+                          "color": "Colors.black_15"
+                        },
+                        "styles": {
+                          "flex": 1
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "type": "View",
+                    "styles": {
+                      "alignSelf": "stretch"
+                    },
+                    "children": [
+                      {
+                        "type": "Text",
+                        "props": {
+                          "typography": "action_s_bold",
+                          "children": "Hoàn 100K",
+                          "numberOfLines": 1,
+                          "ellipsizeMode": "tail",
+                          "color": "Colors.black_17"
+                        },
+                        "styles": {
+                          "alignSelf": "stretch",
+                          "textAlignVertical": "center"
+                        }
+                      },
+                      {
+                        "type": "Text",
+                        "props": {
+                          "typography": "description_xs_regular",
+                          "children": "Khi mua bằng quỹ nhóm",
+                          "numberOfLines": 1,
+                          "ellipsizeMode": "tail",
+                          "color": "Colors.black_12"
+                        },
+                        "styles": {
+                          "alignSelf": "stretch"
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "type": "DecentralizeTagBaseHubPromotion",
+                    "props": {
+                      "type": "Tại cửa hàng",
+                      "viTraSau": "Tại cửa hàng"
+                    },
+                    "figma": {
+                      "componentSetKey": "12f230a78ecf20a75d2ff19d7dc0ee342b19d51a"
+                    }
+                  }
+                ]
+              },
+              {
+                "type": "ActionBaseNewHubPromotion",
+                "props": {},
+                "figma": {
+                  "componentSetKey": "b340d53bb7c1758aa3409209e50ac41adb6295a9"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "footer": null,
+  "tabs": null,
+  "tracking": {
+    "events": []
+  },
+  "localization": {
+    "vi": {},
+    "en": {}
+  },
+  "actions": {}
+}

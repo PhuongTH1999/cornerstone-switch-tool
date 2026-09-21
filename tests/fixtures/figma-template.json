@@ -1,0 +1,276 @@
+{
+  "meta": {
+    "screenName": "TemplateScreen",
+    "version": "1.0.0",
+    "description": "https://www.figma.com/design/3hdK9leWpwUP4fQJ7Po9qu/Template?node-id=7131-41023",
+    "root": true
+  },
+  "components": [
+    {
+      "type": "NoneVerticalVoucherNewHubPromotion",
+      "figma": {
+        "componentSetKey": "d1a9a2fef1846085f852f913495a9558ab728e2a"
+      },
+      "props": {},
+      "styles": {
+        "backgroundColor": "Colors.black_01",
+        "borderColor": "Colors.black_04",
+        "borderWidth": 1,
+        "borderRadius": "Radius.M",
+        "paddingLeft": "Spacing.S",
+        "paddingRight": "Spacing.S",
+        "paddingTop": "Spacing.S",
+        "paddingBottom": "Spacing.S",
+        "gap": "Spacing.S",
+        "flexDirection": "column"
+      },
+      "children": [
+        {
+          "type": "View",
+          "styles": {
+            "gap": "Spacing.XS",
+            "alignSelf": "stretch",
+            "height": 86
+          },
+          "children": [
+            {
+              "type": "View",
+              "styles": {
+                "gap": "Spacing.XS",
+                "flexDirection": "row",
+                "alignItems": "center",
+                "alignSelf": "stretch"
+              },
+              "children": [
+                {
+                  "type": "Image",
+                  "props": {
+                    "source": {
+                      "uri": "/api/projects/2072a566-8925-4913-a553-8f900b444bdb/files/designs/assets/fig-33e47424cc08887f.png"
+                    }
+                  },
+                  "styles": {
+                    "width": 28,
+                    "height": 28
+                  }
+                },
+                {
+                  "type": "Text",
+                  "props": {
+                    "typography": "label_s_medium",
+                    "children": "Brand/Service",
+                    "numberOfLines": 1,
+                    "ellipsizeMode": "tail",
+                    "color": "Colors.black_15"
+                  },
+                  "styles": {
+                    "flex": 1
+                  }
+                }
+              ]
+            },
+            {
+              "type": "View",
+              "styles": {
+                "alignSelf": "stretch"
+              },
+              "children": [
+                {
+                  "type": "Text",
+                  "props": {
+                    "typography": "action_s_bold",
+                    "children": "Gift prefix",
+                    "numberOfLines": 1,
+                    "ellipsizeMode": "tail",
+                    "color": "Colors.black_17"
+                  },
+                  "styles": {
+                    "alignSelf": "stretch",
+                    "textAlignVertical": "center"
+                  }
+                },
+                {
+                  "type": "Text",
+                  "props": {
+                    "typography": "description_xs_regular",
+                    "children": "Gift suffix",
+                    "numberOfLines": 1,
+                    "ellipsizeMode": "tail",
+                    "color": "Colors.black_12"
+                  },
+                  "styles": {
+                    "alignSelf": "stretch"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "Svg",
+          "props": {
+            "width": 124,
+            "height": 28,
+            "viewBox": "0 0 124 28",
+            "fill": "none"
+          },
+          "children": [
+            {
+              "type": "Path",
+              "props": {
+                "d": "M3.15918 19.7578C2.00684 19.7578 1.46484 19.2158 1.46484 18.0781V16.7012C1.46484 15.9199 1.19629 15.6611 0.390625 15.6611V14.7334C1.19629 14.7334 1.46484 14.4746 1.46484 13.6934V12.3262C1.46484 11.1885 2.00684 10.6465 3.15918 10.6465H3.42773V11.335H3.23242C2.54395 11.335 2.26562 11.6523 2.26562 12.4336V13.9961C2.26562 14.6992 1.91406 15.0654 1.19629 15.1387V15.2559C1.91406 15.3291 2.26562 15.6953 2.26562 16.3984V17.9707C2.26562 18.752 2.54395 19.0693 3.23242 19.0693H3.42773V19.7578H3.15918ZM4.18945 18L5.99121 15.3682L4.16992 12.7363H5.1709L6.4209 14.6943H6.49902L7.73438 12.7363H8.68652L6.89941 15.334L8.71094 18H7.71484L6.46973 16.0127H6.3916L5.1416 18H4.18945ZM9.72168 19.7578H9.45312V19.0693H9.64844C10.3369 19.0693 10.6152 18.752 10.6152 17.9707V16.3984C10.6152 15.6953 10.9668 15.3291 11.6846 15.2559V15.1387C10.9668 15.0654 10.6152 14.6992 10.6152 13.9961V12.4336C10.6152 11.6523 10.3369 11.335 9.64844 11.335H9.45312V10.6465H9.72168C10.874 10.6465 11.416 11.1885 11.416 12.3262V13.6934C11.416 14.4746 11.6846 14.7334 12.4902 14.7334V15.6611C11.6846 15.6611 11.416 15.9199 11.416 16.7012V18.0781C11.416 19.2158 10.874 19.7578 9.72168 19.7578ZM13.7207 18V10.6465H14.5703V15.0361H14.6484L16.9238 12.7363H17.9541L15.6592 14.9482L18.1055 18H17.0361L15.0635 15.5244L14.5703 16.0029V18H13.7207ZM19.1016 18V12.7363H19.9512V13.5371H20.0293C20.2637 12.9707 20.7617 12.6436 21.4502 12.6436C22.1631 12.6436 22.6611 13.0195 22.9053 13.5664H22.9834C23.2666 13.0098 23.8672 12.6436 24.5947 12.6436C25.6689 12.6436 26.2695 13.2588 26.2695 14.3623V18H25.4199V14.5576C25.4199 13.7812 25.0635 13.3955 24.3213 13.3955C23.5889 13.3955 23.1055 13.9473 23.1055 14.6162V18H22.2559V14.4258C22.2559 13.8008 21.8262 13.3955 21.1621 13.3955C20.4736 13.3955 19.9512 13.9961 19.9512 14.7383V18H19.1016Z",
+                "fill": "#C6C6C6"
+              }
+            },
+            {
+              "type": "Path",
+              "props": {
+                "d": "M60 0.5H116C120.142 0.5 123.5 3.85786 123.5 8V20C123.5 24.1421 120.142 27.5 116 27.5H60C55.8579 27.5 52.5 24.1421 52.5 20V8C52.5 3.85786 55.8579 0.5 60 0.5Z",
+                "fill": "white"
+              }
+            },
+            {
+              "type": "Path",
+              "props": {
+                "d": "M60 0.5H116C120.142 0.5 123.5 3.85786 123.5 8V20C123.5 24.1421 120.142 27.5 116 27.5H60C55.8579 27.5 52.5 24.1421 52.5 20V8C52.5 3.85786 55.8579 0.5 60 0.5Z",
+                "stroke": "#EB2F96"
+              }
+            },
+            {
+              "type": "Path",
+              "props": {
+                "d": "M68.6465 18V9.54492H72.3438C73.9844 9.54492 74.9629 10.3477 74.9629 11.6484V11.6602C74.9629 12.5508 74.3008 13.3301 73.4336 13.459V13.5645C74.5527 13.6523 75.3672 14.4902 75.3672 15.5742V15.5859C75.3672 17.0684 74.248 18 72.4434 18H68.6465ZM71.8926 10.8574H70.416V13.0605H71.7461C72.7012 13.0605 73.2227 12.6621 73.2227 11.9648V11.9531C73.2227 11.2676 72.7363 10.8574 71.8926 10.8574ZM71.9512 14.2266H70.416V16.6816H71.9922C73.0117 16.6816 73.5625 16.248 73.5625 15.4453V15.4336C73.5625 14.6484 72.9941 14.2266 71.9512 14.2266ZM78.9297 18.1348C77.4824 18.1348 76.7383 17.2559 76.7383 15.7207V11.5488H78.4492V15.3281C78.4492 16.2422 78.7949 16.7168 79.6035 16.7168C80.4473 16.7168 80.9043 16.1484 80.9043 15.2754V11.5488H82.6152V18H80.9043V17.0039H80.7988C80.5059 17.707 79.8496 18.1348 78.9297 18.1348ZM87.0098 18.0234C85.4395 18.0234 84.8066 17.5137 84.8066 16.2598V12.8379H83.8105V11.5488H84.8066V10.0078H86.5352V11.5488H87.8652V12.8379H86.5352V15.8672C86.5352 16.4473 86.7812 16.7051 87.3613 16.7051C87.584 16.7051 87.7012 16.6934 87.8652 16.6758V17.9473C87.6543 17.9883 87.3379 18.0234 87.0098 18.0234ZM92.0254 18.0234C90.4551 18.0234 89.8223 17.5137 89.8223 16.2598V12.8379H88.8262V11.5488H89.8223V10.0078H91.5508V11.5488H92.8809V12.8379H91.5508V15.8672C91.5508 16.4473 91.7969 16.7051 92.377 16.7051C92.5996 16.7051 92.7168 16.6934 92.8809 16.6758V17.9473C92.6699 17.9883 92.3535 18.0234 92.0254 18.0234ZM97.123 18.1348C95.1367 18.1348 93.9414 16.875 93.9414 14.7773V14.7656C93.9414 12.6855 95.1543 11.4082 97.123 11.4082C99.0918 11.4082 100.305 12.6797 100.305 14.7656V14.7773C100.305 16.8809 99.1094 18.1348 97.123 18.1348ZM97.123 16.793C98.0312 16.793 98.5527 16.0488 98.5527 14.7773V14.7656C98.5527 13.5059 98.0254 12.75 97.123 12.75C96.2148 12.75 95.6934 13.5059 95.6934 14.7656V14.7773C95.6934 16.0488 96.209 16.793 97.123 16.793ZM101.699 18V11.5488H103.41V12.5449H103.516C103.809 11.8477 104.447 11.4082 105.367 11.4082C106.803 11.4082 107.576 12.2871 107.576 13.8281V18H105.865V14.2148C105.865 13.3066 105.49 12.8262 104.682 12.8262C103.891 12.8262 103.41 13.3945 103.41 14.2676V18H101.699Z",
+                "fill": "#EB2F96"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "ActionBaseNewHubPromotion",
+      "figma": {
+        "componentSetKey": "7e5b1b91078771aedf3ead2a2f9c954c5f2bd40b"
+      },
+      "props": {},
+      "styles": {
+        "gap": "Spacing.XS",
+        "flexDirection": "row",
+        "alignItems": "center",
+        "justifyContent": "flex-end",
+        "alignSelf": "stretch"
+      },
+      "children": [
+        {
+          "type": "View",
+          "styles": {
+            "flexDirection": "row",
+            "alignItems": "center",
+            "flex": 1
+          },
+          "children": [
+            {
+              "type": "Text",
+              "props": {
+                "typography": "description_xs_regular",
+                "children": "{x}km",
+                "color": "Colors.black_08"
+              },
+              "styles": {
+                "flex": 1
+              }
+            }
+          ]
+        },
+        {
+          "type": "Button",
+          "props": {
+            "title": "Button",
+            "size": "small",
+            "type": "outline",
+            "full": false
+          }
+        }
+      ]
+    }
+  ],
+  "overlays": {},
+  "header": {
+    "type": "Header",
+    "props": {
+      "useBack": false,
+      "headerType": "none"
+    }
+  },
+  "body": {
+    "scrollable": true,
+    "style": {
+      "backgroundColor": "Colors.black_01",
+      "borderRadius": "Radius.M",
+      "paddingLeft": "Spacing.M",
+      "paddingRight": "Spacing.M",
+      "paddingTop": "Spacing.M",
+      "paddingBottom": "Spacing.M"
+    },
+    "children": [
+      {
+        "type": "Title",
+        "props": {
+          "description": "Mô tả ngắn",
+          "title": "Card Title",
+          "size": "medium",
+          "showRightAction": true,
+          "type": "card",
+          "useMargin": false
+        },
+        "styles": {
+          "alignSelf": "stretch"
+        }
+      },
+      {
+        "type": "ScrollView",
+        "props": {
+          "horizontal": true,
+          "showsHorizontalScrollIndicator": false,
+          "contentContainerStyle": {
+            "gap": "Spacing.S",
+            "flexDirection": "row"
+          }
+        },
+        "children": [
+          {
+            "type": "NoneVerticalVoucherNewHubPromotion",
+            "props": {},
+            "figma": {
+              "componentSetKey": "d1a9a2fef1846085f852f913495a9558ab728e2a"
+            }
+          },
+          {
+            "type": "NoneVerticalVoucherNewHubPromotion",
+            "props": {},
+            "figma": {
+              "componentSetKey": "d1a9a2fef1846085f852f913495a9558ab728e2a"
+            }
+          },
+          {
+            "type": "NoneVerticalVoucherNewHubPromotion",
+            "props": {},
+            "figma": {
+              "componentSetKey": "d1a9a2fef1846085f852f913495a9558ab728e2a"
+            }
+          }
+        ]
+      }
+    ]
+  },
+  "footer": null,
+  "tabs": null,
+  "tracking": {
+    "events": []
+  },
+  "localization": {
+    "vi": {},
+    "en": {}
+  },
+  "actions": {}
+}
