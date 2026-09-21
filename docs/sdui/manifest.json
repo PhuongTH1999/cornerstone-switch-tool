@@ -1,0 +1,41 @@
+{
+  "formatVersion": 1,
+  "components": [
+    {
+      "id": "container",
+      "title": "container",
+      "file": "components/container.md",
+      "documentVersion": "1.0.0"
+    },
+    {
+      "id": "text",
+      "title": "text",
+      "file": "components/text.md",
+      "documentVersion": "1.0.0"
+    },
+    {
+      "id": "image",
+      "title": "image",
+      "file": "components/image.md",
+      "documentVersion": "1.0.0"
+    },
+    {
+      "id": "button",
+      "title": "button",
+      "file": "components/button.md",
+      "documentVersion": "1.0.0"
+    },
+    {
+      "id": "tag",
+      "title": "tag",
+      "file": "components/tag.md",
+      "documentVersion": "1.0.0"
+    },
+    {
+      "id": "spacer",
+      "title": "spacer",
+      "file": "components/spacer.md",
+      "documentVersion": "1.0.0"
+    }
+  ]
+}
