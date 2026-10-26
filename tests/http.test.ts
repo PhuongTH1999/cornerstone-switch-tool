@@ -1,6 +1,6 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { request, apiClient, REQUEST_TIMEOUT_MS } from '../src/lib/http'
+import { request, apiClient, REQUEST_TIMEOUT_MS, REQUEST_MAX_RETRIES } from '../src/lib/http'
 import { getRequestSnapshot, dismissToast } from '../src/lib/requestFeedback'
 
 function clearToasts() {
@@ -49,7 +49,7 @@ test('request feedback, failures and deadlines', async t => {
     assert.equal(getRequestSnapshot().toasts.length, 0)
   })
 
-  await t.test('5s deadline aborts both stalled headers and stalled response body', async () => {
+  await t.test('each 5s deadline retries stalled headers and body up to the limit', async () => {
     let aborted = 0
     globalThis.fetch = async (input, init) => {
       if (input === '/headers') return new Promise<Response>((_resolve, reject) => {
@@ -64,11 +64,64 @@ test('request feedback, failures and deadlines', async t => {
       assert.rejects(request('/headers'), /5 giây/),
       assert.rejects(request('/body'), /5 giây/),
     ])
-    assert.ok(Date.now() - started >= REQUEST_TIMEOUT_MS - 50)
-    assert.equal(aborted, 2)
+    assert.ok(Date.now() - started >= REQUEST_TIMEOUT_MS * (REQUEST_MAX_RETRIES + 1) - 50)
+    assert.equal(aborted, 2 * (REQUEST_MAX_RETRIES + 1))
     assert.equal(getRequestSnapshot().pending, 0)
     assert.equal(getRequestSnapshot().toasts.length, 1)
     clearToasts()
+  })
+
+  await t.test('fetch retries a cold server without clearing loading or showing a toast', async () => {
+    let attempts = 0
+    globalThis.fetch = async (_input, init) => {
+      attempts++
+      assert.equal(getRequestSnapshot().pending, 1)
+      assert.equal(getRequestSnapshot().toasts.length, 0)
+      if (attempts === 1) return new Promise<Response>((_resolve, reject) => {
+        init?.signal?.addEventListener('abort', () => reject(init.signal?.reason))
+      })
+      return new Response('{"ready":true}')
+    }
+    assert.deepEqual(await (await request('/cold-start')).json(), { ready: true })
+    assert.equal(attempts, 2)
+    assert.equal(getRequestSnapshot().pending, 0)
+    assert.equal(getRequestSnapshot().toasts.length, 0)
+  })
+
+  await t.test('Axios retries timeout codes and preserves request data', async () => {
+    let attempts = 0
+    await apiClient.post('/cold-start', { value: 1 }, { adapter: async config => {
+      attempts++
+      assert.equal(config.data, '{"value":1}')
+      assert.equal(getRequestSnapshot().pending, 1)
+      assert.equal(getRequestSnapshot().toasts.length, 0)
+      if (attempts <= REQUEST_MAX_RETRIES) {
+        throw Object.assign(new Error('timeout'), {
+          isAxiosError: true, config, code: attempts === 1 ? 'ECONNABORTED' : 'ETIMEDOUT',
+        })
+      }
+      return { data: {}, status: 200, statusText: 'OK', headers: {}, config }
+    } })
+    assert.equal(attempts, REQUEST_MAX_RETRIES + 1)
+    assert.equal(getRequestSnapshot().pending, 0)
+  })
+
+  await t.test('Axios does not retry non-timeout errors or caller cancellation', async () => {
+    for (const cancel of [false, true]) {
+      let attempts = 0
+      const controller = new AbortController()
+      await assert.rejects(apiClient.get('/failure', { signal: controller.signal, adapter: async config => {
+        attempts++
+        if (cancel) controller.abort()
+        throw Object.assign(new Error('failure'), {
+          isAxiosError: true, config, code: cancel ? 'ECONNABORTED' : 'ERR_NETWORK',
+        })
+      } }))
+      assert.equal(attempts, 1)
+      assert.equal(getRequestSnapshot().pending, 0)
+      assert.equal(getRequestSnapshot().toasts.length, cancel ? 0 : 1)
+      clearToasts()
+    }
   })
 
   await t.test('Axios uses 5s timeout and clears loading on success and failure', async () => {
@@ -78,10 +131,13 @@ test('request feedback, failures and deadlines', async t => {
       return { data: {}, status: 200, statusText: 'OK', headers: {}, config }
     } })
     assert.equal(getRequestSnapshot().pending, 0)
+    let attempts = 0
     await assert.rejects(apiClient.get('/timeout', { adapter: async config => {
+      attempts++
       throw Object.assign(new Error('timeout'), { isAxiosError: true, config, code: 'ECONNABORTED' })
     } }))
     assert.equal(getRequestSnapshot().pending, 0)
-    assert.match(getRequestSnapshot().toasts[0].message, /5 giây/)
+    assert.equal(attempts, REQUEST_MAX_RETRIES + 1)
+    assert.match(getRequestSnapshot().toasts[0].message, /3 lần thử/)
   })
 })

@@ -39,7 +39,7 @@ Preview dùng CSS trên trình duyệt. Màu alpha, typography và kích thướ
 
 ## Lưu ý về validator cũ
 
-Validator/plugin converter trong repository hiện chỉ khai báo 5 type (chưa có tag), layout chưa khai báo scrollColumn và danh sách property/style hẹp hơn editor. Cảnh báo từ validator cũ không phải bảng hỗ trợ đầy đủ của native.
+Validator/plugin converter trong repository hiện chỉ khai báo 5 type (chưa có tag) và danh sách property/style hẹp hơn editor. Layout hợp lệ là `row`, `column`, `scrollRow`; không dùng `scrollColumn` vì native có thể crash.
 
 ## Cách tra cứu
 
@@ -47,4 +47,3 @@ Validator/plugin converter trong repository hiện chỉ khai báo 5 type (chưa
 2. Xem value, các property, style và enum trong ví dụ JSON.
 3. Các block jsonc có comment hoặc dấu ... là minh họa; bỏ comment và thay ... bằng dữ liệu thật trước khi import JSON.
 4. Mục Tracking, onTap, expire_time và ví dụ đầy đủ mô tả các cấu hình bổ sung.
-

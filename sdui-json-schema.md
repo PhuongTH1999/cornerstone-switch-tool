@@ -154,7 +154,7 @@ Tất cả field trong `style` đều optional. Màu là chuỗi hex (`#RRGGBB` 
   "type": "container",
   "style": { ... },
   "property": {
-    "layout": "column",   // "column" (mặc định) | "row" | "scrollColumn" | "scrollRow"
+    "layout": "column",   // "column" (mặc định) | "row" | "scrollRow"
     "spacing": 8,          // number — khoảng cách giữa các con
     "alignment": "center"  // column: "left"/"leading" | "center" | "right"/"trailing"
                            // row:    "top" | "center" | "bottom"/"end"
@@ -165,7 +165,8 @@ Tất cả field trong `style` đều optional. Màu là chuỗi hex (`#RRGGBB` 
 }
 ```
 - `layout` thiếu → mặc định `"column"`.
-- `scrollRow` / `scrollColumn` cho phép cuộn. Trong `scrollRow` nên đặt `style.width` cụ thể cho con (vì chiều ngang vô hạn).
+- `scrollRow` cho phép cuộn ngang. Trong `scrollRow` nên đặt `style.width` cụ thể cho con (vì chiều ngang vô hạn).
+- Không dùng `scrollColumn`: native hiện không hỗ trợ và có thể crash app. Danh sách dọc dùng `column`.
 - Trong `row`: con có `style.fillMaxWidth = true` (hoặc node `spacer`) sẽ giãn chiếm phần trống.
 
 ### 6.2. `text`
@@ -562,7 +563,7 @@ Cả 3 đều là `template_widget` / `SDUI_WIDGET`, `containerType:"widget"` �
 | Zone `type`            | `template_widget`                                                    |
 | Zone `templateType`    | `SDUI_WIDGET`                                                        |
 | Node `type`            | `container`, `text`, `image`, `button`, `tag`, `spacer`             |
-| `container.layout`     | `column`, `row`, `scrollColumn`, `scrollRow`                        |
+| `container.layout`     | `column`, `row`, `scrollRow`                                        |
 | `alignment` (column)   | `left`/`leading`, `center`, `right`/`trailing`                      |
 | `alignment` (row)      | `top`, `center`, `bottom`/`end`                                     |
 | `image.contentMode`    | `fit`, `fill`                                                       |

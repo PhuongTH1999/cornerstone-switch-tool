@@ -1,11 +1,13 @@
-import axios from 'axios'
+import axios, { type InternalAxiosRequestConfig } from 'axios'
 import { beginRequest, notifyRequestError } from './requestFeedback'
 
 export const REQUEST_TIMEOUT_MS = 5000
-const TIMEOUT_MESSAGE = 'Yêu cầu quá thời gian chờ 5 giây. Vui lòng thử lại.'
+export const REQUEST_MAX_RETRIES = 2
+const TIMEOUT_MESSAGE = `Yêu cầu quá thời gian chờ ${REQUEST_TIMEOUT_MS / 1000} giây sau ${REQUEST_MAX_RETRIES + 1} lần thử. Vui lòng thử lại.`
+const isTimeout = (error: { code?: string }) => error.code === 'ECONNABORTED' || error.code === 'ETIMEDOUT'
 export function requestErrorMessage(error: unknown): string {
   if (axios.isAxiosError(error)) {
-    if (error.code === 'ECONNABORTED' || error.code === 'ETIMEDOUT') return TIMEOUT_MESSAGE
+    if (isTimeout(error)) return TIMEOUT_MESSAGE
     if (!error.response) return 'Không thể kết nối máy chủ. Vui lòng kiểm tra kết nối và thử lại.'
     return responseError(error.response.status, error.response.data)
   }
@@ -22,51 +24,70 @@ function responseError(status: number, body: unknown): string {
 }
 
 export const apiClient = axios.create({ timeout: REQUEST_TIMEOUT_MS })
-const completions = new WeakMap<object, () => void>()
+interface RetryConfig extends InternalAxiosRequestConfig {
+  timeoutRetry?: { count: number; finish: () => void }
+}
 apiClient.interceptors.request.use(config => {
-  completions.set(config, beginRequest())
+  const retryConfig = config as RetryConfig
+  retryConfig.timeoutRetry ??= { count: 0, finish: beginRequest() }
   return config
 })
 apiClient.interceptors.response.use(response => {
-  completions.get(response.config)?.()
+  const config = response.config as RetryConfig
+  config.timeoutRetry?.finish()
+  delete config.timeoutRetry
   return response
 }, error => {
-  if (error.config) completions.get(error.config)?.()
-  if (!axios.isCancel(error)) notifyRequestError(requestErrorMessage(error))
+  const config = error.config as RetryConfig | undefined
+  const retry = config?.timeoutRetry
+  const canceled = axios.isCancel(error) || config?.signal?.aborted || config?.cancelToken?.reason
+  if (!canceled && isTimeout(error) && config && retry && retry.count < REQUEST_MAX_RETRIES) {
+    retry.count++
+    return apiClient.request(config)
+  }
+  retry?.finish()
+  if (config) delete config.timeoutRetry
+  if (!canceled) notifyRequestError(requestErrorMessage(error))
   return Promise.reject(error)
 })
 
 /** Buffer the response body so the deadline covers download as well as headers. */
 export async function request(input: string, init: RequestInit = {}): Promise<Response> {
   const finish = beginRequest()
-  const controller = new AbortController()
-  let timedOut = false
-  const abort = () => controller.abort(init.signal?.reason)
-  if (init.signal?.aborted) abort()
-  else init.signal?.addEventListener('abort', abort, { once: true })
-  const timer = setTimeout(() => { timedOut = true; controller.abort() }, REQUEST_TIMEOUT_MS)
   try {
-    const response = await fetch(input, { ...init, signal: controller.signal })
-    const bytes = await response.arrayBuffer()
-    const buffered = new Response([204, 205, 304].includes(response.status) ? null : bytes, {
-      status: response.status, statusText: response.statusText, headers: response.headers,
-    })
-    if (!response.ok) {
-      let body: unknown
-      try { body = JSON.parse(new TextDecoder().decode(bytes)) } catch { /* Non-JSON error response */ }
-      throw new Error(responseError(response.status, body))
+    for (let attempt = 0; ; attempt++) {
+      const controller = new AbortController()
+      let timedOut = false
+      const abort = () => controller.abort(init.signal?.reason)
+      if (init.signal?.aborted) abort()
+      else init.signal?.addEventListener('abort', abort, { once: true })
+      const timer = setTimeout(() => { timedOut = true; controller.abort() }, REQUEST_TIMEOUT_MS)
+      try {
+        const response = await fetch(input, { ...init, signal: controller.signal })
+        const bytes = await response.arrayBuffer()
+        const buffered = new Response([204, 205, 304].includes(response.status) ? null : bytes, {
+          status: response.status, statusText: response.statusText, headers: response.headers,
+        })
+        if (!response.ok) {
+          let body: unknown
+          try { body = JSON.parse(new TextDecoder().decode(bytes)) } catch { /* Non-JSON error response */ }
+          throw new Error(responseError(response.status, body))
+        }
+        return buffered
+      } catch (error) {
+        if (init.signal?.aborted) throw error
+        if (timedOut && attempt < REQUEST_MAX_RETRIES) continue
+        const message = timedOut ? TIMEOUT_MESSAGE : error instanceof TypeError
+          ? 'Không thể kết nối máy chủ. Vui lòng kiểm tra kết nối và thử lại.'
+          : requestErrorMessage(error)
+        notifyRequestError(message)
+        throw new Error(message)
+      } finally {
+        clearTimeout(timer)
+        init.signal?.removeEventListener('abort', abort)
+      }
     }
-    return buffered
-  } catch (error) {
-    if (init.signal?.aborted && !timedOut) throw error
-    const message = timedOut ? TIMEOUT_MESSAGE : error instanceof TypeError
-      ? 'Không thể kết nối máy chủ. Vui lòng kiểm tra kết nối và thử lại.'
-      : requestErrorMessage(error)
-    notifyRequestError(message)
-    throw new Error(message)
   } finally {
-    clearTimeout(timer)
-    init.signal?.removeEventListener('abort', abort)
     finish()
   }
 }

@@ -9,7 +9,7 @@ test('user sample expands repeated references and maps text, layout and SVG warn
   const result = migrateFigmaJson(fixture)
   assert.equal(result.template.templateType, 'SDUI_WIDGET')
   const root = result.template.data[0]
-  assert.equal(root.property.layout, 'scrollColumn')
+  assert.equal(root.property.layout, 'column')
   const cards = (root.value as any).children[1]
   assert.equal(cards.property.layout, 'scrollRow')
   assert.equal(cards.value.children.length, 3)
@@ -40,6 +40,13 @@ test('button is semantic only when source is Button; reports unsupported props',
   assert.equal(button.type, 'button')
   assert.deepEqual(button.value, { title: 'Save', type: 'outline' })
   assert.ok(result.warnings.some(w => w.path.endsWith('.size')))
+})
+
+test('vertical ScrollView never emits unsupported scrollColumn', () => {
+  const result = migrateFigmaJson({ body: { scrollable: true, children: [{ type: 'Text', props: { children: 'Safe' } }] } })
+  const output = JSON.stringify(result.template)
+  assert.equal(result.template.data[0].property.layout, 'column')
+  assert.equal(output.includes('scrollColumn'), false)
 })
 
 

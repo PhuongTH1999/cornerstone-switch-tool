@@ -26,6 +26,14 @@ Cấu hình nằm trong `src/config/api.ts`:
   Giá trị `/api` chỉ sử dụng proxy khi development; production dùng URL AWS mặc định.
 - `VITE_REGISTRY_API_URL`: tùy chọn API cho version/changelog; mặc định dùng API chung.
 - `VITE_GOOGLE_CLIENT_ID`: Google OAuth client ID cho đăng nhập Google.
+- `VITE_MINIAPP_URL`: URL/deep link mở Mini App cho QR. Mặc định dùng
+  `momo://action=marketing&refId=cornerstone_sdui&featureCode=cornerstone_sdui`
+  và thêm `params={"templateId":"..."}`. Nếu URL khác không chứa
+  `{templateId}`, tool tự thêm query param `templateId`. Có thể dùng placeholder
+  trong cấu trúc params riêng, ví dụ `...?params={"templateId":"{templateId}"}`.
+
+Phía Mini App đọc `templateId`, gọi JSON endpoint và validate trước khi render theo
+[luồng SDUI preview](docs/sdui/miniapp-preview.md).
 
 Đặt biến trong `.env.local` hoặc môi trường build của nền tảng deploy. Biến `VITE_*`
 được nhúng vào frontend, không dùng để lưu secrets. Khởi động lại dev server hoặc

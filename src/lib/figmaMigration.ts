@@ -146,7 +146,9 @@ export function migrateFigmaJson(input: unknown, options: MigrationOptions = {})
     if (!['view','scrollview','container'].includes(type) && !definition) warn(path, `Type ${node.type} chưa biết; chuyển thành container và giữ cây con.`)
     const layout = { ...styles, ...object(props.contentContainerStyle) }
     const row = type === 'scrollview' ? !!props.horizontal : layout.flexDirection === 'row'
-    property.layout = type === 'scrollview' ? row ? 'scrollRow' : 'scrollColumn' : row ? 'row' : 'column'
+    // Native SDUI supports horizontal scrolling only. A vertical ScrollView is
+    // represented as a regular column; emitting scrollColumn crashes the app.
+    property.layout = type === 'scrollview' && row ? 'scrollRow' : row ? 'row' : 'column'
     const gap = resolve(layout.gap, `${path}.styles.gap`, true)
     if (gap !== undefined) property.spacing = gap
     if (layout.alignItems) property.alignment = alignment[layout.alignItems] || layout.alignItems

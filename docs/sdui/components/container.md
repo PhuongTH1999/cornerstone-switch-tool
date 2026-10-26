@@ -14,7 +14,7 @@
   "type": "container",
   "style": { ... },
   "property": {
-    "layout": "column",   // "column" (mặc định) | "row" | "scrollColumn" | "scrollRow"
+    "layout": "column",   // "column" (mặc định) | "row" | "scrollRow"
     "spacing": 8,          // number — khoảng cách giữa các con
     "alignment": "center"  // column: "left"/"leading" | "center" | "right"/"trailing"
                            // row:    "top" | "center" | "bottom"/"end"
@@ -25,7 +25,8 @@
 }
 ```
 - `layout` thiếu → mặc định `"column"`.
-- `scrollRow` / `scrollColumn` cho phép cuộn. Trong `scrollRow` nên đặt `style.width` cụ thể cho con (vì chiều ngang vô hạn).
+- `scrollRow` cho phép cuộn ngang. Trong `scrollRow` nên đặt `style.width` cụ thể cho con (vì chiều ngang vô hạn).
+- Không dùng `scrollColumn`: native hiện không hỗ trợ và có thể crash app. Dữ liệu dọc dùng `column`.
 - Trong `row`: con có `style.fillMaxWidth = true` (hoặc node `spacer`) sẽ giãn chiếm phần trống.
 
 ## Style và cấu hình chung
@@ -37,7 +38,7 @@ Các field nội bộ của editor không thuộc JSON contract.
 
 | Runtime | Trạng thái đối chiếu | Ghi chú |
 | --- | --- | --- |
-| TypeScript / Web editor | Đã đối chiếu source hiện tại | Preview hỗ trợ layout hàng/cột/cuộn, spacing, alignment, arrangement. Editor còn xuất modifier.weight. Validator cũ chưa khai báo scrollColumn. |
+| TypeScript / Web editor | Đã đối chiếu source hiện tại | Preview hỗ trợ `row`, `column`, `scrollRow`, spacing, alignment, arrangement. Editor còn xuất modifier.weight. |
 | Kotlin / Android | Chưa xác minh source runtime | Cần bổ sung phiên bản SDK và đường dẫn implementation khi sync. |
 | Swift / iOS | Chưa xác minh source runtime | Cần bổ sung phiên bản SDK và đường dẫn implementation khi sync. |
 

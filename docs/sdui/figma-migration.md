@@ -28,7 +28,7 @@ Token chưa biết bị bỏ field và báo cảnh báo. Asset thiếu dùng `ht
 
 ## Chuyển đổi
 
-- `View` → container; `ScrollView` → scrollRow/scrollColumn.
+- `View` → container; `ScrollView` ngang → `scrollRow`; `ScrollView` dọc → `column` vì native không hỗ trợ `scrollColumn`.
 - Custom component tham chiếu theo componentSetKey hoặc type → mở rộng definition; instance props/styles ghi đè definition.
 - `Text` → text, snake_case typography → token camelCase tương ứng.
 - `Image` → image; `Button` → button; `Tag` → tag; `Spacer` → spacer.
