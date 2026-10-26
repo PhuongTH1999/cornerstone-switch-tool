@@ -1,0 +1,19 @@
+{
+  "checks": "D30 🔎: root column trong feed có child fillMaxHeight",
+  "html": "<div class=\"sdui-canvas sdui-android\" data-platform=\"android\" style=\"width:375px;font-family:-apple-system, &quot;SF Pro Text&quot;, system-ui, sans-serif;display:flex;flex-direction:column;align-items:flex-start;background-color:#F2F2F6;--sdui-tap:rgba(37, 99, 235, 0.18);--sdui-tap-outline:#2563EB;--sdui-selection:#2563EB;--sdui-unconfirmed:#DC2626;--sdui-canvas-border:#DDDDE3\"><div class=\"sdui-node sdui-node-container\" data-sdui-path=\"root\" style=\"box-sizing:border-box;position:relative;display:flex;flex-direction:column;padding:0px 0px 0px 0px;max-width:375px;justify-content:flex-start;align-items:flex-start\"><div class=\"sdui-stack\" data-share=\"0.0\" style=\"display:flex;flex-direction:column;gap:8px;align-items:flex-start;justify-content:flex-start;align-self:stretch;flex:1 1 auto;min-width:0;min-height:0\"><div class=\"sdui-node sdui-node-text\" data-sdui-path=\"root.children[0]\" style=\"box-sizing:border-box;position:relative;display:flex;flex-direction:column;padding:0px 0px 0px 0px;max-width:375px;justify-content:flex-start;align-items:flex-start;flex:0 0 auto\"><div class=\"sdui-drawn sdui-text\" style=\"font-family:-apple-system, &quot;SF Pro Text&quot;, system-ui, sans-serif;font-size:12px;font-weight:400;line-height:18px;color:#303233;text-align:left;white-space:pre-wrap;overflow-wrap:break-word;margin:0;align-self:stretch;flex:1 1 auto;min-width:0;min-height:0\">Trên</div></div><div class=\"sdui-node sdui-node-text sdui-drawn\" data-sdui-path=\"root.children[1]\" style=\"box-sizing:border-box;position:relative;display:flex;flex-direction:column;padding:0px 0px 0px 0px;background-color:#FEF8FC;height:0;max-width:375px;max-height:0;justify-content:flex-start;align-items:flex-start;flex:0 0 auto\"><div class=\"sdui-drawn sdui-text\" style=\"font-family:-apple-system, &quot;SF Pro Text&quot;, system-ui, sans-serif;font-size:12px;font-weight:400;line-height:18px;color:#303233;text-align:left;white-space:pre-wrap;overflow-wrap:break-word;margin:0;align-self:stretch;flex:1 1 auto;min-width:0;min-height:0\">Giữa</div></div><div class=\"sdui-node sdui-node-text\" data-sdui-path=\"root.children[2]\" style=\"box-sizing:border-box;position:relative;display:flex;flex-direction:column;padding:0px 0px 0px 0px;max-width:375px;justify-content:flex-start;align-items:flex-start;flex:0 0 auto\"><div class=\"sdui-drawn sdui-text\" style=\"font-family:-apple-system, &quot;SF Pro Text&quot;, system-ui, sans-serif;font-size:12px;font-weight:400;line-height:18px;color:#303233;text-align:left;white-space:pre-wrap;overflow-wrap:break-word;margin:0;align-self:stretch;flex:1 1 auto;min-width:0;min-height:0\">Dưới</div></div></div></div></div>",
+  "weightPlan": [
+    {
+      "path": "root",
+      "axis": "column",
+      "maxMain": "from parent",
+      "slots": [
+        "FIXED",
+        "W(fill)",
+        "FIXED"
+      ]
+    }
+  ],
+  "lint": [
+    "error D30 root.children[1]"
+  ]
+}

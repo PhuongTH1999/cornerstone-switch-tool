@@ -1,43 +1,95 @@
-# tag
+# SDUI `tag`
 
-## Định danh
+| | |
+|---|---|
+| **Spec** | [../sdui-spec.md](../sdui-spec.md) §6.4, token màu §5.3 |
+| **Android** | `ServerDrivenUI/UITypes/Tag/ServerTag.kt`, `ServerTagProperty.kt` |
+| **iOS** | `ios/ServerDrivenUI/UITypes/Tag/ServerTag.swift`, `ServerTagProperty.swift` |
+| **Phần chung** | node, style, tracking, onTap: [README.md](README.md) |
 
-- Component ID: `tag` (dùng chung giữa các ngôn ngữ).
-- Document version: `1.0.0` (phiên bản tài liệu, không phải phiên bản SDK).
-- JSON discriminator: `type: "tag"`.
-- Nguồn: schema SDUI hiện có và editor TypeScript trong repository này.
+Nhãn nhỏ có nền màu (ví dụ "Mới", "Tại cửa hàng", "Sắp hết hạn"), có thể kèm icon bên trái.
 
-## Contract: property và value
+## 1. Interface
 
-```jsonc
-{
-  "type": "tag",
-  "style": {},
-  "property": {
-    "tagType": "highlight",      // "info" | "success" | "error" | "warning" | "highlight" → màu preset
-    "backgroundColor": "#FFF3E0",// optional — override màu nền
-    "textColor": "#E65100",      // optional — override màu chữ
-    "iconUrl": "https://..."     // optional — icon đứng trước
-  },
-  "value": "HOT"                 // string nội dung tag
+```ts
+type TagNode = SduiNode<"tag", TagProperty, string>;   // value = nội dung nhãn
+
+interface TagProperty {
+  tagType?: "info" | "success" | "error" | "warning" | "highlight";
+  backgroundColor?: string;
+  textColor?: string;
+  iconUrl?: string;
 }
 ```
 
-## Style và cấu hình chung
+## 2. Field
 
-Áp dụng contract [Common](../common.md): style, modifier, onTap, tracking, widgetId và expire_time.
-Các field nội bộ của editor không thuộc JSON contract.
+### `value`
+| Kiểu | Bắt buộc | Thiếu / sai kiểu |
+|---|---|---|
+| `string` | ✅ | Android: nhãn rỗng. **iOS: node bị bỏ** |
 
-## Hỗ trợ theo ngôn ngữ / runtime
+### `property`
+| Field | Kiểu | Mặc định | Ghi chú |
+|---|---|---|---|
+| `tagType` | string | xám (black_17 / black_01) | Chọn bộ màu có sẵn, bảng §3 |
+| `backgroundColor` | `#RRGGBB` | theo `tagType` | Ghi đè màu nền |
+| `textColor` | `#RRGGBB` | theo `tagType` | Ghi đè màu chữ |
+| `iconUrl` | URL | không | Icon 12×12 bên trái chữ |
 
-| Runtime | Trạng thái đối chiếu | Ghi chú |
-| --- | --- | --- |
-| TypeScript / Web editor | Đã đối chiếu source hiện tại | Editor hỗ trợ import, chỉnh và preview tag; menu Add chưa có tag. Preview hiển thị màu và nội dung, chưa render iconUrl. Validator/plugin converter cũ chưa khai báo tag. |
-| Kotlin / Android | Chưa xác minh source runtime | Cần bổ sung phiên bản SDK và đường dẫn implementation khi sync. |
-| Swift / iOS | Chưa xác minh source runtime | Cần bổ sung phiên bản SDK và đường dẫn implementation khi sync. |
+⚠️ iOS decode `property` chặt: field sai kiểu → **cả node bị bỏ**.
 
-## Quy tắc đồng bộ
+## 3. Bộ màu `tagType`
 
-Giữ nguyên Component ID, đường dẫn field và enum của JSON giữa các ngôn ngữ.
-Khi thay đổi contract, cập nhật document version, ví dụ và bảng runtime trong cùng thay đổi.
-Không coi trạng thái chưa xác minh là đã hỗ trợ hoặc không hỗ trợ.
+| `tagType` | Nền | Chữ |
+|---|---|---|
+| `info` | blue_08 | blue_03 |
+| `success` | green_08 | green_03 |
+| `error` | red_08 | red_03 |
+| `warning` | orange_08 | orange_03 |
+| `highlight` | gold_09 | gold_03 |
+| khác / thiếu | black_17 | black_01 |
+
+Tên token theo bảng màu MoMo kits (giống nhau 2 nền tảng).
+
+## 4. Cách vẽ
+
+Hàng ngang `[icon 12×12]? + chữ`, cách nhau `Spacing.XXS`; padding ngang `Spacing.S`, dọc 1; bo góc `Spacing.S`; chữ
+`labelSMedium`, **1 dòng** (dài thì cắt). Kích thước theo nội dung.
+
+## 5. Khác biệt Android ↔ iOS
+
+| Vùng | Android | iOS | Khuyến nghị |
+|---|---|---|---|
+| `backgroundColor` lỗi | về màu của `tagType` | trong suốt | gửi `#RRGGBB` đúng |
+| `textColor` lỗi | về màu của `tagType` | đen | gửi `#RRGGBB` đúng |
+| `value` thiếu / sai kiểu | nhãn rỗng | node bị bỏ | luôn gửi chuỗi |
+| Chiều cao nhãn (D27) | 20 (chữ 18 + 2) | ≈ 16 (chữ ≈ 14.3 + 2) | không căn layout theo chiều cao tag |
+
+## 6. Ví dụ
+
+Nhãn thông tin:
+```json
+{ "type": "tag", "value": "Tại cửa hàng", "property": { "tagType": "info" } }
+```
+
+Màu tự chọn kèm icon:
+```json
+{ "type": "tag", "value": "Hot",
+  "property": { "backgroundColor": "#FFE5F0", "textColor": "#A50064", "iconUrl": "https://static.momocdn.net/…/ic_fire.png" } }
+```
+
+Nhiều tag trên một hàng:
+```json
+{ "type": "container", "property": { "layout": "row", "spacing": 4 },
+  "value": { "children": [
+    { "type": "tag", "value": "Mới", "property": { "tagType": "success" } },
+    { "type": "tag", "value": "Sắp hết hạn", "property": { "tagType": "warning" } }
+  ] } }
+```
+
+## 7. Lỗi thường gặp
+
+- [ ] Nhãn quá dài → bị cắt (chỉ 1 dòng).
+- [ ] `tagType` viết hoa (`"INFO"`) → về màu xám.
+- [ ] Màu sai định dạng → iOS nền trong suốt / chữ đen.

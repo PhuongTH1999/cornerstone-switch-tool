@@ -1,0 +1,184 @@
+{
+  "checks": "Mẫu \"Financial Products Widget\" — toàn bộ",
+  "html": "<div class=\"sdui-canvas sdui-android\" data-platform=\"android\" style=\"width:375px;font-family:-apple-system, &quot;SF Pro Text&quot;, system-ui, sans-serif;display:flex;flex-direction:column;align-items:flex-start;background-color:#F2F2F6;--sdui-tap:rgba(37, 99, 235, 0.18);--sdui-tap-outline:#2563EB;--sdui-selection:#2563EB;--sdui-unconfirmed:#DC2626;--sdui-canvas-border:#DDDDE3\"><div class=\"sdui-node sdui-node-container sdui-drawn\" data-sdui-path=\"root\" style=\"box-sizing:border-box;position:relative;display:flex;flex-direction:column;padding:12px 12px 12px 12px;background-color:#FFFFFF;border-radius:12px;max-width:375px;justify-content:flex-start;align-items:flex-start;overflow:hidden\"><div class=\"sdui-stack\" style=\"display:flex;flex-direction:column;gap:8px;align-items:flex-start;justify-content:flex-start;align-self:stretch;flex:1 1 auto;min-width:0;min-height:0\"><div class=\"sdui-node sdui-node-container\" data-sdui-path=\"root.children[0]\" style=\"box-sizing:border-box;position:relative;display:flex;flex-direction:column;padding:0px 0px 0px 0px;max-width:351px;justify-content:flex-start;align-items:flex-start;flex:0 0 auto\"><div class=\"sdui-stack\" data-share=\"0.0\" style=\"display:flex;flex-direction:row;gap:12px;align-items:flex-start;justify-content:flex-start;align-self:stretch;flex:1 1 auto;min-width:0;min-height:0\"><div class=\"sdui-node sdui-node-image\" data-sdui-path=\"root.children[0].children[0]\" style=\"box-sizing:border-box;position:relative;display:flex;flex-direction:column;padding:0px 0px 0px 0px;width:24px;height:24px;max-width:351px;justify-content:flex-start;align-items:flex-start;flex:0 0 auto\"><img class=\"sdui-drawn sdui-image\" src=\"https://static.momocdn.net/app/icon/promotion/logo_mega26.png\" alt=\"\" style=\"align-self:stretch;flex:1 1 auto;min-width:0;min-height:0;display:block;object-fit:cover;border-radius:0;max-width:100%;width:100%;height:100%\"/></div><div class=\"sdui-node sdui-node-container\" data-sdui-path=\"root.children[0].children[1]\" style=\"box-sizing:border-box;position:relative;display:flex;flex-direction:column;padding:0px 0px 0px 0px;max-width:0;justify-content:flex-start;align-items:flex-start;flex:0 0 auto;overflow:hidden\"><div class=\"sdui-stack\" style=\"display:flex;flex-direction:column;gap:4px;align-items:flex-start;justify-content:flex-start;align-self:stretch;flex:1 1 auto;min-width:0;min-height:0\"><div class=\"sdui-node sdui-node-text\" data-sdui-path=\"root.children[0].children[1].children[0]\" style=\"box-sizing:border-box;position:relative;display:flex;flex-direction:column;padding:0px 0px 0px 0px;width:0;max-width:0;justify-content:flex-start;align-items:flex-start;flex:0 0 auto\"><div class=\"sdui-drawn sdui-text\" style=\"font-family:-apple-system, &quot;SF Pro Text&quot;, system-ui, sans-serif;font-size:16px;font-weight:700;line-height:22px;color:#303233;text-align:left;white-space:pre-wrap;overflow-wrap:break-word;margin:0;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:1;overflow:hidden;align-self:stretch;flex:1 1 auto;min-width:0;min-height:0\">Financial Products Widget</div></div><div class=\"sdui-node sdui-node-text\" data-sdui-path=\"root.children[0].children[1].children[1]\" style=\"box-sizing:border-box;position:relative;display:flex;flex-direction:column;padding:0px 0px 0px 0px;max-width:0;justify-content:flex-start;align-items:flex-start;flex:0 0 auto\"><div class=\"sdui-drawn sdui-text\" style=\"font-family:-apple-system, &quot;SF Pro Text&quot;, system-ui, sans-serif;font-size:12px;font-weight:400;line-height:18px;color:#303233;text-align:left;white-space:pre-wrap;overflow-wrap:break-word;margin:0;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:1;overflow:hidden;align-self:stretch;flex:1 1 auto;min-width:0;min-height:0\">Choose the product that fits your needs</div></div></div></div><div class=\"sdui-node sdui-node-spacer\" data-sdui-path=\"root.children[0].children[2]\" style=\"box-sizing:border-box;position:relative;display:flex;flex-direction:column;padding:0px 0px 0px 0px;max-width:351px;justify-content:flex-start;align-items:flex-start;flex:0 0 auto;width:0;min-width:0;min-height:0\"></div><div class=\"sdui-node sdui-node-image sdui-tappable\" data-sdui-path=\"root.children[0].children[3]\" style=\"box-sizing:border-box;position:relative;display:flex;flex-direction:column;padding:0px 0px 0px 0px;width:18px;height:18px;max-width:351px;justify-content:flex-start;align-items:flex-start;flex:0 0 auto\"><img class=\"sdui-drawn sdui-image\" src=\"https://static.momocdn.net/app/icon/promotion/logo_mega26.png\" alt=\"\" style=\"align-self:stretch;flex:1 1 auto;min-width:0;min-height:0;display:block;object-fit:cover;border-radius:0;max-width:100%;width:100%;height:100%\"/></div></div></div><div class=\"sdui-node sdui-node-container\" data-sdui-path=\"root.children[1]\" style=\"box-sizing:border-box;position:relative;display:flex;flex-direction:column;padding:0px 0px 0px 0px;max-width:351px;justify-content:flex-start;align-items:flex-start;flex:0 0 auto\"><div class=\"sdui-stack sdui-scroll\" style=\"display:flex;flex-direction:row;gap:8px;align-items:flex-start;overflow-x:auto;overflow-y:hidden;max-width:100%;align-self:stretch;flex:1 1 auto;min-width:0;min-height:0\"><div class=\"sdui-node sdui-node-container sdui-drawn sdui-tappable\" data-sdui-path=\"root.children[1].children[0]\" style=\"box-sizing:border-box;position:relative;display:flex;flex-direction:column;padding:12px 12px 12px 12px;background-color:#FEF8FC;border-radius:12px;width:150px;height:124px;justify-content:flex-start;align-items:flex-start;overflow:hidden;flex:0 0 auto\"><div class=\"sdui-stack\" data-share=\"0.0\" style=\"display:flex;flex-direction:column;gap:8px;align-items:flex-start;justify-content:flex-start;align-self:stretch;flex:1 1 auto;min-width:0;min-height:0\"><div class=\"sdui-node sdui-node-text\" data-sdui-path=\"root.children[1].children[0].children[0]\" style=\"box-sizing:border-box;position:relative;display:flex;flex-direction:column;padding:0px 0px 0px 0px;width:126px;max-width:126px;max-height:100px;justify-content:flex-start;align-items:flex-start;flex:0 0 auto\"><div class=\"sdui-drawn sdui-text\" style=\"font-family:-apple-system, &quot;SF Pro Text&quot;, system-ui, sans-serif;font-size:10px;font-weight:500;line-height:14px;color:#727272;text-align:left;white-space:pre-wrap;overflow-wrap:break-word;margin:0;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:1;overflow:hidden;align-self:stretch;flex:1 1 auto;min-width:0;min-height:0\">Personal Loan</div></div><div class=\"sdui-node sdui-node-text\" data-sdui-path=\"root.children[1].children[0].children[1]\" style=\"box-sizing:border-box;position:relative;display:flex;flex-direction:column;padding:0px 0px 0px 0px;max-width:126px;max-height:100px;justify-content:flex-start;align-items:flex-start;flex:0 0 auto\"><div class=\"sdui-drawn sdui-text\" style=\"font-family:-apple-system, &quot;SF Pro Text&quot;, system-ui, sans-serif;font-size:14px;font-weight:700;line-height:20px;color:#EB2F96;text-align:left;white-space:pre-wrap;overflow-wrap:break-word;margin:0;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:1;overflow:hidden;align-self:stretch;flex:1 1 auto;min-width:0;min-height:0\">Up to 100,000,000 VND</div></div><div class=\"sdui-node sdui-node-spacer\" data-sdui-path=\"root.children[1].children[0].children[2]\" style=\"box-sizing:border-box;position:relative;display:flex;flex-direction:column;padding:0px 0px 0px 0px;max-width:126px;max-height:0;justify-content:flex-start;align-items:flex-start;flex:0 0 auto;height:0;min-width:0;min-height:0\"></div><div class=\"sdui-node sdui-node-container\" data-sdui-path=\"root.children[1].children[0].children[3]\" style=\"box-sizing:border-box;position:relative;display:flex;flex-direction:column;padding:0px 0px 0px 0px;max-width:126px;max-height:100px;justify-content:flex-start;align-items:flex-start;flex:0 0 auto\"><div class=\"sdui-stack\" data-share=\"0.0\" style=\"display:flex;flex-direction:row;gap:0;align-items:flex-end;justify-content:flex-start;align-self:stretch;flex:1 1 auto;min-width:0;min-height:0\"><div class=\"sdui-node sdui-node-container\" data-sdui-path=\"root.children[1].children[0].children[3].children[0]\" style=\"box-sizing:border-box;position:relative;display:flex;flex-direction:column;padding:0px 0px 0px 0px;max-width:0;max-height:100px;justify-content:flex-start;align-items:flex-start;flex:0 0 auto;overflow:hidden\"><div class=\"sdui-stack\" style=\"display:flex;flex-direction:column;gap:0;align-items:flex-start;justify-content:flex-start;align-self:stretch;flex:1 1 auto;min-width:0;min-height:0\"><div class=\"sdui-node sdui-node-container\" data-sdui-path=\"root.children[1].children[0].children[3].children[0].children[0]\" style=\"box-sizing:border-box;position:relative;display:flex;flex-direction:column;padding:0px 0px 0px 0px;max-width:0;max-height:100px;justify-content:flex-start;align-items:flex-start;flex:0 0 auto\"><div class=\"sdui-stack\" data-share=\"0.0\" style=\"display:flex;flex-direction:row;gap:4px;align-items:center;justify-content:flex-start;align-self:stretch;flex:1 1 auto;min-width:0;min-height:0\"><div class=\"sdui-node sdui-node-image\" data-sdui-path=\"root.children[1].children[0].children[3].children[0].children[0].children[0]\" style=\"box-sizing:border-box;position:relative;display:flex;flex-direction:column;padding:0px 0px 0px 0px;width:12px;height:12px;max-width:0;max-height:100px;justify-content:flex-start;align-items:flex-start;flex:0 0 auto\"><img class=\"sdui-drawn sdui-image\" src=\"https://static.momocdn.net/app/icon/promotion/logo_mega26.png\" alt=\"\" style=\"align-self:stretch;flex:1 1 auto;min-width:0;min-height:0;display:block;object-fit:cover;border-radius:0;max-width:100%;width:100%;height:100%\"/></div><div class=\"sdui-node sdui-node-text\" data-sdui-path=\"root.children[1].children[0].children[3].children[0].children[0].children[1]\" style=\"box-sizing:border-box;position:relative;display:flex;flex-direction:column;padding:0px 0px 0px 0px;max-width:0;max-height:100px;justify-content:flex-start;align-items:flex-start;flex:0 0 auto;overflow:hidden\"><div class=\"sdui-drawn sdui-text\" style=\"font-family:-apple-system, &quot;SF Pro Text&quot;, system-ui, sans-serif;font-size:12px;font-weight:600;line-height:18px;color:#303233;text-align:left;white-space:pre-wrap;overflow-wrap:break-word;margin:0;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:1;overflow:hidden;align-self:stretch;flex:1 1 auto;min-width:0;min-height:0\">Loan term</div></div></div></div><div class=\"sdui-node sdui-node-text\" data-sdui-path=\"root.children[1].children[0].children[3].children[0].children[1]\" style=\"box-sizing:border-box;position:relative;display:flex;flex-direction:column;padding:0px 0px 0px 0px;max-width:0;max-height:100px;justify-content:flex-start;align-items:flex-start;flex:0 0 auto\"><div class=\"sdui-drawn sdui-text\" style=\"font-family:-apple-system, &quot;SF Pro Text&quot;, system-ui, sans-serif;font-size:10px;font-weight:400;line-height:14px;color:#484848;text-align:left;white-space:pre-wrap;overflow-wrap:break-word;margin:0;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:1;overflow:hidden;align-self:stretch;flex:1 1 auto;min-width:0;min-height:0\">Flights + Hotel included</div></div></div></div><div class=\"sdui-node sdui-node-spacer\" data-sdui-path=\"root.children[1].children[0].children[3].children[1]\" style=\"box-sizing:border-box;position:relative;display:flex;flex-direction:column;padding:0px 0px 0px 0px;max-width:126px;max-height:100px;justify-content:flex-start;align-items:flex-start;flex:0 0 auto;width:0;min-width:0;min-height:0\"></div><div class=\"sdui-node sdui-node-image\" data-sdui-path=\"root.children[1].children[0].children[3].children[2]\" style=\"box-sizing:border-box;position:relative;display:flex;flex-direction:column;padding:0px 0px 0px 0px;width:40px;height:40px;max-width:126px;max-height:100px;justify-content:flex-start;align-items:flex-start;flex:0 0 auto\"><img class=\"sdui-drawn sdui-image\" src=\"https://static.momocdn.net/app/icon/promotion/logo_mega26.png\" alt=\"\" style=\"align-self:stretch;flex:1 1 auto;min-width:0;min-height:0;display:block;object-fit:cover;border-radius:0;max-width:100%;width:100%;height:100%\"/></div></div></div></div><span class=\"sdui-border\" style=\"border-width:1px;border-style:solid;border-color:#E8EAED\"></span></div><div class=\"sdui-node sdui-node-container sdui-drawn sdui-tappable\" data-sdui-path=\"root.children[1].children[1]\" style=\"box-sizing:border-box;position:relative;display:flex;flex-direction:column;padding:12px 12px 12px 12px;background-color:#FEF8FC;border-radius:12px;width:150px;height:124px;justify-content:flex-start;align-items:flex-start;overflow:hidden;flex:0 0 auto\"><div class=\"sdui-stack\" data-share=\"0.0\" style=\"display:flex;flex-direction:column;gap:8px;align-items:flex-start;justify-content:flex-start;align-self:stretch;flex:1 1 auto;min-width:0;min-height:0\"><div class=\"sdui-node sdui-node-text\" data-sdui-path=\"root.children[1].children[1].children[0]\" style=\"box-sizing:border-box;position:relative;display:flex;flex-direction:column;padding:0px 0px 0px 0px;width:126px;max-width:126px;max-height:100px;justify-content:flex-start;align-items:flex-start;flex:0 0 auto\"><div class=\"sdui-drawn sdui-text\" style=\"font-family:-apple-system, &quot;SF Pro Text&quot;, system-ui, sans-serif;font-size:10px;font-weight:500;line-height:14px;color:#303233;text-align:left;white-space:pre-wrap;overflow-wrap:break-word;margin:0;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:1;overflow:hidden;align-self:stretch;flex:1 1 auto;min-width:0;min-height:0\">Things To Do</div></div><div class=\"sdui-node sdui-node-spacer\" data-sdui-path=\"root.children[1].children[1].children[1]\" style=\"box-sizing:border-box;position:relative;display:flex;flex-direction:column;padding:0px 0px 0px 0px;max-width:126px;max-height:0;justify-content:flex-start;align-items:flex-start;flex:0 0 auto;height:0;min-width:0;min-height:0\"></div><div class=\"sdui-node sdui-node-container\" data-sdui-path=\"root.children[1].children[1].children[2]\" style=\"box-sizing:border-box;position:relative;display:flex;flex-direction:column;padding:0px 0px 0px 0px;max-width:126px;max-height:100px;justify-content:flex-start;align-items:flex-start;flex:0 0 auto\"><div class=\"sdui-stack\" data-share=\"0.0\" style=\"display:flex;flex-direction:row;gap:0;align-items:flex-end;justify-content:flex-start;align-self:stretch;flex:1 1 auto;min-width:0;min-height:0\"><div class=\"sdui-node sdui-node-container\" data-sdui-path=\"root.children[1].children[1].children[2].children[0]\" style=\"box-sizing:border-box;position:relative;display:flex;flex-direction:column;padding:0px 0px 0px 0px;max-width:0;max-height:100px;justify-content:flex-start;align-items:flex-start;flex:0 0 auto;overflow:hidden\"><div class=\"sdui-stack\" style=\"display:flex;flex-direction:column;gap:8px;align-items:flex-start;justify-content:flex-start;align-self:stretch;flex:1 1 auto;min-width:0;min-height:0\"><div class=\"sdui-node sdui-node-container\" data-sdui-path=\"root.children[1].children[1].children[2].children[0].children[0]\" style=\"box-sizing:border-box;position:relative;display:flex;flex-direction:column;padding:0px 0px 0px 0px;max-width:0;max-height:100px;justify-content:flex-start;align-items:flex-start;flex:0 0 auto\"><div class=\"sdui-stack\" data-share=\"0.0\" style=\"display:flex;flex-direction:row;gap:4px;align-items:center;justify-content:flex-start;align-self:stretch;flex:1 1 auto;min-width:0;min-height:0\"><div class=\"sdui-node sdui-node-image\" data-sdui-path=\"root.children[1].children[1].children[2].children[0].children[0].children[0]\" style=\"box-sizing:border-box;position:relative;display:flex;flex-direction:column;padding:0px 0px 0px 0px;width:16px;height:16px;max-width:0;max-height:100px;justify-content:flex-start;align-items:flex-start;flex:0 0 auto\"><img class=\"sdui-drawn sdui-image\" src=\"https://static.momocdn.net/app/icon/promotion/logo_mega26.png\" alt=\"\" style=\"align-self:stretch;flex:1 1 auto;min-width:0;min-height:0;display:block;object-fit:cover;border-radius:0;max-width:100%;width:100%;height:100%\"/></div><div class=\"sdui-node sdui-node-text\" data-sdui-path=\"root.children[1].children[1].children[2].children[0].children[0].children[1]\" style=\"box-sizing:border-box;position:relative;display:flex;flex-direction:column;padding:0px 0px 0px 0px;max-width:0;max-height:100px;justify-content:flex-start;align-items:flex-start;flex:0 0 auto;overflow:hidden\"><div class=\"sdui-drawn sdui-text\" style=\"font-family:-apple-system, &quot;SF Pro Text&quot;, system-ui, sans-serif;font-size:12px;font-weight:400;line-height:18px;color:#484848;text-align:left;white-space:pre-wrap;overflow-wrap:break-word;margin:0;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:1;overflow:hidden;align-self:stretch;flex:1 1 auto;min-width:0;min-height:0\">Beach Activities</div></div></div></div><div class=\"sdui-node sdui-node-container\" data-sdui-path=\"root.children[1].children[1].children[2].children[0].children[1]\" style=\"box-sizing:border-box;position:relative;display:flex;flex-direction:column;padding:0px 0px 0px 0px;max-width:0;max-height:100px;justify-content:flex-start;align-items:flex-start;flex:0 0 auto\"><div class=\"sdui-stack\" data-share=\"0.0\" style=\"display:flex;flex-direction:row;gap:4px;align-items:center;justify-content:flex-start;align-self:stretch;flex:1 1 auto;min-width:0;min-height:0\"><div class=\"sdui-node sdui-node-image\" data-sdui-path=\"root.children[1].children[1].children[2].children[0].children[1].children[0]\" style=\"box-sizing:border-box;position:relative;display:flex;flex-direction:column;padding:0px 0px 0px 0px;width:16px;height:16px;max-width:0;max-height:100px;justify-content:flex-start;align-items:flex-start;flex:0 0 auto\"><img class=\"sdui-drawn sdui-image\" src=\"https://static.momocdn.net/app/icon/promotion/logo_mega26.png\" alt=\"\" style=\"align-self:stretch;flex:1 1 auto;min-width:0;min-height:0;display:block;object-fit:cover;border-radius:0;max-width:100%;width:100%;height:100%\"/></div><div class=\"sdui-node sdui-node-text\" data-sdui-path=\"root.children[1].children[1].children[2].children[0].children[1].children[1]\" style=\"box-sizing:border-box;position:relative;display:flex;flex-direction:column;padding:0px 0px 0px 0px;max-width:0;max-height:100px;justify-content:flex-start;align-items:flex-start;flex:0 0 auto;overflow:hidden\"><div class=\"sdui-drawn sdui-text\" style=\"font-family:-apple-system, &quot;SF Pro Text&quot;, system-ui, sans-serif;font-size:12px;font-weight:400;line-height:18px;color:#484848;text-align:left;white-space:pre-wrap;overflow-wrap:break-word;margin:0;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:1;overflow:hidden;align-self:stretch;flex:1 1 auto;min-width:0;min-height:0\">Local Food Tours</div></div></div></div></div></div><div class=\"sdui-node sdui-node-spacer\" data-sdui-path=\"root.children[1].children[1].children[2].children[1]\" style=\"box-sizing:border-box;position:relative;display:flex;flex-direction:column;padding:0px 0px 0px 0px;max-width:126px;max-height:100px;justify-content:flex-start;align-items:flex-start;flex:0 0 auto;width:0;min-width:0;min-height:0\"></div><div class=\"sdui-node sdui-node-image\" data-sdui-path=\"root.children[1].children[1].children[2].children[2]\" style=\"box-sizing:border-box;position:relative;display:flex;flex-direction:column;padding:0px 0px 0px 0px;width:40px;height:40px;max-width:126px;max-height:100px;justify-content:flex-start;align-items:flex-start;flex:0 0 auto\"><img class=\"sdui-drawn sdui-image\" src=\"https://static.momocdn.net/app/icon/promotion/logo_mega26.png\" alt=\"\" style=\"align-self:stretch;flex:1 1 auto;min-width:0;min-height:0;display:block;object-fit:cover;border-radius:0;max-width:100%;width:100%;height:100%\"/></div></div></div></div><span class=\"sdui-border\" style=\"border-width:1px;border-style:solid;border-color:#E8EAED\"></span></div><div class=\"sdui-node sdui-node-container sdui-drawn sdui-tappable\" data-sdui-path=\"root.children[1].children[2]\" style=\"box-sizing:border-box;position:relative;display:flex;flex-direction:column;padding:12px 12px 12px 12px;background-color:#FEF8FC;border-radius:12px;width:150px;height:124px;justify-content:flex-start;align-items:flex-start;overflow:hidden;flex:0 0 auto\"><div class=\"sdui-stack\" data-share=\"0.0\" style=\"display:flex;flex-direction:column;gap:8px;align-items:flex-start;justify-content:flex-start;align-self:stretch;flex:1 1 auto;min-width:0;min-height:0\"><div class=\"sdui-node sdui-node-text\" data-sdui-path=\"root.children[1].children[2].children[0]\" style=\"box-sizing:border-box;position:relative;display:flex;flex-direction:column;padding:0px 0px 0px 0px;width:126px;max-width:126px;max-height:100px;justify-content:flex-start;align-items:flex-start;flex:0 0 auto\"><div class=\"sdui-drawn sdui-text\" style=\"font-family:-apple-system, &quot;SF Pro Text&quot;, system-ui, sans-serif;font-size:10px;font-weight:500;line-height:14px;color:#303233;text-align:left;white-space:pre-wrap;overflow-wrap:break-word;margin:0;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:1;overflow:hidden;align-self:stretch;flex:1 1 auto;min-width:0;min-height:0\">Trip Summary</div></div><div class=\"sdui-node sdui-node-spacer\" data-sdui-path=\"root.children[1].children[2].children[1]\" style=\"box-sizing:border-box;position:relative;display:flex;flex-direction:column;padding:0px 0px 0px 0px;max-width:126px;max-height:0;justify-content:flex-start;align-items:flex-start;flex:0 0 auto;height:0;min-width:0;min-height:0\"></div><div class=\"sdui-node sdui-node-container\" data-sdui-path=\"root.children[1].children[2].children[2]\" style=\"box-sizing:border-box;position:relative;display:flex;flex-direction:column;padding:0px 0px 0px 0px;max-width:126px;max-height:100px;justify-content:flex-start;align-items:flex-start;flex:0 0 auto\"><div class=\"sdui-stack\" data-share=\"0.0\" style=\"display:flex;flex-direction:row;gap:0;align-items:flex-end;justify-content:flex-start;align-self:stretch;flex:1 1 auto;min-width:0;min-height:0\"><div class=\"sdui-node sdui-node-container\" data-sdui-path=\"root.children[1].children[2].children[2].children[0]\" style=\"box-sizing:border-box;position:relative;display:flex;flex-direction:column;padding:0px 0px 0px 0px;max-width:0;max-height:100px;justify-content:flex-start;align-items:flex-start;flex:0 0 auto;overflow:hidden\"><div class=\"sdui-stack\" style=\"display:flex;flex-direction:column;gap:8px;align-items:flex-start;justify-content:flex-start;align-self:stretch;flex:1 1 auto;min-width:0;min-height:0\"><div class=\"sdui-node sdui-node-container\" data-sdui-path=\"root.children[1].children[2].children[2].children[0].children[0]\" style=\"box-sizing:border-box;position:relative;display:flex;flex-direction:column;padding:0px 0px 0px 0px;max-width:0;max-height:100px;justify-content:flex-start;align-items:flex-start;flex:0 0 auto\"><div class=\"sdui-stack\" data-share=\"0.0\" style=\"display:flex;flex-direction:row;gap:4px;align-items:center;justify-content:flex-start;align-self:stretch;flex:1 1 auto;min-width:0;min-height:0\"><div class=\"sdui-node sdui-node-image\" data-sdui-path=\"root.children[1].children[2].children[2].children[0].children[0].children[0]\" style=\"box-sizing:border-box;position:relative;display:flex;flex-direction:column;padding:0px 0px 0px 0px;width:16px;height:16px;max-width:0;max-height:100px;justify-content:flex-start;align-items:flex-start;flex:0 0 auto\"><img class=\"sdui-drawn sdui-image\" src=\"https://static.momocdn.net/app/icon/promotion/logo_mega26.png\" alt=\"\" style=\"align-self:stretch;flex:1 1 auto;min-width:0;min-height:0;display:block;object-fit:cover;border-radius:0;max-width:100%;width:100%;height:100%\"/></div><div class=\"sdui-node sdui-node-text\" data-sdui-path=\"root.children[1].children[2].children[2].children[0].children[0].children[1]\" style=\"box-sizing:border-box;position:relative;display:flex;flex-direction:column;padding:0px 0px 0px 0px;width:0;max-width:0;max-height:100px;justify-content:flex-start;align-items:flex-start;flex:0 0 auto\"><div class=\"sdui-drawn sdui-text\" style=\"font-family:-apple-system, &quot;SF Pro Text&quot;, system-ui, sans-serif;font-size:12px;font-weight:400;line-height:18px;color:#484848;text-align:left;white-space:pre-wrap;overflow-wrap:break-word;margin:0;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:1;overflow:hidden;align-self:stretch;flex:1 1 auto;min-width:0;min-height:0\">Duration</div></div><div class=\"sdui-node sdui-node-text\" data-sdui-path=\"root.children[1].children[2].children[2].children[0].children[0].children[2]\" style=\"box-sizing:border-box;position:relative;display:flex;flex-direction:column;padding:0px 0px 0px 0px;max-width:0;max-height:100px;justify-content:flex-start;align-items:flex-start;flex:0 0 auto;overflow:hidden\"><div class=\"sdui-drawn sdui-text\" style=\"font-family:-apple-system, &quot;SF Pro Text&quot;, system-ui, sans-serif;font-size:12px;font-weight:600;line-height:18px;color:#303233;text-align:left;white-space:pre-wrap;overflow-wrap:break-word;margin:0;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:1;overflow:hidden;align-self:stretch;flex:1 1 auto;min-width:0;min-height:0\">5 Days</div></div></div></div><div class=\"sdui-node sdui-node-container\" data-sdui-path=\"root.children[1].children[2].children[2].children[0].children[1]\" style=\"box-sizing:border-box;position:relative;display:flex;flex-direction:column;padding:0px 0px 0px 0px;max-width:0;max-height:100px;justify-content:flex-start;align-items:flex-start;flex:0 0 auto\"><div class=\"sdui-stack\" data-share=\"0.0\" style=\"display:flex;flex-direction:row;gap:4px;align-items:center;justify-content:flex-start;align-self:stretch;flex:1 1 auto;min-width:0;min-height:0\"><div class=\"sdui-node sdui-node-image\" data-sdui-path=\"root.children[1].children[2].children[2].children[0].children[1].children[0]\" style=\"box-sizing:border-box;position:relative;display:flex;flex-direction:column;padding:0px 0px 0px 0px;width:16px;height:16px;max-width:0;max-height:100px;justify-content:flex-start;align-items:flex-start;flex:0 0 auto\"><img class=\"sdui-drawn sdui-image\" src=\"https://static.momocdn.net/app/icon/promotion/logo_mega26.png\" alt=\"\" style=\"align-self:stretch;flex:1 1 auto;min-width:0;min-height:0;display:block;object-fit:cover;border-radius:0;max-width:100%;width:100%;height:100%\"/></div><div class=\"sdui-node sdui-node-text\" data-sdui-path=\"root.children[1].children[2].children[2].children[0].children[1].children[1]\" style=\"box-sizing:border-box;position:relative;display:flex;flex-direction:column;padding:0px 0px 0px 0px;width:0;max-width:0;max-height:100px;justify-content:flex-start;align-items:flex-start;flex:0 0 auto\"><div class=\"sdui-drawn sdui-text\" style=\"font-family:-apple-system, &quot;SF Pro Text&quot;, system-ui, sans-serif;font-size:12px;font-weight:400;line-height:18px;color:#484848;text-align:left;white-space:pre-wrap;overflow-wrap:break-word;margin:0;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:1;overflow:hidden;align-self:stretch;flex:1 1 auto;min-width:0;min-height:0\">Estimated Cost</div></div><div class=\"sdui-node sdui-node-text\" data-sdui-path=\"root.children[1].children[2].children[2].children[0].children[1].children[2]\" style=\"box-sizing:border-box;position:relative;display:flex;flex-direction:column;padding:0px 0px 0px 0px;max-width:0;max-height:100px;justify-content:flex-start;align-items:flex-start;flex:0 0 auto;overflow:hidden\"><div class=\"sdui-drawn sdui-text\" style=\"font-family:-apple-system, &quot;SF Pro Text&quot;, system-ui, sans-serif;font-size:12px;font-weight:600;line-height:18px;color:#303233;text-align:left;white-space:pre-wrap;overflow-wrap:break-word;margin:0;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:1;overflow:hidden;align-self:stretch;flex:1 1 auto;min-width:0;min-height:0\">$450</div></div></div></div></div></div></div></div></div><span class=\"sdui-border\" style=\"border-width:1px;border-style:solid;border-color:#E8EAED\"></span></div></div></div></div></div></div>",
+  "weightPlan": [
+    {
+      "path": "root.children[0]",
+      "axis": "row",
+      "maxMain": 351,
+      "slots": [
+        "FIXED",
+        "W",
+        "FIXED",
+        "FIXED"
+      ],
+      "share": 273,
+      "sizes": [
+        24,
+        257.4,
+        0,
+        18
+      ]
+    },
+    {
+      "path": "root.children[1].children[0]",
+      "axis": "column",
+      "maxMain": 100,
+      "slots": [
+        "FIXED",
+        "FIXED",
+        "W(fill)",
+        "FIXED"
+      ]
+    },
+    {
+      "path": "root.children[1].children[0].children[3]",
+      "axis": "row",
+      "maxMain": 126,
+      "slots": [
+        "W",
+        "FIXED",
+        "FIXED"
+      ],
+      "share": 86,
+      "sizes": [
+        86,
+        0,
+        40
+      ]
+    },
+    {
+      "path": "root.children[1].children[0].children[3].children[0].children[0]",
+      "axis": "row",
+      "maxMain": 86,
+      "slots": [
+        "FIXED",
+        "W"
+      ],
+      "share": 70,
+      "sizes": [
+        12,
+        59.4
+      ]
+    },
+    {
+      "path": "root.children[1].children[1]",
+      "axis": "column",
+      "maxMain": 100,
+      "slots": [
+        "FIXED",
+        "W(fill)",
+        "FIXED"
+      ]
+    },
+    {
+      "path": "root.children[1].children[1].children[2]",
+      "axis": "row",
+      "maxMain": 126,
+      "slots": [
+        "W",
+        "FIXED",
+        "FIXED"
+      ],
+      "share": 86,
+      "sizes": [
+        86,
+        0,
+        40
+      ]
+    },
+    {
+      "path": "root.children[1].children[1].children[2].children[0].children[0]",
+      "axis": "row",
+      "maxMain": 86,
+      "slots": [
+        "FIXED",
+        "W"
+      ],
+      "share": 66,
+      "sizes": [
+        16,
+        66
+      ]
+    },
+    {
+      "path": "root.children[1].children[1].children[2].children[0].children[1]",
+      "axis": "row",
+      "maxMain": 86,
+      "slots": [
+        "FIXED",
+        "W"
+      ],
+      "share": 66,
+      "sizes": [
+        16,
+        66
+      ]
+    },
+    {
+      "path": "root.children[1].children[2]",
+      "axis": "column",
+      "maxMain": 100,
+      "slots": [
+        "FIXED",
+        "W(fill)",
+        "FIXED"
+      ]
+    },
+    {
+      "path": "root.children[1].children[2].children[2]",
+      "axis": "row",
+      "maxMain": 126,
+      "slots": [
+        "W"
+      ],
+      "share": 126,
+      "sizes": [
+        126
+      ]
+    },
+    {
+      "path": "root.children[1].children[2].children[2].children[0].children[0]",
+      "axis": "row",
+      "maxMain": 126,
+      "slots": [
+        "FIXED",
+        "W(fill)",
+        "W"
+      ],
+      "share": 51,
+      "sizes": [
+        16,
+        51,
+        39.6
+      ]
+    },
+    {
+      "path": "root.children[1].children[2].children[2].children[0].children[1]",
+      "axis": "row",
+      "maxMain": 126,
+      "slots": [
+        "FIXED",
+        "W(fill)",
+        "W"
+      ],
+      "share": 51,
+      "sizes": [
+        16,
+        51,
+        26.4
+      ]
+    }
+  ],
+  "lint": [
+    "warning D3 root.children[0].children[2]",
+    "warning D25 root.children[0].children[3]",
+    "warning D29 root.children[1].children[2].children[2].children[0].children[0]",
+    "warning D29 root.children[1].children[2].children[2].children[0].children[1]",
+    "info spec §2.1 root",
+    "info spec §2.1 root.children[0].children[3]",
+    "info spec §2.1 root.children[1].children[0]",
+    "info spec §2.1 root.children[1].children[1]",
+    "info spec §2.1 root.children[1].children[2]"
+  ]
+}

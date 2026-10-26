@@ -1,39 +1,67 @@
-# spacer
+# SDUI `spacer`
 
-## Định danh
+| | |
+|---|---|
+| **Spec** | [../sdui-spec.md](../sdui-spec.md) §6.3, luật chia chỗ §6.5 |
+| **Android** | `ServerDrivenUI/UITypes/Spacer/ServerSpacer.kt`, `ServerSpacerProperty.kt` |
+| **iOS** | `ios/ServerDrivenUI/UITypes/Spacer/ServerSpacer.swift`, `ServerSpacerProperty.swift` |
+| **Phần chung** | node, style, tracking, onTap: [README.md](README.md) |
 
-- Component ID: `spacer` (dùng chung giữa các ngôn ngữ).
-- Document version: `1.0.0` (phiên bản tài liệu, không phải phiên bản SDK).
-- JSON discriminator: `type: "spacer"`.
-- Nguồn: schema SDUI hiện có và editor TypeScript trong repository này.
+Khoảng trống co giãn: chiếm phần còn lại trong `container` dạng `row` / `column`, dùng để đẩy các child về hai đầu.
 
-## Contract: property và value
+## 1. Interface
 
-```jsonc
-{
-  "type": "spacer",
-  "style": {},
-  "property": { "minLength": 0 }, // optional — khoảng tối thiểu
-  "value": ""                     // luôn là chuỗi rỗng
+```ts
+type SpacerNode = SduiNode<"spacer", SpacerProperty, "">;   // value không dùng, gửi ""
+
+interface SpacerProperty {
+  minLength?: number;
 }
 ```
-- Trong `row`/`column`, `spacer` giãn để đẩy các phần tử ra hai phía (giống `Spacer()` SwiftUI / `weight(1f)` Compose).
 
-## Style và cấu hình chung
+## 2. Field
 
-Áp dụng contract [Common](../common.md): style, modifier, onTap, tracking, widgetId và expire_time.
-Các field nội bộ của editor không thuộc JSON contract.
+| Field | Kiểu | Mặc định | Ghi chú |
+|---|---|---|---|
+| `value` | `""` | — | Bắt buộc gửi (iOS bỏ node nếu thiếu), nội dung bỏ qua |
+| `property.minLength` | số | Android `0` · **iOS ~8 (mặc định hệ thống)** | Kích thước tối thiểu theo chiều của container cha. **Luôn gửi** |
 
-## Hỗ trợ theo ngôn ngữ / runtime
+⚠️ iOS decode `property` chặt: `minLength` sai kiểu → **cả node bị bỏ**.
 
-| Runtime | Trạng thái đối chiếu | Ghi chú |
-| --- | --- | --- |
-| TypeScript / Web editor | Đã đối chiếu source hiện tại | Preview có khoảng trống co giãn. minLength có form chỉnh nhưng cần xác minh trên native. |
-| Kotlin / Android | Chưa xác minh source runtime | Cần bổ sung phiên bản SDK và đường dẫn implementation khi sync. |
-| Swift / iOS | Chưa xác minh source runtime | Cần bổ sung phiên bản SDK và đường dẫn implementation khi sync. |
+## 3. Cách vẽ
 
-## Quy tắc đồng bộ
+| Container cha | Spacer |
+|---|---|
+| `row` | co giãn theo chiều ngang (Android `weight(1f)`), **trừ khi** trong hàng có một `container` co giãn được (không `width`, không `fillMaxWidth`) — khi đó spacer chỉ rộng `minLength` |
+| `column` | co giãn theo chiều dọc (cần column có chiều cao cố định mới thấy tác dụng) |
+| `scrollRow` / `scrollColumn` / `box` | **không** co giãn, chỉ bằng `minLength` |
 
-Giữ nguyên Component ID, đường dẫn field và enum của JSON giữa các ngôn ngữ.
-Khi thay đổi contract, cập nhật document version, ví dụ và bảng runtime trong cùng thay đổi.
-Không coi trạng thái chưa xác minh là đã hỗ trợ hoặc không hỗ trợ.
+Muốn khoảng cách cố định giữa các child thì dùng `container.spacing`, không dùng spacer.
+
+## 4. Khác biệt Android ↔ iOS
+
+| Vùng | Android | iOS | Khuyến nghị |
+|---|---|---|---|
+| `minLength` thiếu | 0 | ~8 | luôn gửi |
+| Trong `box` / scroll | 0 + minLength | không co giãn rõ ràng | không dùng spacer trong các container này |
+| `minLength` (D35) | min cả 2 chiều → trong `row` hàng cao ≥ `minLength` | chỉ trục chính | giữ `minLength` nhỏ hơn chiều cao hàng |
+| `spacer` cạnh `text` trong `row` (D29) | text bị giới hạn ½ chỗ còn lại | text lấy đủ chỗ | xem [container.md](container.md) §5 |
+
+## 5. Ví dụ
+
+Đẩy tiêu đề sang trái, nút "Xem tất cả" sang phải:
+```json
+{ "type": "container", "style": { "fillMaxWidth": true },
+  "property": { "layout": "row", "spacing": 0, "alignment": "center" },
+  "value": { "children": [
+    { "type": "text", "value": "Ưu đãi cho bạn", "property": { "typography": "headerDefaultBold" } },
+    { "type": "spacer", "value": "", "property": { "minLength": 8 } },
+    { "type": "text", "value": "Xem tất cả", "property": { "typography": "labelSMedium", "color": "#A50064" } }
+  ] } }
+```
+
+## 6. Lỗi thường gặp
+
+- [ ] Không gửi `minLength` → iOS thêm ~8 so với Android.
+- [ ] Không gửi `value: ""` → iOS mất node.
+- [ ] Hàng có thêm `container` co giãn → spacer không đẩy được (Android); đặt `width` hoặc `fillMaxWidth` cho container đó.

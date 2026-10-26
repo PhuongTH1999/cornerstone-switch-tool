@@ -1,19 +1,29 @@
-import SDUIPreviewImage from '../components/SDUIPreviewImage'
 import { buildMiniAppUrl, DEFAULT_MINI_APP_URL } from '../lib/miniAppUrl'
 import { resolveExportAssets } from '../lib/exportAssets'
 import { copyText } from '../lib/clipboard'
-import { IMAGE_PLACEHOLDER, resolveSDUIDesignTokens } from '../lib/designTokens'
+import { resolveSDUIDesignTokens } from '../lib/designTokens'
+import { applyDynamicFields, buildDynamicFields, contentPath, duplicateVariables, findDynamicFields, indexesOf, isBindable } from '../lib/dynamicFields'
+import { areSiblings, moveNode, moveNodeTo, parentOf } from '../lib/builderTree'
+import { allOfType, applyStyleTo, captureStyleTree, sameItemInList, siblingsOf, type StyleTree } from '../lib/builderStyle'
 import FigmaMigration from '../components/FigmaMigration'
 import SDUIDocumentation from '../components/SDUIDocumentation'
+import SDUIPreview from '../renderers/sdui/preview/SDUIPreview'
+import { SDUI_TYPES } from '../renderers/sdui/preview/types'
 import { ChangeEvent, useEffect, useRef, useState } from 'react'
-import type { CSSProperties, ReactNode } from 'react'
+import type { DragEvent, ReactNode } from 'react'
 import '../styles/sdui.scss'
 import { useSearchParams } from 'react-router-dom'
 import SDUIIcon from '../components/SDUIIcon'
 import { createSDUITemplate, deleteSDUITemplate, getSDUITemplate, updateSDUITemplate, useSDUITemplates, templateKey, TEMPLATE_CHANGED_EVENT, type SavedSchema } from '../hooks/useSDUITemplates'
 import API_BASE_URL from '../config/api'
 
-interface BuilderNode { source?: any; id: number; type: string; name: string; value?: string; url?: string; title?: string; buttonType?: string; ctaType?: string; iconLeft?: string; iconRight?: string; layout?: string; spacing?: number; padding?: any; radius?: number; bg?: string; width?: number; height?: number; border?: { width?: number; color?: string }; alignment?: string; textAlignment?: string; contentMode?: string; fillMaxWidth?: boolean; fillMaxHeight?: boolean; weight?: number; nativeStyle?: any; nativeProperty?: any; children?: BuilderNode[] }
+interface BuilderNode { source?: any; id: number; type: string; name: string; value?: string; url?: string; title?: string; buttonType?: string; ctaType?: string; iconLeft?: string; iconRight?: string; layout?: string; spacing?: number; padding?: any; radius?: number; bg?: string; width?: number; height?: number; border?: { width?: number; color?: string }; alignment?: string; textAlignment?: string; contentMode?: string; fillMaxWidth?: boolean; fillMaxHeight?: boolean; weight?: number; nativeStyle?: any; nativeProperty?: any; nativeValue?: any; variable?: string; children?: BuilderNode[] }
+
+/** Types whose `value.children` the editor shows as layers (spec §2.2). */
+const PARENT_TYPES = ['container', 'box', 'pager']
+const TYPE_ICON: Record<string, string> = { container: '▦', text: 'T', image: '▧', button: '▣', tag: '⌑', spacer: '·', box: '⧉', pager: '⇆', pageIndicator: '•', progressBar: '▬' }
+const TYPOGRAPHY_OPTIONS = ['', 'headlineDefaultBold', 'headerDefaultBold', 'headerSSemibold', 'headerXsSemibold', 'descriptionDefaultRegular', 'descriptionXsRegular', 'labelSMedium', 'labelXsMedium', 'actionDefaultBold', 'actionSBold', 'actionXsBold']
+const ALIGNMENT9_OPTIONS = ['topStart', 'topCenter', 'topEnd', 'centerStart', 'center', 'centerEnd', 'bottomStart', 'bottomCenter', 'bottomEnd']
 
 const initialBuilderTree: BuilderNode = {
   id: 1,
@@ -48,115 +58,13 @@ function unwrapSchema(input: any): any {
   return root
 }
 
-const flexAlignment: Record<string, CSSProperties['justifyContent']> = {
-  start: 'flex-start', top: 'flex-start', left: 'flex-start', leading: 'flex-start',
-  center: 'center', end: 'flex-end', bottom: 'flex-end', right: 'flex-end', trailing: 'flex-end',
-  spaceBetween: 'space-between', spaceAround: 'space-around', spaceEvenly: 'space-evenly',
-}
-
-const normalizeSDUILayout = (layout?: string) => layout === 'scrollColumn' ? 'column' : layout
-
-const typography: Record<string, CSSProperties> = {
-  labelXsMedium: { fontSize: 11, fontWeight: 500 }, labelSMedium: { fontSize: 12, fontWeight: 500 },
-  headerXsSemibold: { fontSize: 13, fontWeight: 600 }, headerSSemibold: { fontSize: 15, fontWeight: 600 },
-  headerDefaultBold: { fontSize: 17, fontWeight: 700 }, descriptionXsRegular: { fontSize: 11, fontWeight: 400 },
-  descriptionDefaultRegular: { fontSize: 13, fontWeight: 400 }, actionSBold: { fontSize: 13, fontWeight: 700 },
-}
-
-function boxStyle(input: any): CSSProperties {
-  const box = input || {}
-  const padding = box.padding
-  const result: CSSProperties = {}
-  if (box.backgroundColor) result.backgroundColor = box.backgroundColor
-  if (box.cornerRadius != null) result.borderRadius = box.cornerRadius
-  if (box.border && (box.border.width != null || box.border.color)) result.border = `${box.border.width ?? 1}px solid ${box.border.color || '#e0e0e0'}`
-  if (box.width != null && box.width !== '') result.width = box.width
-  if (box.height != null && box.height !== '') result.height = box.height
-  if (padding != null) {
-    result.padding = typeof padding === 'number'
-      ? padding
-      : padding.all != null
-        ? padding.all
-        : `${padding.top ?? padding.vertical ?? 0}px ${padding.right ?? padding.horizontal ?? 0}px ${padding.bottom ?? padding.vertical ?? 0}px ${padding.left ?? padding.horizontal ?? 0}px`
-  }
-  return result
-}
-
-function fillStyle(node: any, row: boolean): CSSProperties {
-  const style = node?.style || {}
-  const modifier = node?.modifier || {}
-  const fillWidth = node?.fillMaxWidth || style.fillMaxWidth || modifier.fillMaxWidth || modifier.fillMaxSize
-  const fillHeight = node?.fillMaxHeight || style.fillMaxHeight || modifier.fillMaxHeight || modifier.fillMaxSize
-  return {
-    ...(modifier.weight != null ? { flex: modifier.weight, minWidth: row ? 0 : undefined, minHeight: row ? undefined : 0 } : {}),
-    ...(fillWidth || (row && node?.type === 'spacer') ? { flex: row ? 1 : undefined, minWidth: row ? 0 : undefined, alignSelf: row ? undefined : 'stretch' } : {}),
-    ...(fillHeight || (!row && node?.type === 'spacer') ? { flex: row ? undefined : 1, minHeight: row ? undefined : 0, alignSelf: row ? 'stretch' : undefined } : {}),
-    ...(node?.width != null || style.width != null || modifier.width != null ? { flexShrink: 0 } : {}),
-  }
-}
-
-function renderPreviewNode(rawNode: any, key?: string | number, selectedNodeId?: number, onSelect?: (id: number) => void): ReactNode {
-  if (!rawNode || typeof rawNode !== 'object') return null
-  const node = rawNode.type === 'template_widget' ? unwrapSchema(rawNode) : rawNode
-  const style = node.nativeStyle || node.style || {}
-  const property = node.nativeProperty || node.property || {}
-  const modifier = node.modifier || {}
-  const value = typeof node.value === 'object' ? node.value || {} : {}
-
-  if (node.type === 'container') {
-    const layout = normalizeSDUILayout(node.layout || property.layout) || 'column'
-    const row = /row/i.test(layout) && !/column/i.test(layout)
-    const scroll = /scroll/i.test(layout)
-    const children = node.children || value.children || []
-    const alignment = node.alignment || property.alignment || modifier.alignment
-    const arrangement = property.arrangement || modifier.arrangement
-    const nodeBox = { ...style, backgroundColor: node.bg ?? style.backgroundColor, width: node.width ?? style.width, height: node.height ?? style.height, padding: node.padding ?? style.padding, cornerRadius: node.radius ?? style.cornerRadius, border: style.border || node.border }
-    const styleProps: CSSProperties = { display: 'flex', flexDirection: row ? 'row' : 'column', gap: node.spacing ?? property.spacing, justifyContent: flexAlignment[arrangement] || 'flex-start', alignItems: flexAlignment[alignment] || (row ? 'center' : 'stretch'), ...(scroll ? (row ? { overflowX: 'auto', flexWrap: 'nowrap' } : { overflowY: 'auto' }) : {}), ...boxStyle(nodeBox), ...boxStyle(modifier) }
-    return <div key={key} className={`schema-preview-container ${selectedNodeId === node.id ? 'preview-node-selected' : ''}`} data-node-id={node.id} onClick={(event) => { if (node.id && onSelect) { event.stopPropagation(); onSelect(node.id) } }} style={styleProps}>{children.map((child: any, index: number) => <div key={child._id || child.id || index} className={`preview-node-shell ${selectedNodeId === child.id ? 'preview-node-shell-selected' : ''}`} data-node-id={child.id} onClick={(event) => { if (child.id && onSelect) { event.stopPropagation(); onSelect(child.id) } }} style={fillStyle(child, row)}>{renderPreviewNode(child, child._id || child.id || index, selectedNodeId, onSelect)}</div>)}</div>
-  }
-
-  if (node.componentType) {
-    const componentType = node.componentType
-    if (componentType === 'ITEM_LIST') return <div key={key} className="schema-preview-list" style={{ width: '100%', ...boxStyle(modifier) }}>{Array.from({ length: Math.min(node.maxItems || 2, 3) }, (_, index) => renderPreviewNode(node.itemTemplate, `${key}-${index}`))}</div>
-    if (componentType === 'TEXT') return <div key={key} className="schema-preview-text" style={{ ...typography[style.typography] || typography.descriptionDefaultRegular, color: style.color || '#222', fontWeight: style.fontWeight, fontStyle: 'italic', opacity: .85, ...boxStyle(modifier) }}>{`{${node.field || 'text'}}`}</div>
-    if (componentType === 'ICON' || componentType === 'IMAGE') return <img key={key} className="schema-preview-image" src={IMAGE_PLACEHOLDER} alt={node.field || 'image'} style={{ width: componentType === 'ICON' ? node.iconSize || 24 : '100%', height: componentType === 'ICON' ? node.iconSize || 24 : 80, objectFit: 'cover', ...boxStyle(modifier) }} />
-    if (componentType === 'CTA_BUTTON') return <PreviewButton key={key} title="Action" type="primary" style={modifier} />
-    if (componentType === 'TAG') return <PreviewTag key={key} value={`{${node.field || 'tag'}}`} type={style.tagType} />
-  }
-
-  if (node.type === undefined && (node.layout || node.children)) return <div key={key}>{renderPreviewNode({ type: 'container', property: { ...modifier, layout: node.layout, spacing: modifier.spacing }, value: { children: node.children }, style: modifier }, key)}</div>
-  if (node.body || node.footer || node.header) return <div key={key} className="schema-preview-sections">{['header', 'body', 'footer'].map((section) => node[section] ? renderPreviewNode(node[section], `${key}-${section}`) : null)}</div>
-  if (node.type === 'text') return <div key={key} className="schema-preview-text" style={{ ...(typography[property.typography] || typography.descriptionDefaultRegular), color: property.color || '#222', textAlign: property.textAlignment || node.textAlignment, ...(property.lineLimit ? { display: '-webkit-box', WebkitLineClamp: property.lineLimit, WebkitBoxOrient: 'vertical', overflow: 'hidden' } : {}), ...boxStyle({ ...style, width: node.width ?? style.width, height: node.height ?? style.height }) }}>{typeof node.value === 'string' ? node.value : ''}</div>
-  if (node.type === 'image') return <SDUIPreviewImage key={key} src={node.url || (typeof node.value === 'string' && /^(https?:|data:|\/\/)/i.test(node.value) ? node.value : IMAGE_PLACEHOLDER)} alt="" style={{ width: node.width || style.width || 48, height: node.height || style.height || 48, aspectRatio: property.aspectRatio, objectFit: (node.contentMode || property.contentMode) === 'fill' ? 'cover' : (node.contentMode || property.contentMode) === 'center' ? 'none' : 'contain', background: property.tintColor || '#eee', flexShrink: 0, ...boxStyle({ ...style, width: node.width ?? style.width, height: node.height ?? style.height, border: style.border || node.border }) }} />
-  if (node.type === 'button') return <PreviewButton key={key} title={node.title || value.title || 'Button'} type={node.buttonType || value.type || property.type || 'primary'} style={{ ...property, ...style }} iconLeft={node.iconLeft || value.iconLeft} iconRight={node.iconRight || value.iconRight} />
-  if (node.type === 'tag') return <PreviewTag key={key} value={typeof node.value === 'string' ? node.value : 'TAG'} type={property.tagType} style={property} />
-  if (node.type === 'spacer') return <div key={key} style={{ flex: 1, minWidth: property.minLength, minHeight: property.minLength }} />
-  return null
-}
-
-function PreviewButton({ title, type, style, iconLeft, iconRight }: { title: string; type: string; style?: any; iconLeft?: string; iconRight?: string }) {
-  const colors: Record<string, CSSProperties> = { primary: { background: '#a50064', color: '#fff', borderColor: '#a50064' }, secondary: { background: '#f0f0f3', color: '#333', borderColor: '#f0f0f3' }, tonal: { background: '#fce4f1', color: '#a50064', borderColor: '#fce4f1' }, outline: { background: 'transparent', color: style?.color || '#a50064', borderColor: style?.color || '#a50064' }, danger: { background: '#e53935', color: '#fff', borderColor: '#e53935' }, text: { background: 'transparent', color: style?.color || '#a50064', borderColor: 'transparent' }, disabled: { background: '#eaeaea', color: '#aaa', borderColor: '#eaeaea' } }
-  return <button disabled={type === 'disabled'} className="schema-preview-button" style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '7px 14px', borderRadius: 8, fontSize: 12, fontWeight: 600, border: '1px solid transparent', flexShrink: 0, ...(colors[type] || colors.primary), justifyContent: 'center', ...boxStyle(style) }}>{iconLeft && <img src={iconLeft} alt="" width="14" height="14" />}{title}{iconRight && <img src={iconRight} alt="" width="14" height="14" />}</button>
-}
-
-function PreviewTag({ value, type, style }: { value: string; type?: string; style?: any }) {
-  const colors: Record<string, CSSProperties> = { info: { background: '#e3f2fd', color: '#1565c0' }, success: { background: '#e6f7ed', color: '#1b873f' }, error: { background: '#fdecea', color: '#c62828' }, warning: { background: '#fff3e0', color: '#e65100' }, highlight: { background: '#fde7f1', color: '#a50064' } }
-  return <span className="schema-preview-tag" style={{ padding: '2px 8px', borderRadius: 10, fontSize: 10, fontWeight: 700, alignSelf: 'flex-start', ...colors[type || 'highlight'], ...(style?.backgroundColor ? { background: style.backgroundColor } : {}), ...(style?.textColor ? { color: style.textColor } : {}) }}>{value}</span>
-}
-
-let activePreviewLink: { selectedNodeId?: number; onSelect?: (id: number) => void } = {}
-
-function PreviewNode({ node, selectedNodeId, onSelect }: { node: any; selectedNodeId?: number; onSelect?: (id: number) => void }) {
-  return <>{renderPreviewNode(unwrapSchema(node), 'preview-root', selectedNodeId ?? activePreviewLink.selectedNodeId, onSelect || activePreviewLink.onSelect)}</>
-}
-
 function SchemaTreeNode({ node, selected, onSelect }: { node: BuilderNode; selected: number; onSelect: (id: number) => void }) {
   const description = node.type === 'text' ? node.value : node.type === 'button' ? node.title : node.type === 'image' ? node.url : node.layout
   const dimensions = node.width || node.height ? `${node.width || 'auto'} × ${node.height || 'auto'}` : ''
   return <div className="generated-tree-node">
     <button className={`generated-tree-row ${selected === node.id ? 'selected' : ''}`} onClick={() => onSelect(node.id)}>
-      <span className={`generated-tree-type type-${node.type}`}>{node.type === 'container' ? '▦' : node.type === 'text' ? 'T' : node.type === 'image' ? '▧' : node.type === 'button' ? '▣' : '·'}</span>
-      <span className="generated-tree-label"><strong>{node.name}</strong><small>{node.type}</small></span>
+      <span className={`generated-tree-type type-${node.type}`}>{TYPE_ICON[node.type] || '·'}</span>
+      <span className="generated-tree-label"><strong>{node.name}</strong>{node.variable && <span className="variable-badge">{node.variable}</span>}<small>{node.type}</small></span>
       {description && <code title={description}>{description}</code>}
       {dimensions && <span className="generated-tree-chip">{dimensions}</span>}
       {node.children && <span className="generated-tree-count">{node.children.length}</span>}
@@ -169,29 +77,27 @@ const countBuilderNodes = (node: BuilderNode): number => 1 + (node.children || [
 
 function normalizeBuilderTree(tree: any): BuilderNode | null {
   const root = unwrapSchema(resolveSDUIDesignTokens(tree))
-  if (!root || typeof root !== 'object' || !['container', 'text', 'image', 'button', 'tag', 'spacer'].includes(root.type)) return null
+  if (!root || typeof root !== 'object' || !(SDUI_TYPES as readonly string[]).includes(root.type)) return null
   let nextId = 1
+  // Children with an unknown type are kept as-is so their JSON survives a round trip; the preview and lint show they are not drawn.
   const convert = (node: any): BuilderNode => {
-    if (!node || typeof node !== 'object' || !['container', 'text', 'image', 'button', 'tag', 'spacer'].includes(node.type)) throw new Error('Unsupported component')
+    if (!node || typeof node !== 'object') throw new Error('Unsupported component')
     const value = node.value && typeof node.value === 'object' ? node.value : {}
     const id = nextId++
-    return { source: node.source || node, id, type: node.type || 'text', name: node.name || node.property?.id || (typeof node.value === 'string' ? node.value : `${node.type || 'component'}_${id}`), value: typeof node.value === 'string' ? node.value : undefined, url: node.url || (node.type === 'image' && typeof node.value === 'string' ? node.value : undefined), title: node.title || value.title || node.property?.title, buttonType: node.buttonType || value.type || node.property?.type, ctaType: node.ctaType || node.property?.ctaType, iconLeft: node.iconLeft || value.iconLeft, iconRight: node.iconRight || value.iconRight, layout: normalizeSDUILayout(node.layout || node.property?.layout), spacing: node.spacing ?? node.property?.spacing, padding: node.padding ?? node.style?.padding, radius: node.radius ?? node.style?.cornerRadius, bg: node.bg || node.style?.backgroundColor, width: node.width ?? node.style?.width, height: node.height ?? node.style?.height, border: node.border || node.style?.border, alignment: node.alignment || node.property?.alignment, textAlignment: node.textAlignment || node.property?.textAlignment, contentMode: node.contentMode || node.property?.contentMode, fillMaxWidth: node.fillMaxWidth ?? node.style?.fillMaxWidth ?? node.modifier?.fillMaxWidth, fillMaxHeight: node.fillMaxHeight ?? node.style?.fillMaxHeight ?? node.modifier?.fillMaxHeight, weight: node.weight ?? node.modifier?.weight, nativeStyle: node.nativeStyle || node.style || {}, nativeProperty: node.nativeProperty || node.property || {}, children: node.type === 'container' ? (node.children || value.children || []).map(convert) : undefined }
+    return { source: node.source || node, id, type: node.type || 'text', name: node.name || node.property?.id || (typeof node.value === 'string' ? node.value : `${node.type || 'component'}_${id}`), value: typeof node.value === 'string' ? node.value : undefined, url: node.url || (node.type === 'image' && typeof node.value === 'string' ? node.value : undefined), title: node.title || value.title || node.property?.title, buttonType: node.buttonType || value.type || node.property?.type, ctaType: node.ctaType || node.property?.ctaType, iconLeft: node.iconLeft || value.iconLeft, iconRight: node.iconRight || value.iconRight, layout: node.layout || node.property?.layout, spacing: node.spacing ?? node.property?.spacing, padding: node.padding ?? node.style?.padding, radius: node.radius ?? node.style?.cornerRadius, bg: node.bg || node.style?.backgroundColor, width: node.width ?? node.style?.width, height: node.height ?? node.style?.height, border: node.border || node.style?.border, alignment: node.alignment || node.property?.alignment, textAlignment: node.textAlignment || node.property?.textAlignment, contentMode: node.contentMode || node.property?.contentMode, fillMaxWidth: node.fillMaxWidth ?? node.style?.fillMaxWidth ?? node.modifier?.fillMaxWidth, fillMaxHeight: node.fillMaxHeight ?? node.style?.fillMaxHeight ?? node.modifier?.fillMaxHeight, weight: node.weight ?? node.modifier?.weight, nativeStyle: node.nativeStyle || node.style || {}, nativeProperty: node.nativeProperty || node.property || {}, nativeValue: node.type === 'progressBar' ? node.nativeValue || value : undefined, children: PARENT_TYPES.includes(node.type) ? (node.children || value.children || []).map(convert) : undefined }
   }
-  try { return convert(root) } catch { return null }
+  try { return applyDynamicFields(convert(root), findDynamicFields(tree)).root } catch { return null }
 }
 
-function BuilderInspector({ node, onField, onStyle, onProperty, onApplyToAll }: { node: BuilderNode; onField: (key: keyof BuilderNode, value: string) => void; onStyle: (key: string, value: string) => void; onProperty: (key: string, value: string) => void; onApplyToAll: () => void }) {
+function BuilderInspector({ node, onField, onStyle, onProperty, onValue, styleTools, path, duplicateVariable, onCopyPath }: { node: BuilderNode; onField: (key: keyof BuilderNode, value: string) => void; onStyle: (key: string, value: string) => void; onProperty: (key: string, value: string) => void; onValue: (key: string, value: string) => void; styleTools: ReactNode; path: string; duplicateVariable: boolean; onCopyPath: () => void }) {
   const style = node.nativeStyle || {}
   const property = node.nativeProperty || {}
-  const applyAllControl = <button className="inspector-apply-button" onClick={onApplyToAll}>Apply appearance to all {node.type}s</button>
-  const input = (label: string, key: keyof BuilderNode, value: string | number = '') => <><label className="sdui-label">{label}<input value={value} onChange={(event) => onField(key, event.target.value)} /></label>{node.type === 'image' && label === 'Corner radius' && applyAllControl}</>
+  const input = (label: string, key: keyof BuilderNode, value: string | number = '') => <><label className="sdui-label">{label}<input value={value} onChange={(event) => onField(key, event.target.value)} /></label></>
   const styleInput = (label: string, key: string, value: string | number = '') => <label className="sdui-label">{label}<input value={value} onChange={(event) => onStyle(key, event.target.value)} /></label>
-  const propertyInput = (label: string, key: string, value: string | number = '') => <><label className="sdui-label">{label}<input value={value} onChange={(event) => onProperty(key, event.target.value)} /></label>{((node.type === 'tag' && label === 'Icon URL') || (node.type === 'spacer' && label === 'Minimum length')) && applyAllControl}</>
-  const propertySelect = (label: string, key: string, value: string, options: string[]) => <><label className="sdui-label">{label}<select value={value} onChange={(event) => onProperty(key, event.target.value)}>{options.map((option) => <option key={option} value={option}>{option || 'Default'}</option>)}</select></label>{node.type === 'text' && label === 'Text alignment' && applyAllControl}</>
-  const onApplyToSiblings = onApplyToAll
-  const onApplyToAllButtons = onApplyToAll
+  const propertyInput = (label: string, key: string, value: string | number = '') => <><label className="sdui-label">{label}<input value={value} onChange={(event) => onProperty(key, event.target.value)} /></label></>
+  const propertySelect = (label: string, key: string, value: string, options: string[]) => <><label className="sdui-label">{label}<select value={value} onChange={(event) => onProperty(key, event.target.value)}>{options.map((option) => <option key={option} value={option}>{option || 'Default'}</option>)}</select></label></>
 
-  return <aside className="sdui-card figma-inspector-dock"><div className="sdui-card-title">Inspector <span>{node.type.toUpperCase()}</span></div>{input('Layer name', 'name', node.name)}{node.type === 'container' && <><label className="sdui-label">Background color<div className="inspector-color-row"><input className="inspector-color" type="color" value={/^#[0-9a-f]{6}$/i.test(node.bg || style.backgroundColor || '') ? (node.bg || style.backgroundColor) : '#ffffff'} onChange={(event) => onStyle('backgroundColor', event.target.value)} /><input value={node.bg || style.backgroundColor || ''} onChange={(event) => onStyle('backgroundColor', event.target.value)} placeholder="#FFFFFF" /></div></label><label className="sdui-label">Layout<select className="inspector-select" value={node.layout || property.layout || 'column'} onChange={(event) => onField('layout', event.target.value)}><option value="column">Vertical / Column</option><option value="row">Horizontal / Row</option><option value="scrollRow">Horizontal scroll</option></select></label>{input('Spacing', 'spacing', node.spacing ?? property.spacing ?? 0)}{input('Padding', 'padding', typeof node.padding === 'number' ? node.padding : node.padding?.all ?? 0)}{input('Width', 'width', node.width ?? style.width ?? '')}{input('Height', 'height', node.height ?? style.height ?? '')}{input('Corner radius', 'radius', node.radius ?? style.cornerRadius ?? 0)}{styleInput('Border color', 'border.color', style.border?.color || '')}{styleInput('Border width', 'border.width', style.border?.width || 0)}{propertySelect('Alignment', 'alignment', node.alignment || property.alignment || '', ['', 'leading', 'center', 'trailing', 'left', 'right', 'top', 'bottom'])}<button className="inspector-apply-button" onClick={onApplyToSiblings}>Apply appearance to all containers</button></>}{node.type === 'text' && <>{<label className="sdui-label">Text content<textarea value={node.value || ''} onChange={(event) => onField('value', event.target.value)} /></label>}{propertySelect('Typography', 'typography', property.typography || '', ['', 'labelXsMedium', 'labelSMedium', 'headerXsSemibold', 'headerSSemibold', 'headerDefaultBold', 'descriptionXsRegular', 'descriptionDefaultRegular', 'actionSBold'])}{propertyInput('Text color', 'color', property.color || '')}{propertyInput('Line limit', 'lineLimit', property.lineLimit || '')}{propertySelect('Text alignment', 'textAlignment', property.textAlignment || '', ['', 'leading', 'center', 'trailing'])}</>}{node.type === 'image' && <>{input('Image URL', 'url', node.url || '')}{propertySelect('Content mode', 'contentMode', node.contentMode || property.contentMode || 'fit', ['fit', 'fill', 'center'])}{propertyInput('Tint color', 'tintColor', property.tintColor || '')}{propertyInput('Aspect ratio', 'aspectRatio', property.aspectRatio || '')}{input('Width', 'width', node.width ?? style.width ?? '')}{input('Height', 'height', node.height ?? style.height ?? '')}{input('Corner radius', 'radius', node.radius ?? property.cornerRadius ?? style.cornerRadius ?? 0)}</>}{node.type === 'button' && <>{input('Button title', 'title', node.title || '')}<label className="sdui-label">Button type<select value={node.buttonType || 'primary'} onChange={(event) => onField('buttonType', event.target.value)}>{['primary', 'secondary', 'tonal', 'outline', 'danger', 'text', 'disabled'].map(type => <option key={type} value={type}>{type}</option>)}</select></label>{propertySelect('CTA type', 'ctaType', node.ctaType || property.ctaType || 'BUTTON', ['BUTTON', 'TOGGLE', 'ICON'])}{propertyInput('Button color', 'color', property.color || '')}{input('Left icon URL', 'iconLeft', node.iconLeft || '')}{input('Right icon URL', 'iconRight', node.iconRight || '')}{propertyInput('Action type', 'actionType', property.actionType || '')}{propertyInput('Feature code', 'actions.0.featureCode', property.actions?.[0]?.featureCode || '')}<button className="inspector-apply-button" onClick={onApplyToAllButtons}>Apply appearance to all buttons</button></>}{node.type === 'tag' && <>{input('Tag value', 'value', node.value || '')}{propertySelect('Tag type', 'tagType', property.tagType || 'highlight', ['info', 'success', 'error', 'warning', 'highlight'])}{propertyInput('Tag background', 'backgroundColor', property.backgroundColor || '')}{propertyInput('Tag text color', 'textColor', property.textColor || '')}{propertyInput('Icon URL', 'iconUrl', property.iconUrl || '')}</>}{node.type === 'spacer' && propertyInput('Minimum length', 'minLength', property.minLength || 0)}</aside>
+  return <aside className="sdui-card figma-inspector-dock"><div className="sdui-card-title">Inspector <span>{node.type.toUpperCase()}</span></div>{styleTools}<div className="sdui-label">Path<div className="inspector-path-row"><code title={path}>{path}</code><button type="button" className="sdui-quiet" onClick={onCopyPath}>Copy</button></div></div>{isBindable(node.type) ? <label className="sdui-label">Variable<input value={node.variable || ''} placeholder="Key BE trả về, vd. giftPrefix" onChange={(event) => onField('variable', event.target.value)} />{duplicateVariable && <small className="inspector-warning">Variable này đang gắn ở node khác — BE chỉ trả một giá trị cho mỗi key.</small>}</label> : <p className="sdui-muted inspector-note">Chỉ text, image, tag, button gắn được variable.</p>}{node.type === 'container' && <><label className="sdui-label">Background color<div className="inspector-color-row"><input className="inspector-color" type="color" value={/^#[0-9a-f]{6}$/i.test(node.bg || style.backgroundColor || '') ? (node.bg || style.backgroundColor) : '#ffffff'} onChange={(event) => onStyle('backgroundColor', event.target.value)} /><input value={node.bg || style.backgroundColor || ''} onChange={(event) => onStyle('backgroundColor', event.target.value)} placeholder="#FFFFFF" /></div></label><label className="sdui-label">Layout<select className="inspector-select" value={node.layout || property.layout || 'column'} onChange={(event) => onField('layout', event.target.value)}><option value="column">Vertical / Column</option><option value="row">Horizontal / Row</option><option value="scrollRow">Horizontal scroll</option><option value="scrollColumn">Vertical scroll</option></select></label>{input('Spacing', 'spacing', node.spacing ?? property.spacing ?? 0)}{input('Padding', 'padding', typeof node.padding === 'number' ? node.padding : node.padding?.all ?? 0)}{input('Width', 'width', node.width ?? style.width ?? '')}{input('Height', 'height', node.height ?? style.height ?? '')}{input('Corner radius', 'radius', node.radius ?? style.cornerRadius ?? 0)}{styleInput('Border color', 'border.color', style.border?.color || '')}{styleInput('Border width', 'border.width', style.border?.width || 0)}{propertySelect('Alignment', 'alignment', node.alignment || property.alignment || '', ['', 'leading', 'center', 'trailing', 'right', 'top', 'bottom', 'end'])}</>}{node.type === 'text' && <>{<label className="sdui-label">Text content<textarea value={node.value || ''} onChange={(event) => onField('value', event.target.value)} /></label>}{propertySelect('Typography', 'typography', property.typography || '', TYPOGRAPHY_OPTIONS)}{propertyInput('Text color', 'color', property.color || '')}{propertyInput('Line limit', 'lineLimit', property.lineLimit || '')}{propertySelect('Text alignment', 'textAlignment', property.textAlignment || '', ['', 'leading', 'center', 'trailing'])}</>}{node.type === 'image' && <>{input('Image URL', 'url', node.url || '')}{propertySelect('Content mode', 'contentMode', node.contentMode || property.contentMode || 'fit', ['fit', 'fill', 'scaleAspectFill'])}{propertyInput('Tint color', 'tintColor', property.tintColor || '')}{propertyInput('Aspect ratio', 'aspectRatio', property.aspectRatio || '')}{input('Width', 'width', node.width ?? style.width ?? '')}{input('Height', 'height', node.height ?? style.height ?? '')}{input('Corner radius', 'radius', node.radius ?? property.cornerRadius ?? style.cornerRadius ?? 0)}</>}{node.type === 'button' && <>{input('Button title', 'title', node.title || '')}<label className="sdui-label">Button type<select value={node.buttonType || 'primary'} onChange={(event) => onField('buttonType', event.target.value)}>{['primary', 'secondary', 'tonal', 'outline', 'danger', 'text', 'disabled'].map(type => <option key={type} value={type}>{type}</option>)}</select></label>{propertySelect('CTA type', 'ctaType', node.ctaType || property.ctaType || 'BUTTON', ['BUTTON', 'TOGGLE', 'ICON'])}{propertyInput('Button color', 'color', property.color || '')}{input('Left icon URL', 'iconLeft', node.iconLeft || '')}{input('Right icon URL', 'iconRight', node.iconRight || '')}{propertyInput('Action type', 'actionType', property.actionType || '')}{propertyInput('Feature code', 'actions.0.featureCode', property.actions?.[0]?.featureCode || '')}</>}{node.type === 'tag' && <>{input('Tag value', 'value', node.value || '')}{propertySelect('Tag type', 'tagType', property.tagType || '', ['', 'info', 'success', 'error', 'warning', 'highlight'])}{propertyInput('Tag background', 'backgroundColor', property.backgroundColor || '')}{propertyInput('Tag text color', 'textColor', property.textColor || '')}{propertyInput('Icon URL', 'iconUrl', property.iconUrl || '')}</>}{node.type === 'spacer' && propertyInput('Minimum length', 'minLength', property.minLength || 0)}{(node.type === 'box' || node.type === 'pager') && <>{input('Width', 'width', node.width ?? style.width ?? '')}{input('Height', 'height', node.height ?? style.height ?? '')}{input('Corner radius', 'radius', node.radius ?? style.cornerRadius ?? 0)}</>}{node.type === 'box' && propertySelect('Content alignment', 'contentAlignment', property.contentAlignment || 'topStart', ALIGNMENT9_OPTIONS)}{node.type === 'pager' && <>{propertySelect('Show indicator', 'showIndicator', String(property.showIndicator ?? true), ['true', 'false'])}{propertySelect('Indicator alignment', 'alignmentIndicator', property.alignmentIndicator || 'bottomCenter', ALIGNMENT9_OPTIONS)}{propertyInput('Active color', 'activeColor', property.activeColor || '')}{propertyInput('Inactive color', 'inactiveColor', property.inactiveColor || '')}{propertyInput('Indicator background', 'indicatorBackgroundColor', property.indicatorBackgroundColor || '')}</>}{node.type === 'pageIndicator' && <>{propertyInput('Total', 'total', property.total ?? 0)}{propertyInput('Active index', 'activeIndex', property.activeIndex ?? 0)}{propertyInput('Active color', 'activeColor', property.activeColor || '')}{propertyInput('Inactive color', 'inactiveColor', property.inactiveColor || '')}</>}{node.type === 'progressBar' && <>{(['currentValue', 'maxValue', 'subDes1', 'subDes2'] as const).map(key => <label key={key} className="sdui-label">{key}<input value={node.nativeValue?.[key] ?? ''} onChange={(event) => onValue(key, event.target.value)} /></label>)}{propertyInput('Bar color', 'color', property.color || '')}{propertyInput('Bar height', 'barHeight', property.barHeight ?? '')}{propertyInput('Bar width', 'barWidth', property.barWidth ?? '')}</>}</aside>
 }
 
 export default function SDUIPage() {
@@ -216,10 +122,13 @@ export default function SDUIPage() {
   const [importJson, setImportJson] = useState('')
   const [importError, setImportError] = useState('')
   const [outputView, setOutputView] = useState<'tree' | 'json'>('tree')
-  const [previewWidth, setPreviewWidth] = useState(390)
   const [qrDataUrl, setQrDataUrl] = useState('')
   const [showQr, setShowQr] = useState(false)
   const [qrGenerating, setQrGenerating] = useState(false)
+  const [styleClipboard, setStyleClipboard] = useState<{ tree: StyleTree; from: string } | null>(null)
+  const [styleDeep, setStyleDeep] = useState(true)
+  const draggedLayer = useRef<number | null>(null)
+  const [dropHint, setDropHint] = useState<{ id: number; place: 'before' | 'after' } | null>(null)
   const [miniAppBaseUrl, setMiniAppBaseUrl] = useState(() => import.meta.env.VITE_MINIAPP_URL || DEFAULT_MINI_APP_URL)
 
   const [copyFeedback, setCopyFeedback] = useState('')
@@ -240,9 +149,13 @@ export default function SDUIPage() {
   }
   const findBuilderNode = (node: BuilderNode, id: number): BuilderNode | null => node.id === id ? node : (node.children || []).reduce<BuilderNode | null>((found, child) => found || findBuilderNode(child, id), null)
   const updateBuilderTree = (node: BuilderNode, id: number, update: (target: BuilderNode) => BuilderNode): BuilderNode => node.id === id ? update(node) : { ...node, children: node.children?.map((child) => updateBuilderTree(child, id, update)) }
-  const toSchemaNode = (node: BuilderNode): any => ({ ...(node.source || {}), type: node.type, style: { ...(node.nativeStyle || {}), ...(node.bg ? { backgroundColor: node.bg } : {}), ...(node.padding != null ? { padding: typeof node.padding === 'number' ? { all: node.padding } : node.padding } : {}), ...(node.radius != null ? { cornerRadius: node.radius } : {}), ...(node.width != null ? { width: node.width } : {}), ...(node.height != null ? { height: node.height } : {}), ...(node.border ? { border: node.border } : {}), ...(node.fillMaxWidth ? { fillMaxWidth: true } : {}), ...(node.fillMaxHeight ? { fillMaxHeight: true } : {}) }, property: { ...(node.nativeProperty || {}), ...(node.layout ? { layout: node.layout } : {}), ...(node.spacing != null ? { spacing: node.spacing } : {}), ...(node.alignment ? { alignment: node.alignment } : {}), ...(node.textAlignment ? { textAlignment: node.textAlignment } : {}), ...(node.contentMode ? { contentMode: node.contentMode } : {}), ...(node.type === 'button' ? { type: undefined, ctaType: node.ctaType || node.nativeProperty?.ctaType || 'BUTTON' } : {}), id: node.name }, modifier: { ...(node.source?.modifier || {}), ...(node.weight != null ? { weight: node.weight } : {}) }, value: node.type === 'container' ? { ...(node.source?.value && typeof node.source.value === 'object' ? node.source.value : {}), children: (node.children || []).map(toSchemaNode) } : node.type === 'image' ? node.url || '' : node.type === 'button' ? { ...(node.source?.value && typeof node.source.value === 'object' ? node.source.value : {}), title: node.title || 'Button', type: node.buttonType || 'primary', ...(node.iconLeft ? { iconLeft: node.iconLeft } : {}), ...(node.iconRight ? { iconRight: node.iconRight } : {}) } : node.value || '' })
-  const generatedSchema = resolveExportAssets({ type: 'template_widget', templateType: 'SDUI_WIDGET', data: [toSchemaNode(builderRoot)] }, import.meta.env.VITE_PUBLIC_ASSET_URL || window.location.origin)
+  const toSchemaNode = (node: BuilderNode, withRef = false): any => ({ ...(node.source || {}), ...(withRef ? { __ref: node.id } : {}), type: node.type, style: { ...(node.nativeStyle || {}), ...(node.bg ? { backgroundColor: node.bg } : {}), ...(node.padding != null ? { padding: typeof node.padding === 'number' ? { all: node.padding } : node.padding } : {}), ...(node.radius != null ? { cornerRadius: node.radius } : {}), ...(node.width != null ? { width: node.width } : {}), ...(node.height != null ? { height: node.height } : {}), ...(node.border ? { border: node.border } : {}), ...(node.fillMaxWidth ? { fillMaxWidth: true } : {}), ...(node.fillMaxHeight ? { fillMaxHeight: true } : {}) }, property: { ...(node.nativeProperty || {}), ...(node.layout ? { layout: node.layout } : {}), ...(node.spacing != null ? { spacing: node.spacing } : {}), ...(node.alignment ? { alignment: node.alignment } : {}), ...(node.textAlignment ? { textAlignment: node.textAlignment } : {}), ...(node.contentMode ? { contentMode: node.contentMode } : {}), ...(node.type === 'button' ? { type: undefined, ctaType: node.ctaType || node.nativeProperty?.ctaType || 'BUTTON' } : {}), id: node.name }, ...(node.source?.modifier || node.weight != null ? { modifier: { ...(node.source?.modifier || {}), ...(node.weight != null ? { weight: node.weight } : {}) } } : {}), value: PARENT_TYPES.includes(node.type) ? { ...(node.source?.value && typeof node.source.value === 'object' ? node.source.value : {}), children: (node.children || []).map(child => toSchemaNode(child, withRef)) } : node.type === 'image' ? node.url || '' : node.type === 'button' ? { ...(node.source?.value && typeof node.source.value === 'object' ? node.source.value : {}), title: node.title || 'Button', type: node.buttonType || 'primary', ...(node.iconLeft ? { iconLeft: node.iconLeft } : {}), ...(node.iconRight ? { iconRight: node.iconRight } : {}) } : node.type === 'progressBar' ? node.nativeValue || node.source?.value || {} : (SDUI_TYPES as readonly string[]).includes(node.type) ? node.value || '' : node.source?.value })
+  // Content nodes bound to a BE data key; the path points into this exported JSON.
+  const dynamicFields = buildDynamicFields(builderRoot)
+  const generatedSchema = resolveExportAssets({ type: 'template_widget', templateType: 'SDUI_WIDGET', data: [toSchemaNode(builderRoot)], ...(dynamicFields.length ? { dynamic_fields: dynamicFields } : {}) }, import.meta.env.VITE_PUBLIC_ASSET_URL || window.location.origin)
   const builderSchema = JSON.stringify(generatedSchema, null, 2)
+  // Same JSON as the export, plus `__ref` so a click in the preview selects the layer.
+  const previewSchema = resolveExportAssets({ type: 'template_widget', templateType: 'SDUI_WIDGET', data: [toSchemaNode(builderRoot, true)] }, import.meta.env.VITE_PUBLIC_ASSET_URL || window.location.origin)
   const templateJsonUrl = editingSchema?.id
     ? new URL(`${API_BASE_URL.replace(/\/+$/, '')}/cornerstone-package/sdui/templates/${encodeURIComponent(editingSchema.id)}/json`, window.location.origin).href
     : ''
@@ -310,8 +223,15 @@ export default function SDUIPage() {
   }
   const selectedBuilderNode = findBuilderNode(builderRoot, selectedNode) || builderRoot
   const addBuilderChild = (parentId: number, type: string) => {
-    if (findBuilderNode(builderRoot, parentId)?.type !== 'container') return
-    const child: BuilderNode = { id: Date.now(), type, name: `${type}_${Date.now().toString().slice(-4)}`, value: type === 'text' ? 'New text' : undefined, title: type === 'button' ? 'Button' : undefined, buttonType: type === 'button' ? 'primary' : undefined, ctaType: type === 'button' ? 'BUTTON' : undefined, nativeProperty: type === 'button' ? { ctaType: 'BUTTON' } : {}, children: type === 'container' ? [] : undefined }
+    if (!PARENT_TYPES.includes(findBuilderNode(builderRoot, parentId)?.type || '')) return
+    const defaults: Record<string, Partial<BuilderNode>> = {
+      container: { layout: 'column', spacing: 0 }, text: { value: 'New text' }, tag: { value: 'Tag', nativeProperty: { tagType: 'info' } },
+      image: { width: 48, height: 48 }, button: { title: 'Button', buttonType: 'primary', ctaType: 'BUTTON', nativeProperty: { ctaType: 'BUTTON' } },
+      spacer: { nativeProperty: { minLength: 0 } }, box: { nativeProperty: { contentAlignment: 'topStart' } },
+      pager: { height: 120, nativeProperty: { showIndicator: true } }, pageIndicator: { nativeProperty: { total: 3, activeIndex: 0 } },
+      progressBar: { nativeValue: { currentValue: 30, maxValue: 100, subDes1: '', subDes2: '' } },
+    }
+    const child: BuilderNode = { id: Date.now(), type, name: `${type}_${Date.now().toString().slice(-4)}`, nativeProperty: {}, ...defaults[type], children: PARENT_TYPES.includes(type) ? [] : undefined }
     setBuilderRoot((current) => updateBuilderTree(current, parentId, (node) => ({ ...node, children: [...(node.children || []), child] })))
     setNativePreviewJson(null)
     setSelectedNode(child.id)
@@ -325,7 +245,7 @@ export default function SDUIPage() {
     setSelectedNode(builderRoot.id)
   }
   const setBuilderField = (key: keyof BuilderNode, value: string) => { setNativePreviewJson(null); setBuilderRoot((current) => updateBuilderTree(current, selectedNode, (node) => ({ ...node, [key]: ['spacing', 'padding', 'radius', 'width', 'height'].includes(key) ? Number(value) || 0 : value }))) }
-  const setBuilderNested = (rootKey: 'nativeStyle' | 'nativeProperty', path: string, value: string) => {
+  const setBuilderNested = (rootKey: 'nativeStyle' | 'nativeProperty' | 'nativeValue', path: string, value: string) => {
     setNativePreviewJson(null)
     setBuilderRoot((current) => updateBuilderTree(current, selectedNode, (node) => {
       const nextRoot = { ...(node[rootKey] || {}) }
@@ -334,7 +254,10 @@ export default function SDUIPage() {
       let target = nextRoot
       keys.slice(0, -1).forEach((key) => { target[key] = Array.isArray(target[key]) ? [...target[key]] : { ...(target[key] || {}) }; target = target[key] })
       const lastKey = keys[keys.length - 1]
-      target[lastKey] = /^(-?\d+(\.\d+)?)$/.test(value) ? Number(value) : value
+      // An emptied field removes the key: a '' left in a number field makes iOS drop the node (spec §2).
+      if (value === '') delete target[lastKey]
+      else if (path === 'showIndicator') target[lastKey] = value !== 'false'
+      else target[lastKey] = /^(-?\d+(\.\d+)?)$/.test(value) && !/^subDes/.test(path) ? Number(value) : value
       const nextNode = { ...node, [rootKey]: nextRoot }
       if (rootKey === 'nativeProperty' && path === 'type') nextNode.buttonType = value
       if (rootKey === 'nativeProperty' && path === 'alignment') nextNode.alignment = value
@@ -346,40 +269,67 @@ export default function SDUIPage() {
   }
   const setBuilderStyle = (key: string, value: string) => setBuilderNested('nativeStyle', key, value)
   const setBuilderProperty = (key: string, value: string) => setBuilderNested('nativeProperty', key, value)
-  const applySelectedAppearanceToAll = () => {
-    const source = findBuilderNode(builderRoot, selectedNode)
-    if (!source) return
-    const fieldKeys: Record<string, (keyof BuilderNode)[]> = {
-      container: ['layout', 'spacing', 'padding', 'radius', 'bg', 'width', 'height', 'border', 'alignment', 'fillMaxWidth', 'fillMaxHeight', 'weight'],
-      text: ['textAlignment'], image: ['width', 'height', 'radius', 'contentMode'],
-      button: ['buttonType', 'ctaType'], tag: [], spacer: [],
-    }
-    const propertyKeys: Record<string, string[]> = {
-      container: ['layout', 'spacing', 'alignment', 'arrangement'], text: ['typography', 'color', 'lineLimit', 'textAlignment'],
-      image: ['contentMode', 'tintColor', 'aspectRatio', 'cornerRadius'], button: ['color', 'ctaType'],
-      tag: ['tagType', 'backgroundColor', 'textColor'], spacer: ['minLength'],
-    }
-    const copyAppearance = (target: BuilderNode): BuilderNode => {
-      if (target.type !== source.type || target.id === source.id) return target
-      const nextProperty = { ...(target.nativeProperty || {}) }
-      for (const key of propertyKeys[source.type] || []) {
-        if (source.nativeProperty?.[key] === undefined) delete nextProperty[key]
-        else nextProperty[key] = structuredClone(source.nativeProperty[key])
-      }
-      return { ...target, ...Object.fromEntries((fieldKeys[source.type] || []).map(key => [key, structuredClone(source[key])])), nativeStyle: structuredClone(source.nativeStyle || {}), nativeProperty: nextProperty }
-    }
-    let affected = 0
-    const apply = (node: BuilderNode): BuilderNode => {
-      if (node.type === source.type && node.id !== source.id) affected++
-      const updated = copyAppearance(node)
-      return { ...updated, children: updated.children?.map(apply) }
-    }
+  const setBuilderValue = (key: string, value: string) => setBuilderNested('nativeValue', key, value)
+  const selectedPath = contentPath(selectedBuilderNode.type, indexesOf(builderRoot, selectedBuilderNode) ?? [])
+  const pasteStyleOnto = (targets: BuilderNode[], tree: StyleTree, label: string, deep: boolean) => {
+    if (!targets.length) return
+    const result = applyStyleTo(builderRoot, new Set(targets.map(target => target.id)), tree, deep)
     setNativePreviewJson(null)
-    setBuilderRoot(current => apply(current))
-    setStatus(affected ? `Applied appearance to ${affected} other ${source.type}${affected === 1 ? '' : 's'}.` : `No other ${source.type} components found.`)
+    setBuilderRoot(result.root)
+    const crossType = targets.some(target => target.type !== tree.style.type)
+    setStatus(`Style pasted to ${targets.length} ${label}`
+      + (deep && result.inside ? ` + ${result.inside} items inside` : '')
+      + (deep && result.skipped ? ` (${result.skipped} inside items skipped: structure differs)` : '')
+      + (crossType ? ` (other type: only style was pasted, not ${tree.style.type} properties)` : '') + '.')
   }
+  const styleTargets = {
+    siblings: siblingsOf(builderRoot, selectedNode),
+    list: sameItemInList(builderRoot, selectedNode),
+    all: allOfType(builderRoot, selectedBuilderNode.type, selectedNode),
+  }
+  const styleTools = <div className="inspector-style-tools" aria-label="Style">
+    <div className="inspector-style-row">
+      <button className="inspector-apply-button" onClick={() => { setStyleClipboard({ tree: captureStyleTree(selectedBuilderNode), from: selectedBuilderNode.name }); setStatus(`Copied style of ${selectedBuilderNode.name}.`) }}>Copy style</button>
+      <button className="inspector-apply-button" disabled={!styleClipboard} title={styleClipboard ? `From ${styleClipboard.from} (${styleClipboard.tree.style.type})` : 'Copy a style first'} onClick={() => styleClipboard && pasteStyleOnto([selectedBuilderNode], styleClipboard.tree, selectedBuilderNode.name, styleDeep)}>Paste style</button>
+    </div>
+    {styleClipboard && <small className="sdui-muted">Clipboard: {styleClipboard.from} · {styleClipboard.tree.style.type}</small>}
+    {!!selectedBuilderNode.children?.length && <label className="inspector-style-deep" title="Also copy the style of every item inside, matched by position"><input type="checkbox" checked={styleDeep} onChange={event => setStyleDeep(event.target.checked)} /> Include items inside</label>}
+    <button className="inspector-apply-button" disabled={!styleTargets.list.length} title="Same position inside the other entries of the list (e.g. the title of every card)" onClick={() => pasteStyleOnto(styleTargets.list, captureStyleTree(selectedBuilderNode), 'items in the list', styleDeep)}>Apply to same item in list ({styleTargets.list.length})</button>
+    <button className="inspector-apply-button" disabled={!styleTargets.siblings.length} title={`Other ${selectedBuilderNode.type}s in the same parent`} onClick={() => pasteStyleOnto(styleTargets.siblings, captureStyleTree(selectedBuilderNode), 'siblings', styleDeep)}>Apply to siblings ({styleTargets.siblings.length})</button>
+    <button className="inspector-apply-button" disabled={!styleTargets.all.length} title="Only the node's own style — items inside are not copied here" onClick={() => pasteStyleOnto(styleTargets.all, captureStyleTree(selectedBuilderNode), `${selectedBuilderNode.type}s`, false)}>Apply to all {selectedBuilderNode.type}s ({styleTargets.all.length})</button>
+  </div>
   const selectBuilderNode = (id: number) => { setSelectedNode(id); requestAnimationFrame(() => document.querySelector(`[data-tree-node-id="${id}"]`)?.scrollIntoView({ block: 'nearest', behavior: 'smooth' })) }
-  const renderBuilderTree = (node: BuilderNode, depth = 0): ReactNode => <div key={node.id} className="figma-tree-branch"><div data-tree-node-id={node.id} className={`figma-tree-row ${selectedNode === node.id ? 'selected' : ''}`} style={{ paddingLeft: `${10 + depth * 18}px` }} onClick={() => selectBuilderNode(node.id)}><button className="figma-tree-chevron" onClick={(event) => { event.stopPropagation(); setExpandedNodes((current) => { const next = new Set(current); next.has(node.id) ? next.delete(node.id) : next.add(node.id); return next }) }}>{node.children?.length ? (expandedNodes.has(node.id) ? '▾' : '▸') : '·'}</button><span className={`figma-tree-icon type-${node.type}`}>{node.type === 'container' ? '▦' : node.type === 'text' ? 'T' : node.type === 'image' ? '▧' : node.type === 'button' ? '▣' : '·'}</span><strong>{node.name}</strong><small>{node.type}</small>{node.id !== builderRoot.id && <button className="figma-tree-delete" onClick={(event) => { event.stopPropagation(); removeBuilderNode(node.id) }}>×</button>}</div>{expandedNodes.has(node.id) && node.children?.map((child) => renderBuilderTree(child, depth + 1))}</div>
+  // Reordering only swaps siblings; dynamic field paths follow automatically because they are computed from positions.
+  const reorderLayers = (next: BuilderNode, label: string) => {
+    if (next === builderRoot) return
+    setNativePreviewJson(null); setBuilderRoot(next); setStatus(label)
+  }
+  const moveLayer = (id: number, delta: -1 | 1) => reorderLayers(moveNode(builderRoot, id, delta), delta < 0 ? 'Layer moved up.' : 'Layer moved down.')
+  const layerDragProps = (node: BuilderNode) => node.id === builderRoot.id ? {} : {
+    draggable: true,
+    onDragStart: (event: DragEvent<HTMLDivElement>) => { draggedLayer.current = node.id; event.dataTransfer.effectAllowed = 'move' },
+    onDragOver: (event: DragEvent<HTMLDivElement>) => {
+      const dragged = draggedLayer.current
+      if (dragged === null || dragged === node.id || !areSiblings(builderRoot, dragged, node.id)) return
+      event.preventDefault()
+      const rect = event.currentTarget.getBoundingClientRect()
+      const place = event.clientY < rect.top + rect.height / 2 ? 'before' : 'after'
+      if (dropHint?.id !== node.id || dropHint.place !== place) setDropHint({ id: node.id, place })
+    },
+    onDrop: (event: DragEvent<HTMLDivElement>) => {
+      event.preventDefault()
+      const dragged = draggedLayer.current
+      if (dragged !== null && dropHint) reorderLayers(moveNodeTo(builderRoot, dragged, node.id, dropHint.place), 'Layer moved.')
+      draggedLayer.current = null; setDropHint(null)
+    },
+    onDragEnd: () => { draggedLayer.current = null; setDropHint(null) },
+  }
+  const renderBuilderTree = (node: BuilderNode, depth = 0): ReactNode => {
+    const position = parentOf(builderRoot, node.id)
+    const lastIndex = (position?.parent.children?.length ?? 1) - 1
+    const hint = dropHint?.id === node.id ? ` drop-${dropHint.place}` : ''
+    return <div key={node.id} className="figma-tree-branch"><div data-tree-node-id={node.id} className={`figma-tree-row ${selectedNode === node.id ? 'selected' : ''}${hint}`} style={{ paddingLeft: `${10 + depth * 18}px` }} onClick={() => selectBuilderNode(node.id)} {...layerDragProps(node)}><button className="figma-tree-chevron" onClick={(event) => { event.stopPropagation(); setExpandedNodes((current) => { const next = new Set(current); next.has(node.id) ? next.delete(node.id) : next.add(node.id); return next }) }}>{node.children?.length ? (expandedNodes.has(node.id) ? '▾' : '▸') : '·'}</button><span className={`figma-tree-icon type-${node.type}`}>{TYPE_ICON[node.type] || '·'}</span><strong>{node.name}</strong>{node.variable && <span className="variable-badge">{node.variable}</span>}<small>{node.type}</small>{position && <><button className="figma-tree-move" title="Move up" aria-label="Move layer up" disabled={position.index === 0} onClick={(event) => { event.stopPropagation(); moveLayer(node.id, -1) }}>↑</button><button className="figma-tree-move" title="Move down" aria-label="Move layer down" disabled={position.index === lastIndex} onClick={(event) => { event.stopPropagation(); moveLayer(node.id, 1) }}>↓</button></>}{node.id !== builderRoot.id && <button className="figma-tree-delete" onClick={(event) => { event.stopPropagation(); removeBuilderNode(node.id) }}>×</button>}</div>{expandedNodes.has(node.id) && node.children?.map((child) => renderBuilderTree(child, depth + 1))}</div>
+  }
 
   const draft = JSON.stringify({ name: schemaName, tree: builderRoot })
   const dirty = baseline ? draft !== baseline : true
@@ -470,7 +420,6 @@ export default function SDUIPage() {
     reader.onerror = () => setImportError('Could not read this file.')
     reader.readAsText(file); event.target.value = ''
   }
-  activePreviewLink = { selectedNodeId: selectedNode, onSelect: selectBuilderNode }
 
   return (
     <main className="sdui-page">
@@ -489,7 +438,7 @@ export default function SDUIPage() {
         if (!tree || !canReplaceDraft()) return
         setBuilderRoot(tree); setSchemaName(result.name); setEditingSchema(null); setBaseline('')
         setNativePreviewJson([result.template]); setSelectedNode(tree.id); setExpandedNodes(new Set([tree.id]))
-        setBuilderJsonInput(''); setPreviewWidth(360); setActiveTab('builder')
+        setBuilderJsonInput(''); setActiveTab('builder')
         setStatus(`Figma migrated. ${result.warnings.length} warnings reviewed. Check preview before saving.`)
       }} />}
       {activeTab === 'document' && <SDUIDocumentation />}
@@ -520,13 +469,13 @@ export default function SDUIPage() {
           <section className="sdui-card figma-tree-panel"><div className="sdui-card-title">Layers <span>SELECT TO EDIT</span></div>
             <details className="sdui-import"><summary>Import JSON</summary><label className="builder-json-label">Paste schema<textarea className="builder-json-input" value={builderJsonInput} onChange={event => setBuilderJsonInput(event.target.value)} placeholder="Paste component tree or template_widget JSON…" /></label><label className="sdui-quiet file-button">Choose JSON file<input hidden type="file" accept=".json,application/json" onChange={importBuilderFile} /></label><button disabled={!builderJsonInput.trim()} className="sdui-primary builder-import-button" onClick={importBuilder}>Apply JSON</button></details>
             <div className="figma-tree">{renderBuilderTree(builderRoot)}</div>
-            <div className="figma-add-row"><select id="builder-type" aria-label="Component type" defaultValue="text"><option value="container">Container</option><option value="text">Text</option><option value="image">Image</option><option value="button">Button</option><option value="spacer">Spacer</option></select><button className="sdui-primary" disabled={selectedBuilderNode.type !== 'container'} onClick={() => addBuilderChild(selectedNode, (document.getElementById('builder-type') as HTMLSelectElement).value)}>+ Add</button></div><p className="sdui-muted">Select a container to add a component inside it.</p>
+            <div className="figma-add-row"><select id="builder-type" aria-label="Component type" defaultValue="text">{SDUI_TYPES.map(type => <option key={type} value={type}>{type}</option>)}</select><button className="sdui-primary" disabled={!PARENT_TYPES.includes(selectedBuilderNode.type)} onClick={() => addBuilderChild(selectedNode, (document.getElementById('builder-type') as HTMLSelectElement).value)}>+ Add</button></div><p className="sdui-muted">Select a container, box or pager to add a component inside it.</p>
           </section>
           <div className="sdui-editor-main">
             <section className="sdui-card figma-canvas-panel">
-              <div className="sdui-card-title">Preview <span>UPDATES AS YOU EDIT</span><label className="preview-size-control">Device<select value={previewWidth} onChange={event => setPreviewWidth(Number(event.target.value))}><option value={390}>Mobile · 390px</option><option value={600}>Galaxy Z Fold (unfolded) · 600px</option><option value={768}>iPad · 768px</option></select></label></div>
-              <div className="sdui-preview figma-canvas"><div className="preview-viewport" style={{ width: previewWidth }}><PreviewNode node={builderRoot} /></div></div>
-              <p className="native-preview-hint">Click a component to edit its properties. Visual fields update here immediately; actions and feature codes are reflected in Generated schema.</p>
+              <div className="sdui-card-title">Preview <span>ANDROID · IOS</span></div>
+              <SDUIPreview input={previewSchema} selectedRef={String(selectedNode)} onSelect={ref => selectBuilderNode(Number(ref))} />
+              <p className="native-preview-hint">“Chọn node” để sửa thuộc tính; “Bấm thử” để chạy onTap / button giả lập. Preview vẽ đúng JSON được export, theo docs/sdui/sdui-preview.md.</p>
             </section>
             <section className="sdui-card sdui-generated-panel">
               <div className="sdui-generated-header"><div><div className="sdui-card-title">Generated schema <span>LIVE OUTPUT</span></div><p className="sdui-muted">Inspector changes are serialized here before saving.</p></div><div className="preview-actions"><button type="button" className="sdui-quiet" onClick={copyBuilderSchema}>Copy</button><button className="sdui-quiet" onClick={() => download(builderSchema, 'sdui-schema.json')}>Download</button><button className="sdui-quiet" disabled={!editingSchema?.id || dirty || qrGenerating} title={!editingSchema?.id ? 'Save the template first' : dirty ? 'Save changes before generating QR' : 'Generate QR to open Mini App'} onClick={() => void generateQr()}>{qrGenerating ? 'Generating…' : 'Mini App QR'}</button><button className="sdui-native-export" onClick={downloadNativeMockData}>Export Native</button></div></div>
@@ -535,7 +484,7 @@ export default function SDUIPage() {
               {outputView === 'tree' ? <div className="schema-component-tree"><div className="schema-tree-meta"><span>template_widget</span><span>SDUI_WIDGET</span><span>{countBuilderNodes(builderRoot)} components</span></div><SchemaTreeNode node={builderRoot} selected={selectedNode} onSelect={selectBuilderNode} /></div> : <pre className="builder-schema builder-schema-expanded">{builderSchema}</pre>}
             </section>
           </div>
-          <BuilderInspector node={selectedBuilderNode} onField={setBuilderField} onStyle={setBuilderStyle} onProperty={setBuilderProperty} onApplyToAll={applySelectedAppearanceToAll} />
+          <BuilderInspector node={selectedBuilderNode} onField={setBuilderField} onStyle={setBuilderStyle} onProperty={setBuilderProperty} onValue={setBuilderValue} styleTools={styleTools} path={selectedPath} duplicateVariable={!!selectedBuilderNode.variable?.trim() && duplicateVariables(dynamicFields).has(selectedBuilderNode.variable.trim())} onCopyPath={() => void copy(selectedPath, 'Path copied')} />
         </fieldset>
       </>}
       {showQr && <div className="sdui-modal-backdrop" role="presentation" onMouseDown={event => { if (event.target === event.currentTarget) setShowQr(false) }}><section className="sdui-qr-modal" role="dialog" aria-modal="true" aria-labelledby="sdui-qr-title"><button className="sdui-modal-close" aria-label="Close QR dialog" onClick={() => setShowQr(false)}>×</button><div><span className="sdui-kicker">Mini App preview</span><h2 id="sdui-qr-title">{schemaName}</h2><p>Scan to open the Mini App with this template ID.</p></div><label className="sdui-label">Mini App URL / deep link<input value={miniAppBaseUrl} onChange={event => { setMiniAppBaseUrl(event.target.value); setQrDataUrl('') }} placeholder="momo://action=marketing&refId=..." /></label><p>Tool sẽ thêm <code>templateId={editingSchema?.id}</code>. Nếu Mini App dùng params JSON, đặt <code>{'{templateId}'}</code> trong URL cấu hình.</p><div className="sdui-qr-image">{qrDataUrl && <img src={qrDataUrl} alt={`QR code for ${schemaName}`} />}</div>{copyFeedback && <p role="status">{copyFeedback}</p>}<code className="sdui-qr-url">{miniAppUrl || 'Nhập URL rồi chọn Generate QR'}</code><small className="sdui-muted">Template JSON API: {templateJsonUrl}</small><div className="sdui-qr-actions"><button className="sdui-quiet" disabled={!miniAppUrl} onClick={() => void copy(miniAppUrl, 'Mini App URL copied')}>Copy URL</button><button className="sdui-quiet" disabled={!miniAppBaseUrl.trim() || qrGenerating} onClick={() => void generateQr()}>{qrGenerating ? 'Generating…' : 'Generate QR'}</button><button className="sdui-primary" disabled={!qrDataUrl} onClick={downloadQr}>Download PNG</button></div></section></div>}

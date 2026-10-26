@@ -1,0 +1,722 @@
+{
+  "type": "template_widget",
+  "templateType": "SDUI_WIDGET",
+  "data": [
+    {
+      "type": "container",
+      "style": {
+        "backgroundColor": "#FFFFFF",
+        "cornerRadius": 12,
+        "padding": {
+          "top": 12,
+          "bottom": 12,
+          "left": 12,
+          "right": 12
+        }
+      },
+      "property": {
+        "layout": "column",
+        "spacing": 8
+      },
+      "trackTypes": {
+        "containerType": "widget",
+        "trackId": "5366ca63-c975-4210-b3ab-98d4db3ccde4",
+        "tracking": {
+          "id": "cdf2212f-b370-48c0-9eee-dc618112fd98",
+          "type": "Disco",
+          "data": "eyJ0eXBlIjoic2VydmljZV93aWRnZXQiLCJzZWdtZW50IjoiUFVTSF9URVNUIiwiZm9ybWF0X3NlcnZpY2UiOiIyNjA2MjRfRGllcF90ZXN0X1NEVUkiLCJmb3JtYXRfdHlwZSI6InNkdWlfd2lkZ2V0IiwicmVmX2lkIjoic2hvcGJhY2siLCJjYW1wYWlnbl9pZCI6IjQyNTk0ZTlkLWM1YzctNGIwZi1iOWQ3LTgwMDg5NmViZGMxOCIsImNhdGVnb3J5IjoiZ2VuZXJhbF9tZXJjaGFudF90ZW1wbGF0ZSIsInRvcGljIjoic2R1aV93aWRnZXQjMjYwNjI0X0RpZXBfdGVzdF9TRFVJIiwicG9zaXRpb25fem9uZSI6MSwicG9zaXRpb25fYmxvY2siOiIzIiwiYXNzZXRfaWQiOiI0MjVjMThmMC02NmRmLTQwZmUtOGQxOC1kNWVmMjJlNThhYzQiLCJzY3JlZW5faWQiOiI3NjM5ZGQ3OC1iZmJiLTQ4YWMtOTZmNi0wMjg4MTY0YjY3MGIiLCJzY3JlZW5fY29kZSI6Ik1haW5fU2hvcGJhY2tOYXRpdmUiLCJzY3JlZW5fa2V5Ijoic2hvcGJhY2siLCJzY3JlZW5fdmVyc2lvbiI6IjIiLCJ3aWRnZXRfdHlwZSI6ImR5bmFtaWNfd2lkZ2V0IiwiY29udGVudF90eXBlIjoiZml4ZWQiLCJpdGVtX2lkIjoiMjYwNjI0X0RpZXBfdGVzdF9TRFVJIiwiaXRlbV9uYW1lIjoiSGVhZGVyIiwicHJpb3JpdHkiOjEwMDAsIm1sX3Njb3JlIjowLjAsInNlbGVjdGlvbl9tZXRob2QiOiJvbmx5X29uZSIsImJsb2NrX25hbWUiOiJzaG9wYmFja19ibG9ja18zIiwiem9uZV9pZCI6ImE0NzhkNmM0LWU2MDItNGRhYi05M2M4LTJkZWNiNTQ3NjYyYyIsInpvbmVfbmFtZSI6IlBXIEIzLVoxIn0=",
+          "trackifyData": ""
+        }
+      },
+      "value": {
+        "children": [
+          {
+            "type": "container",
+            "style": {},
+            "property": {
+              "layout": "row",
+              "spacing": 12
+            },
+            "value": {
+              "children": [
+                {
+                  "type": "image",
+                  "style": {
+                    "width": 24,
+                    "height": 24
+                  },
+                  "property": {
+                    "contentMode": "fill"
+                  },
+                  "value": "https://static.momocdn.net/app/icon/promotion/logo_mega26.png"
+                },
+                {
+                  "type": "container",
+                  "style": {},
+                  "property": {
+                    "layout": "column",
+                    "spacing": 4
+                  },
+                  "value": {
+                    "children": [
+                      {
+                        "type": "text",
+                        "style": {
+                          "fillMaxWidth": true
+                        },
+                        "property": {
+                          "typography": "headerDefaultBold",
+                          "color": "#303233",
+                          "lineLimit": 1
+                        },
+                        "value": "Financial Products Widget"
+                      },
+                      {
+                        "type": "text",
+                        "style": {},
+                        "property": {
+                          "typography": "descriptionDefaultRegular",
+                          "color": "#303233",
+                          "lineLimit": 1
+                        },
+                        "value": "Choose the product that fits your needs"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "type": "spacer",
+                  "style": {},
+                  "property": {},
+                  "value": ""
+                },
+                {
+                  "type": "image",
+                  "style": {
+                    "width": 18,
+                    "height": 18
+                  },
+                  "property": {
+                    "contentMode": "fill"
+                  },
+                  "onTap": {
+                    "iconSource": "https://static.momocdn.net/app/img/XSell/rightAction.png",
+                    "ctaType": "ICON",
+                    "actions": [
+                      {
+                        "actionType": "REDIRECT",
+                        "params": {
+                          "typeScreen": "ListWidgetVoucherScreen",
+                          "widget": {
+                            "widgetId": "9b1d9a94-53e4-4269-9821-60bbc5192eb1",
+                            "widgetTitle": "Voucher_Collect_Filter_Quy_02"
+                          },
+                          "refId": "HomeScreen",
+                          "serviceId": "HomeNative",
+                          "storeId": "",
+                          "merchantId": "",
+                          "totalVouchers": 25
+                        },
+                        "endpoint": "",
+                        "featureCode": "promotion_hub",
+                        "ref_id": "promotion_hub",
+                        "action_type": "REDIRECT"
+                      }
+                    ]
+                  },
+                  "value": "https://static.momocdn.net/app/icon/promotion/logo_mega26.png"
+                }
+              ]
+            }
+          },
+          {
+            "type": "container",
+            "style": {
+              "padding": {
+                "left": 0,
+                "right": 0,
+                "top": 0,
+                "bottom": 0
+              }
+            },
+            "property": {
+              "layout": "scrollRow",
+              "spacing": 8
+            },
+            "value": {
+              "children": [
+                {
+                  "type": "container",
+                  "style": {
+                    "backgroundColor": "#FEF8FC",
+                    "cornerRadius": 12,
+                    "border": {
+                      "width": 1,
+                      "color": "#E8EAED"
+                    },
+                    "padding": {
+                      "all": 12
+                    },
+                    "width": 150,
+                    "height": 124
+                  },
+                  "property": {
+                    "layout": "column",
+                    "spacing": 8
+                  },
+                  "onTap": {
+                    "title": "Thu thập",
+                    "ctaType": "BUTTON",
+                    "type": "outline",
+                    "actions": [
+                      {
+                        "actionType": "REDIRECT",
+                        "params": {
+                          "giftId": "",
+                          "giftType": "huy_test260323_giam_100pt50d_wp9qk",
+                          "campaignId": "260323_clvc_8ij14wkr"
+                        },
+                        "endpoint": "",
+                        "featureCode": "hub_voucher_detail",
+                        "ref_id": "hub_voucher_detail",
+                        "action_type": "REDIRECT"
+                      }
+                    ]
+                  },
+                  "expire_time": "1813004156000",
+                  "trackTypes": {
+                    "containerType": "item",
+                    "trackId": "fac7554d-bc58-4d87-99a0-8f36bfb7149a",
+                    "itemTracking": {
+                      "item_id": "a478d6c4-e602-4dab-93c8-2decb547662c#260624_Diep_test_SDUI#0",
+                      "item_name": "",
+                      "position_slot": 0,
+                      "position_zone": 1,
+                      "format_subtype": "container",
+                      "cta_endpoint": ""
+                    }
+                  },
+                  "value": {
+                    "children": [
+                      {
+                        "type": "text",
+                        "style": {
+                          "fillMaxWidth": true
+                        },
+                        "property": {
+                          "typography": "labelXsMedium",
+                          "color": "#727272",
+                          "lineLimit": 1
+                        },
+                        "value": "Personal Loan"
+                      },
+                      {
+                        "type": "text",
+                        "style": {},
+                        "property": {
+                          "typography": "actionSBold",
+                          "color": "#EB2F96",
+                          "lineLimit": 1
+                        },
+                        "value": "Up to 100,000,000 VND"
+                      },
+                      {
+                        "type": "spacer",
+                        "style": {},
+                        "property": {
+                          "minLength": 0
+                        },
+                        "value": ""
+                      },
+                      {
+                        "type": "container",
+                        "style": {},
+                        "property": {
+                          "layout": "row",
+                          "spacing": 0,
+                          "alignment": "bottom"
+                        },
+                        "value": {
+                          "children": [
+                            {
+                              "type": "container",
+                              "style": {},
+                              "property": {
+                                "layout": "column",
+                                "spacing": 0
+                              },
+                              "value": {
+                                "children": [
+                                  {
+                                    "type": "container",
+                                    "style": {},
+                                    "property": {
+                                      "layout": "row",
+                                      "spacing": 4,
+                                      "alignment": "center"
+                                    },
+                                    "value": {
+                                      "children": [
+                                        {
+                                          "type": "image",
+                                          "style": {
+                                            "width": 12,
+                                            "height": 12
+                                          },
+                                          "property": {
+                                            "contentMode": "fill"
+                                          },
+                                          "value": "https://static.momocdn.net/app/icon/promotion/logo_mega26.png"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "style": {},
+                                          "property": {
+                                            "typography": "headerXsSemibold",
+                                            "color": "#303233",
+                                            "lineLimit": 1
+                                          },
+                                          "value": "Loan term"
+                                        }
+                                      ]
+                                    }
+                                  },
+                                  {
+                                    "type": "text",
+                                    "style": {},
+                                    "property": {
+                                      "typography": "descriptionXsRegular",
+                                      "color": "#484848",
+                                      "lineLimit": 1
+                                    },
+                                    "value": "Flights + Hotel included"
+                                  }
+                                ]
+                              }
+                            },
+                            {
+                              "type": "spacer",
+                              "style": {},
+                              "property": {
+                                "minLength": 0
+                              },
+                              "value": ""
+                            },
+                            {
+                              "type": "image",
+                              "style": {
+                                "width": 40,
+                                "height": 40
+                              },
+                              "property": {
+                                "contentMode": "fill"
+                              },
+                              "value": "https://static.momocdn.net/app/icon/promotion/logo_mega26.png"
+                            }
+                          ]
+                        }
+                      }
+                    ]
+                  }
+                },
+                {
+                  "type": "container",
+                  "style": {
+                    "backgroundColor": "#FEF8FC",
+                    "cornerRadius": 12,
+                    "border": {
+                      "width": 1,
+                      "color": "#E8EAED"
+                    },
+                    "padding": {
+                      "all": 12
+                    },
+                    "width": 150,
+                    "height": 124
+                  },
+                  "property": {
+                    "layout": "column",
+                    "spacing": 8
+                  },
+                  "onTap": {
+                    "title": "Thu thập",
+                    "ctaType": "BUTTON",
+                    "type": "outline",
+                    "actions": [
+                      {
+                        "actionType": "REDIRECT",
+                        "params": {
+                          "giftId": "",
+                          "giftType": "huy_test260323_giam_100pt50d_wp9qk",
+                          "campaignId": "260323_clvc_8ij14wkr"
+                        },
+                        "endpoint": "",
+                        "featureCode": "hub_voucher_detail",
+                        "ref_id": "hub_voucher_detail",
+                        "action_type": "REDIRECT"
+                      }
+                    ]
+                  },
+                  "expire_time": "1813004156000",
+                  "trackTypes": {
+                    "containerType": "item",
+                    "trackId": "e78068cf-24b3-406f-b585-d6301c534882",
+                    "itemTracking": {
+                      "item_id": "a478d6c4-e602-4dab-93c8-2decb547662c#260624_Diep_test_SDUI#1",
+                      "item_name": "",
+                      "position_slot": 1,
+                      "position_zone": 1,
+                      "format_subtype": "container",
+                      "cta_endpoint": ""
+                    }
+                  },
+                  "value": {
+                    "children": [
+                      {
+                        "type": "text",
+                        "style": {
+                          "fillMaxWidth": true
+                        },
+                        "property": {
+                          "typography": "labelXsMedium",
+                          "color": "#303233",
+                          "lineLimit": 1
+                        },
+                        "value": "Things To Do"
+                      },
+                      {
+                        "type": "spacer",
+                        "style": {},
+                        "property": {
+                          "minLength": 0
+                        },
+                        "value": ""
+                      },
+                      {
+                        "type": "container",
+                        "style": {},
+                        "property": {
+                          "layout": "row",
+                          "spacing": 0,
+                          "alignment": "bottom"
+                        },
+                        "value": {
+                          "children": [
+                            {
+                              "type": "container",
+                              "style": {},
+                              "property": {
+                                "layout": "column",
+                                "spacing": 8
+                              },
+                              "value": {
+                                "children": [
+                                  {
+                                    "type": "container",
+                                    "style": {},
+                                    "property": {
+                                      "layout": "row",
+                                      "spacing": 4,
+                                      "alignment": "center"
+                                    },
+                                    "value": {
+                                      "children": [
+                                        {
+                                          "type": "image",
+                                          "style": {
+                                            "width": 16,
+                                            "height": 16
+                                          },
+                                          "property": {
+                                            "contentMode": "fill"
+                                          },
+                                          "value": "https://static.momocdn.net/app/icon/promotion/logo_mega26.png"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "style": {},
+                                          "property": {
+                                            "typography": "descriptionDefaultRegular",
+                                            "color": "#484848",
+                                            "lineLimit": 1
+                                          },
+                                          "value": "Beach Activities"
+                                        }
+                                      ]
+                                    }
+                                  },
+                                  {
+                                    "type": "container",
+                                    "style": {},
+                                    "property": {
+                                      "layout": "row",
+                                      "spacing": 4,
+                                      "alignment": "center"
+                                    },
+                                    "value": {
+                                      "children": [
+                                        {
+                                          "type": "image",
+                                          "style": {
+                                            "width": 16,
+                                            "height": 16
+                                          },
+                                          "property": {
+                                            "contentMode": "fill"
+                                          },
+                                          "value": "https://static.momocdn.net/app/icon/promotion/logo_mega26.png"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "style": {},
+                                          "property": {
+                                            "typography": "descriptionDefaultRegular",
+                                            "color": "#484848",
+                                            "lineLimit": 1
+                                          },
+                                          "value": "Local Food Tours"
+                                        }
+                                      ]
+                                    }
+                                  }
+                                ]
+                              }
+                            },
+                            {
+                              "type": "spacer",
+                              "style": {},
+                              "property": {
+                                "minLength": 0
+                              },
+                              "value": ""
+                            },
+                            {
+                              "type": "image",
+                              "style": {
+                                "width": 40,
+                                "height": 40
+                              },
+                              "property": {
+                                "contentMode": "fill"
+                              },
+                              "value": "https://static.momocdn.net/app/icon/promotion/logo_mega26.png"
+                            }
+                          ]
+                        }
+                      }
+                    ]
+                  }
+                },
+                {
+                  "type": "container",
+                  "style": {
+                    "backgroundColor": "#FEF8FC",
+                    "cornerRadius": 12,
+                    "border": {
+                      "width": 1,
+                      "color": "#E8EAED"
+                    },
+                    "padding": {
+                      "all": 12
+                    },
+                    "width": 150,
+                    "height": 124
+                  },
+                  "property": {
+                    "layout": "column",
+                    "spacing": 8
+                  },
+                  "onTap": {
+                    "title": "Thu thập",
+                    "ctaType": "BUTTON",
+                    "type": "outline",
+                    "actions": [
+                      {
+                        "actionType": "REDIRECT",
+                        "params": {
+                          "giftId": "",
+                          "giftType": "huy_test260323_giam_100pt50d_wp9qk",
+                          "campaignId": "260323_clvc_8ij14wkr"
+                        },
+                        "endpoint": "",
+                        "featureCode": "hub_voucher_detail",
+                        "ref_id": "hub_voucher_detail",
+                        "action_type": "REDIRECT"
+                      }
+                    ]
+                  },
+                  "expire_time": "1813004156000",
+                  "trackTypes": {
+                    "containerType": "item",
+                    "trackId": "ecf74028-55e3-4a98-988e-ade2e1efdbd0",
+                    "itemTracking": {
+                      "item_id": "a478d6c4-e602-4dab-93c8-2decb547662c#260624_Diep_test_SDUI#2",
+                      "item_name": "",
+                      "position_slot": 2,
+                      "position_zone": 1,
+                      "format_subtype": "container",
+                      "cta_endpoint": ""
+                    }
+                  },
+                  "value": {
+                    "children": [
+                      {
+                        "type": "text",
+                        "style": {
+                          "fillMaxWidth": true
+                        },
+                        "property": {
+                          "typography": "labelXsMedium",
+                          "color": "#303233",
+                          "lineLimit": 1
+                        },
+                        "value": "Trip Summary"
+                      },
+                      {
+                        "type": "spacer",
+                        "style": {},
+                        "property": {
+                          "minLength": 0
+                        },
+                        "value": ""
+                      },
+                      {
+                        "type": "container",
+                        "style": {},
+                        "property": {
+                          "layout": "row",
+                          "spacing": 0,
+                          "alignment": "bottom"
+                        },
+                        "value": {
+                          "children": [
+                            {
+                              "type": "container",
+                              "style": {},
+                              "property": {
+                                "layout": "column",
+                                "spacing": 8
+                              },
+                              "value": {
+                                "children": [
+                                  {
+                                    "type": "container",
+                                    "style": {},
+                                    "property": {
+                                      "layout": "row",
+                                      "spacing": 4,
+                                      "alignment": "center"
+                                    },
+                                    "value": {
+                                      "children": [
+                                        {
+                                          "type": "image",
+                                          "style": {
+                                            "width": 16,
+                                            "height": 16
+                                          },
+                                          "property": {
+                                            "contentMode": "fill"
+                                          },
+                                          "value": "https://static.momocdn.net/app/icon/promotion/logo_mega26.png"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "style": {
+                                            "fillMaxWidth": true
+                                          },
+                                          "property": {
+                                            "typography": "descriptionDefaultRegular",
+                                            "color": "#484848",
+                                            "lineLimit": 1
+                                          },
+                                          "value": "Duration"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "style": {},
+                                          "property": {
+                                            "typography": "headerXsSemibold",
+                                            "color": "#303233",
+                                            "lineLimit": 1
+                                          },
+                                          "value": "5 Days"
+                                        }
+                                      ]
+                                    }
+                                  },
+                                  {
+                                    "type": "container",
+                                    "style": {},
+                                    "property": {
+                                      "layout": "row",
+                                      "spacing": 4,
+                                      "alignment": "center"
+                                    },
+                                    "value": {
+                                      "children": [
+                                        {
+                                          "type": "image",
+                                          "style": {
+                                            "width": 16,
+                                            "height": 16
+                                          },
+                                          "property": {
+                                            "contentMode": "fill"
+                                          },
+                                          "value": "https://static.momocdn.net/app/icon/promotion/logo_mega26.png"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "style": {
+                                            "fillMaxWidth": true
+                                          },
+                                          "property": {
+                                            "typography": "descriptionDefaultRegular",
+                                            "color": "#484848",
+                                            "lineLimit": 1
+                                          },
+                                          "value": "Estimated Cost"
+                                        },
+                                        {
+                                          "type": "text",
+                                          "style": {},
+                                          "property": {
+                                            "typography": "headerXsSemibold",
+                                            "color": "#303233",
+                                            "lineLimit": 1
+                                          },
+                                          "value": "$450"
+                                        }
+                                      ]
+                                    }
+                                  }
+                                ]
+                              }
+                            }
+                          ]
+                        }
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "widgetId": "260624_Diep_test_SDUI"
+    }
+  ],
+  "tracking": {
+    "id": "b7427d27-07c9-41d8-a9dc-1bd3a63f74a4",
+    "type": "Disco",
+    "data": "eyJ0eXBlIjoic2VydmljZV93aWRnZXQiLCJzZWdtZW50IjoiUFVTSF9URVNUIiwiZm9ybWF0X3NlcnZpY2UiOiIyNjA2MjRfRGllcF90ZXN0X1NEVUkiLCJmb3JtYXRfdHlwZSI6InNkdWlfd2lkZ2V0IiwicmVmX2lkIjoic2hvcGJhY2siLCJjYW1wYWlnbl9pZCI6IjQyNTk0ZTlkLWM1YzctNGIwZi1iOWQ3LTgwMDg5NmViZGMxOCIsImNhdGVnb3J5IjoiZ2VuZXJhbF9tZXJjaGFudF90ZW1wbGF0ZSIsInRvcGljIjoic2R1aV93aWRnZXQjMjYwNjI0X0RpZXBfdGVzdF9TRFVJIiwicG9zaXRpb25fem9uZSI6IjE3ODIzODQxMTcxMjQtMmIwNGJkYWMtNGMwZS00MThiLWFlY2ItMmI0ZjZiZWQ1NzNlIiwicG9zaXRpb25fYmxvY2siOiIzIiwiYXNzZXRfaWQiOiI0MjVjMThmMC02NmRmLTQwZmUtOGQxOC1kNWVmMjJlNThhYzQiLCJzY3JlZW5faWQiOiI3NjM5ZGQ3OC1iZmJiLTQ4YWMtOTZmNi0wMjg4MTY0YjY3MGIiLCJzY3JlZW5fY29kZSI6Ik1haW5fU2hvcGJhY2tOYXRpdmUiLCJzY3JlZW5fa2V5Ijoic2hvcGJhY2siLCJzY3JlZW5fdmVyc2lvbiI6IjIiLCJ3aWRnZXRfdHlwZSI6ImR5bmFtaWNfd2lkZ2V0IiwiY29udGVudF90eXBlIjoiZml4ZWQiLCJpdGVtX2lkIjoiMjYwNjI0X0RpZXBfdGVzdF9TRFVJIiwiaXRlbV9uYW1lIjoiSGVhZGVyIiwicHJpb3JpdHkiOjEwMDAsIm1sX3Njb3JlIjowLjAsInNlbGVjdGlvbl9tZXRob2QiOiJvbmx5X29uZSJ9",
+    "extra_data": {
+      "position_index": 0,
+      "position_zone": 1,
+      "request_id": "1782384119716-476d559d-85c9-42f0-b94d-01b5cdb47e12",
+      "block_id": "sdui_widget#260624_Diep_test_SDUI"
+    }
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "checks": "D34: TOGGLE + style + onTap",
+  "html": "<div class=\"sdui-canvas sdui-android\" data-platform=\"android\" style=\"width:375px;font-family:-apple-system, &quot;SF Pro Text&quot;, system-ui, sans-serif;display:flex;flex-direction:column;align-items:flex-start;background-color:#F2F2F6;--sdui-tap:rgba(37, 99, 235, 0.18);--sdui-tap-outline:#2563EB;--sdui-selection:#2563EB;--sdui-unconfirmed:#DC2626;--sdui-canvas-border:#DDDDE3\"><span class=\"sdui-drawn sdui-toggle sdui-unconfirmed\" title=\"G4: kích thước công tắc chưa có trong tài liệu\" style=\"position:relative;display:inline-block;flex:0 0 auto;width:40px;height:24px;border-radius:12px;background-color:#C6C6C6\"><span style=\"position:absolute;top:2px;left:2px;width:20px;height:20px;border-radius:10px;background-color:#FFFFFF\"></span></span></div>",
+  "weightPlan": [],
+  "lint": [
+    "warning D34 root"
+  ]
+}

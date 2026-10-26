@@ -1,4 +1,4 @@
-.sdui-page { min-height: calc(100vh - 68px); padding: 34px clamp(18px, 4vw, 58px) 70px; background: var(--bg); }
+.sdui-page { --sdui-max-width: 1880px; --sdui-side-width: 380px; min-height: calc(100vh - 68px); padding: 34px clamp(18px, 4vw, 58px) 70px; background: var(--bg); }
 .sdui-header, .sdui-tabs, .sdui-grid, .sdui-wide-card { max-width: 1160px; margin-left: auto; margin-right: auto; }
 .sdui-header { display: flex; align-items: flex-end; justify-content: space-between; gap: 24px; margin-bottom: 28px; }
 .sdui-kicker { color: var(--primary); font-family: var(--font-ui); font-size: 12px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; }
@@ -121,18 +121,18 @@
 @media (max-width: 480px) { .sdui-mode-toggle, .sdui-template-grid, .sdui-steps { grid-template-columns: 1fr; } .sdui-tabs { overflow-x: auto; } }
 
 /* Schema library and editor */
-.sdui-header, .sdui-tabs, .sdui-wide-card { max-width: 1440px; }
+.sdui-header, .sdui-tabs, .sdui-wide-card { max-width: var(--sdui-max-width); }
 .sdui-library-heading { display: flex; justify-content: space-between; align-items: center; gap: 20px; }
 .sdui-library-heading h2 { margin: 0 0 8px; font-size: 22px; }
 .sdui-library-heading > button, .sdui-editor-toolbar > .sdui-primary { width: auto; white-space: nowrap; }
-.sdui-editor-toolbar { max-width: 1440px; margin: 20px auto 0; display: flex; gap: 16px; align-items: center; }
+.sdui-editor-toolbar { max-width: var(--sdui-max-width); margin: 20px auto 0; display: flex; gap: 16px; align-items: center; }
 .sdui-editor-toolbar .sdui-label { flex: 1; margin: 0; max-width: 420px; }
 .sdui-editor-toolbar > .sdui-muted { margin-right: auto; }
 .sdui-page input, .sdui-page select, .sdui-page textarea { min-width: 0; max-width: 100%; }
 .sdui-page button:disabled { opacity: .45; cursor: not-allowed; }
 .sdui-page :focus-visible { outline: 2px solid var(--primary); outline-offset: 3px; }
-.sdui-feedback { max-width: 1440px; margin: 16px auto; padding: 12px 16px; border: 1px solid var(--border); border-radius: 8px; color: var(--text); background: var(--surface); font-size: 13px; }
-.sdui-builder-workspace { max-width: 1440px; grid-template-columns: minmax(220px, 280px) minmax(300px, 1fr) minmax(230px, 280px); padding: 0; border: 0; align-items: start; }
+.sdui-feedback { max-width: var(--sdui-max-width); margin: 16px auto; padding: 12px 16px; border: 1px solid var(--border); border-radius: 8px; color: var(--text); background: var(--surface); font-size: 13px; }
+.sdui-builder-workspace { max-width: var(--sdui-max-width); grid-template-columns: minmax(260px, var(--sdui-side-width)) minmax(300px, 1fr) minmax(260px, var(--sdui-side-width)); padding: 0; border: 0; align-items: start; }
 .sdui-editor-main { display: grid; min-width: 0; gap: 14px; }
 .sdui-builder-workspace .figma-inspector-dock { position: static; width: auto; max-height: none; margin: 0; box-shadow: none; }
 @media (min-width: 1101px) { .sdui-builder-workspace > .figma-tree-panel, .sdui-builder-workspace > .figma-inspector-dock { position: sticky; top: 14px; max-height: calc(100vh - 28px); overflow: auto; } }
@@ -152,6 +152,9 @@
 .inspector-color-row { display: flex; gap: 8px; }
 .inspector-color { flex: 0 0 36px; padding: 2px; }
 .inspector-apply-button { padding: 8px; background: transparent; border: 1px solid var(--border); border-radius: 6px; color: var(--text-secondary); cursor: pointer; }
+.inspector-apply-button:disabled { opacity: .5; cursor: not-allowed; }
+.inspector-style-tools { display: grid; gap: 6px; margin-bottom: 12px; padding-bottom: 12px; border-bottom: 1px solid var(--border); }
+.inspector-style-row { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
 .sdui-generated-panel { min-width: 0; margin: 0; }
 .sdui-generated-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 24px; margin-bottom: 18px; }
 .sdui-generated-header .sdui-card-title { margin-bottom: 6px; }
@@ -259,11 +262,75 @@
 .sdui-migration-guide { margin: 20px 0; padding: 12px 20px; border: 1px solid var(--border); border-radius: var(--radius-md); background: var(--bg-secondary); }
 .sdui-migration-guide > summary { color: var(--text); font-weight: 600; font-size: 14px; }
 
-.sdui-preview-image { display: block; flex-shrink: 0; }
-.sdui-preview-image.is-placeholder {
-  background-color: #fce8f3 !important;
-  background-image: repeating-linear-gradient(135deg, transparent, transparent 8px, #eb2f9609 8px, #eb2f9609 16px);
-  outline: 1px dashed #eb2f9660;
-  outline-offset: -1px;
-}
-.sdui-image-size { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; padding: 1px; color: #a50064; font-family: var(--font-ui); font-weight: 500; line-height: 1.2; white-space: nowrap; pointer-events: none; }
+/* SDUI preview renderer (src/renderers/sdui/preview). SDUI colours come from the renderer's tokens module
+   as CSS variables on .sdui-canvas; this file only uses those variables and the app theme. */
+.sdui-preview-panel { display: grid; gap: 14px; min-width: 0; }
+.sdui-preview-toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+.sdui-segmented { display: inline-flex; overflow: hidden; border: 1px solid var(--border); border-radius: var(--radius); }
+.sdui-segmented button { padding: 6px 12px; border: 0; background: var(--bg); color: var(--text-secondary); font: inherit; font-size: 12px; cursor: pointer; }
+.sdui-segmented button + button { border-left: 1px solid var(--border); }
+.sdui-segmented button[aria-pressed='true'] { background: color-mix(in srgb, var(--primary) 12%, var(--bg)); color: var(--primary); font-weight: 600; }
+.sdui-spec-badge { margin-left: auto; padding: 3px 9px; border: 1px solid var(--border); border-radius: 999px; color: var(--text-muted); font-family: var(--font-code); font-size: 11px; }
+.sdui-preview-canvases { display: flex; gap: 20px; align-items: flex-start; justify-content: safe center; overflow-x: auto; padding: 16px; border-radius: var(--radius); background: var(--bg-secondary); }
+.sdui-preview-device { flex: 0 0 auto; margin: 0; }
+.sdui-preview-device figcaption { margin-bottom: 6px; color: var(--text-muted); font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .04em; }
+
+.sdui-canvas { position: relative; min-height: 80px; overflow: hidden; outline: 1px solid var(--sdui-canvas-border); -webkit-font-smoothing: antialiased; }
+.sdui-canvas, .sdui-canvas * { box-sizing: border-box; }
+.sdui-canvas img { max-width: none; }
+.sdui-canvas-empty { margin: 0; padding: 24px 16px; color: var(--text-muted); font-size: 12px; }
+.sdui-border { position: absolute; inset: 0; z-index: 1; border-radius: inherit; pointer-events: none; }
+.sdui-scroll { scrollbar-width: none; }
+.sdui-scroll::-webkit-scrollbar { display: none; }
+.sdui-unconfirmed { outline: 1px dashed var(--sdui-unconfirmed); outline-offset: -1px; }
+.sdui-spinner { display: inline-block; flex: 0 0 auto; border: 2px solid; border-radius: 50%; animation: sdui-spin .8s linear infinite; }
+.sdui-progress-fill { animation-name: sdui-progress-grow; animation-timing-function: ease-out; animation-fill-mode: both; }
+@keyframes sdui-spin { to { transform: rotate(360deg); } }
+@keyframes sdui-progress-grow { from { width: 0; } }
+
+/* Select mode: click selects the node in the editor. */
+.mode-select .sdui-canvas [data-sdui-ref] { cursor: pointer; }
+.mode-select .sdui-canvas .sdui-selected { outline: 2px solid var(--sdui-selection); outline-offset: -2px; }
+
+/* Tap mode — §4.5 / D25. Android and iOS-with-background: the whole frame. */
+.mode-tap .sdui-tappable { cursor: pointer; }
+.mode-tap .sdui-tappable:not(.sdui-tap-painted-only)::after { content: ''; position: absolute; inset: 0; z-index: 2; border-radius: inherit; background: var(--sdui-tap); outline: 1px dashed var(--sdui-tap-outline); outline-offset: -1px; pointer-events: none; }
+/* iOS without background: only painted pixels receive the tap; padding and gaps fall through. */
+.mode-tap .sdui-tap-painted-only, .mode-tap .sdui-tap-painted-only :not(.sdui-drawn) { pointer-events: none; }
+.mode-tap .sdui-tap-painted-only .sdui-drawn { pointer-events: auto; outline: 1px dashed var(--sdui-tap-outline); outline-offset: -1px; }
+
+.sdui-interactions, .sdui-lint { display: grid; gap: 8px; padding: 12px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--bg); }
+.sdui-interactions textarea { font-family: var(--font-code); font-size: 12px; }
+.sdui-log-heading { display: flex; align-items: center; justify-content: space-between; gap: 8px; font-size: 13px; }
+.sdui-log, .sdui-lint-list { display: grid; gap: 4px; max-height: 260px; margin: 0; padding: 0; overflow: auto; list-style: none; }
+.sdui-log li { display: grid; gap: 2px; padding: 6px 8px; border-left: 3px solid var(--border); font-size: 12px; }
+.sdui-log li.status-ok { border-left-color: var(--success); }
+.sdui-log li.status-failed { border-left-color: var(--danger); }
+.sdui-log li.status-skipped, .sdui-log li.status-pending { border-left-color: var(--warning); }
+.sdui-log-meta { color: var(--text-muted); font-size: 11px; }
+.sdui-log pre { margin: 4px 0 0; font-size: 11px; white-space: pre-wrap; }
+.sdui-lint-toggle { display: inline-flex; align-items: center; gap: 4px; color: var(--text-muted); font-size: 12px; }
+.sdui-lint-list button { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px; width: 100%; padding: 6px 8px; border: 0; border-radius: var(--radius); background: transparent; color: var(--text); font: inherit; font-size: 12px; text-align: left; cursor: pointer; }
+.sdui-lint-list button:hover, .sdui-lint-list button[aria-pressed='true'] { background: var(--bg-tertiary); }
+.sdui-lint-code { font-weight: 700; }
+.sdui-lint-path { color: var(--text-secondary); }
+.sdui-lint-platform { padding: 0 6px; border: 1px solid var(--border); border-radius: 999px; color: var(--text-muted); font-size: 10px; }
+.sdui-lint-message { flex-basis: 100%; color: var(--text-secondary); }
+
+/* Dynamic fields (path + variable) */
+.inspector-path-row { display: flex; align-items: center; gap: 6px; margin-top: 4px; }
+.inspector-path-row code { flex: 1; min-width: 0; padding: 6px 8px; overflow: hidden; border: 1px solid var(--border); border-radius: 6px; color: var(--text-secondary); font-family: var(--font-code); font-size: 11px; overflow-wrap: anywhere; word-break: break-all; line-height: 1.5; }
+.inspector-warning { color: var(--warning); }
+.inspector-note { margin: 0 0 12px; font-size: 12px; }
+.variable-badge { margin-left: 6px; padding: 0 6px; border-radius: 999px; background: color-mix(in srgb, var(--primary) 14%, transparent); color: var(--primary); font-family: var(--font-code); font-size: 10px; font-weight: 600; }
+.inspector-style-deep { display: flex; align-items: center; gap: 6px; color: var(--text-secondary); font-size: 12px; cursor: pointer; }
+.inspector-style-deep input { width: auto; margin: 0; }
+
+/* Layer reordering */
+.figma-tree-move { display: none; width: 18px; padding: 0; border: 0; background: transparent; color: var(--text-muted); cursor: pointer; font: inherit; }
+.figma-tree-move:hover:not(:disabled) { color: var(--primary); }
+.figma-tree-move:disabled { opacity: .3; cursor: default; }
+.figma-tree-row:hover .figma-tree-move, .figma-tree-row.selected .figma-tree-move { display: block; }
+.figma-tree-row[draggable='true'] { cursor: grab; }
+.figma-tree-row.drop-before { box-shadow: inset 0 2px 0 var(--primary); }
+.figma-tree-row.drop-after { box-shadow: inset 0 -2px 0 var(--primary); }

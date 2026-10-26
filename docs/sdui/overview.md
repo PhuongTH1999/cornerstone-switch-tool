@@ -1,49 +1,50 @@
 # Hỗ trợ trong SDUI Editor
 
-Tra cứu cấu trúc JSON, component, property, style và ví dụ ở các mục bên trái. Nội dung schema lấy từ tài liệu SDUI trong repository; mức hỗ trợ trên app phụ thuộc phiên bản native.
+Tra cứu cấu trúc JSON, component, property, style và ví dụ ở các mục bên trái. Hợp đồng JSON và hành vi từng nền tảng lấy từ **SDUI spec 1.1.1** (`sdui-spec.md`, `sdui-preview.md`, `components/*.md` — đồng bộ từ repo native-widget).
 
-## 6 component type
+## 10 component type
 
 | Type | Nội dung (value) | Chỉnh trong bảng thuộc tính |
 | --- | --- | --- |
-| container | Object có children: mảng node con | layout, spacing, alignment, arrangement |
-| text | String | typography, color, lineLimit, textAlignment |
-| image | String URL | contentMode, tintColor, aspectRatio, kích thước, cornerRadius |
-| button | Object: title, type, iconLeft, iconRight | ctaType, color, actionType, actions[0].featureCode |
+| container | `{ children }` | layout (column, row, scrollRow, scrollColumn), spacing, alignment, kích thước, nền, viền |
+| text | String | typography (11 giá trị), color, lineLimit, textAlignment |
+| image | String URL | contentMode (fit, fill, scaleAspectFill), tintColor, aspectRatio, kích thước, cornerRadius |
+| button | `{ title, type, iconLeft, iconRight }` | ctaType, color, actions[0].featureCode |
 | tag | String | tagType, backgroundColor, textColor, iconUrl |
-| spacer | Chuỗi rỗng | minLength |
+| spacer | `""` | minLength |
+| box | `{ children }` | contentAlignment, kích thước |
+| pager | `{ children }` (mỗi child 1 trang) | showIndicator, alignmentIndicator, màu indicator, kích thước |
+| pageIndicator | `""` | total, activeIndex, màu |
+| progressBar | `{ currentValue, maxValue, subDes1, subDes2 }` | currentValue, maxValue, subDes1, subDes2, color, barHeight, barWidth |
 
-**Tag:** import, chỉnh sửa và preview đã có; menu Add hiện chưa có tùy chọn tag.
+Thêm component bằng menu **+ Add** khi đang chọn `container`, `box` hoặc `pager`. Component mới được tạo với giá trị an toàn cho cả 2 nền tảng (container có `spacing: 0`, spacer có `minLength: 0`, image có size, pager có `height`).
 
 ## Style và cấu trúc chung
 
-- Node có type, style, property và value. Tên node trong editor được xuất thành property.id.
-- Style gồm backgroundColor, cornerRadius, padding, border, width, height, fillMaxWidth, fillMaxHeight. Xem mục style để biết kiểu dữ liệu và ví dụ.
-- modifier.weight xác định phần không gian được chia trong layout. Dữ liệu modifier sẵn có được giữ khi import/export.
-- Editor lưu lại các field của node gốc khi import, gồm onTap, trackTypes, widgetId, expire_time; các field này chưa có form chỉnh riêng. Sửa bằng JSON trước khi import.
-- Dùng tab Editor để xem JSON xuất ra; không dùng các field nội bộ như nativeStyle, nativeProperty hoặc source làm schema gửi cho native.
+- Node có type, style, property và value. Tên node trong editor được xuất thành `property.id` (native bỏ qua key này).
+- Style gồm backgroundColor, cornerRadius, padding (`all`/`top`/`left`/`right`/`bottom`), border, width, height, fillMaxWidth, fillMaxHeight.
+- `modifier`, `property.arrangement`, `padding.horizontal/vertical` **không có trong spec** — native bỏ qua. Editor giữ lại khi import nhưng preview không vẽ, lint báo "Key không có tác dụng".
+- Editor giữ các field của node gốc khi import (onTap, trackTypes, widgetId, expire_time); chưa có form chỉnh riêng.
+- Xoá trống một ô số trong Inspector sẽ xoá key đó (giá trị `""` ở key số làm iOS bỏ cả node).
 
-## Preview web và runtime native
+## Preview Android / iOS
 
-| Chức năng | Mức hỗ trợ trong preview web hiện tại |
-| --- | --- |
-| Container | Layout hàng/cột, cuộn, spacing, alignment và arrangement |
-| Text | Typography, màu chữ, lineLimit, textAlignment |
-| Image | URL, kích thước, contentMode, cornerRadius; tintColor/aspectRatio có form nhưng preview chưa mô phỏng đầy đủ |
-| Button | Tiêu đề, kiểu nút và icon; không thực thi actions hoặc mô phỏng đầy đủ TOGGLE/ICON |
-| Tag | Nội dung, preset màu và màu tùy chỉnh; iconUrl chưa được render trong preview |
-| Spacer | Khoảng trống co giãn; cần kiểm tra minLength trên native |
-| onTap / tracking / expire_time | Giữ dữ liệu khi import/export; preview không thực thi hành vi native này |
+Preview vẽ **đúng JSON được export**, theo `sdui-preview.md` (spec 1.1.1), trên khung rộng 375:
 
-Preview dùng CSS trên trình duyệt. Màu alpha, typography và kích thước có thể khác app native; hãy kiểm tra trên app trước khi phát hành.
+- **Android / iOS / So sánh**: mỗi quy tắc [A]/[I] trong tài liệu được vẽ riêng theo nền tảng, kể cả các khác biệt D1–D36. Không gộp hay "sửa" khác biệt.
+- **Chọn node**: bấm vào preview để chọn layer.
+- **Bấm thử**: tô vùng bấm theo nền tảng (D25), chạy action giả lập và ghi log (không gọi API, không tracking). Chọn kết quả `CALL_API`: thất bại / thành công / thành công có `cta` (nút đổi sang `cta`).
+- **Lint**: mỗi cảnh báo có mức (❌ ⚠️ ℹ️), mã D (hoặc mục tài liệu) và đường dẫn node (`root.children[1].children[0]`). Bấm vào cảnh báo để khoanh node trên preview.
+- Viền đỏ nét đứt = trường hợp tài liệu chưa mô tả, preview đang vẽ tạm (cần xác nhận trên máy thật).
+
+Preview là mô phỏng trên trình duyệt: các giá trị ≈ / 🔎 trong tài liệu nằm ở `src/renderers/sdui/preview/approx.ts`, cần đối chiếu với máy thật theo bộ test §9 của `sdui-preview.md`.
 
 ## Lưu ý về validator cũ
 
-Validator/plugin converter trong repository hiện chỉ khai báo 5 type (chưa có tag) và danh sách property/style hẹp hơn editor. Layout hợp lệ là `row`, `column`, `scrollRow`; không dùng `scrollColumn` vì native có thể crash.
+`src/renderers/sdui/validator.ts` (dùng cho plugin converter) vẫn chỉ khai báo 5 type và danh sách property/style hẹp hơn spec. Figma migration vẫn xuất cuộn dọc thành `column` (không dùng `scrollColumn`).
 
 ## Cách tra cứu
 
-1. Chọn mục schema hoặc component ở danh sách bên trái.
+1. Chọn mục schema hoặc component ở danh sách bên trái. Link giữa các tài liệu mở mục tương ứng trong tab này.
 2. Xem value, các property, style và enum trong ví dụ JSON.
-3. Các block jsonc có comment hoặc dấu ... là minh họa; bỏ comment và thay ... bằng dữ liệu thật trước khi import JSON.
-4. Mục Tracking, onTap, expire_time và ví dụ đầy đủ mô tả các cấu hình bổ sung.
+3. Các block jsonc có comment hoặc dấu … là minh họa; bỏ comment và thay … bằng dữ liệu thật trước khi import JSON.
