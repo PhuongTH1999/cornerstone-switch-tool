@@ -28,6 +28,8 @@
   },
   "devDependencies": {
     "@figma/plugin-typings": "*",
+    "@grpc/grpc-js": "^1.12.5",
+    "@grpc/proto-loader": "^0.7.13",
     "@types/jszip": "^3.4.0",
     "@types/react": "^18.2.0",
     "@types/react-dom": "^18.2.0",

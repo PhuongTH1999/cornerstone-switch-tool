@@ -1,8 +1,9 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
+import { sduiTemplateBridge } from './server/sduiTemplateBridge'
 
 export default defineConfig({
-  plugins: [react()],
+  plugins: [react(), sduiTemplateBridge()],
   server: {
     port: 5173,
     open: true,

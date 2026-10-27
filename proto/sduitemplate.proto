@@ -1,0 +1,269 @@
+syntax = "proto3";
+
+option java_package = "vn.com.momo.hermes.widget.sduitemplate";
+option java_outer_classname = "SduiTemplateProto";
+option java_multiple_files = true;
+
+package hermes.widget.sduitemplate;
+
+service SduiTemplateService {
+  rpc CreateTemplate(CreateTemplateRequest) returns (CreateTemplateResponse) {}
+  rpc CreateDraftFromVersion(CreateDraftFromVersionRequest) returns (CreateDraftFromVersionResponse) {}
+  rpc UpdateDraft(UpdateDraftRequest) returns (UpdateDraftResponse) {}
+  rpc PublishDraft(PublishDraftRequest) returns (PublishDraftResponse) {}
+  rpc UpdateStatus(UpdateStatusRequest) returns (UpdateStatusResponse) {}
+
+  rpc GetTemplate(GetTemplateRequest) returns (GetTemplateResponse) {}
+  rpc BatchGetTemplates(BatchGetTemplatesRequest) returns (BatchGetTemplatesResponse) {}
+  rpc GetTemplatePreviewHtml(GetTemplatePreviewHtmlRequest) returns (GetTemplatePreviewHtmlResponse) {}
+  rpc ListTemplates(ListTemplatesRequest) returns (ListTemplatesResponse) {}
+
+  // Accepts raw SDUI JSON + a list of dynamic field selections and returns a
+  // Velocity template, derived data_schema, sample data, a rendered preview and a
+  // repeat-detection report. Repeated lists are detected by the backend: a
+  // scrollRow's children, or any array of >= 2 same-shaped data records.
+  rpc GenerateVelocityTemplate(GenerateVelocityTemplateRequest) returns (GenerateVelocityTemplateResponse) {}
+}
+
+enum TemplateStatus {
+  TEMPLATE_STATUS_UNSPECIFIED = 0;
+  DRAFT = 1;
+  PUBLISHED = 2;
+  DISABLED = 3;
+  ARCHIVED = 4;
+}
+
+enum VersionBumpKind {
+  VERSION_BUMP_KIND_UNSPECIFIED = 0;
+  MAJOR = 1;
+  MINOR = 2;
+}
+
+message Version {
+  int32 major = 1;
+  int32 minor = 2;
+}
+
+message AppVersionConstraint {
+  int32 min_version = 1;
+  int32 max_version = 2;
+}
+
+message Actor {
+  string email = 1;
+  string account_id = 2;
+  string role_id = 3;
+}
+
+message AuditInfo {
+  int64 created_at = 1;
+  Actor created_by = 2;
+  int64 updated_at = 3;
+  Actor updated_by = 4;
+  int64 published_at = 5;
+  Actor published_by = 6;
+}
+
+message SduiTemplate {
+  string template_id = 1;
+  int32 major = 2;
+  int32 minor = 3;
+  string name = 4;
+  string description = 5;
+  TemplateStatus status = 6;
+  map<string, AppVersionConstraint> compatible_app_version = 7;
+  string sdui_schema = 8;
+  string data_schema = 9;
+  string sdui_html = 10;
+  AuditInfo audit = 11;
+}
+
+message SduiTemplateRuntime {
+  string template_id = 1;
+  int32 major = 2;
+  int32 minor = 3;
+  string name = 4;
+  TemplateStatus status = 5;
+  map<string, AppVersionConstraint> compatible_app_version = 6;
+  string sdui_schema = 7;
+  string data_schema = 8;
+}
+
+message CreateTemplateRequest {
+  string name = 1;
+  string description = 2;
+  map<string, AppVersionConstraint> compatible_app_version = 3;
+  string sdui_schema = 4;
+  string data_schema = 5;
+  string sdui_html = 6;
+  Actor actor = 7;
+}
+
+message CreateTemplateResponse {
+  string template_id = 1;
+  int32 major = 2;
+  int32 minor = 3;
+  TemplateStatus status = 4;
+  string message = 5;
+}
+
+message CreateDraftFromVersionRequest {
+  string template_id = 1;
+  int32 source_major = 2;
+  int32 source_minor = 3;
+  VersionBumpKind kind = 4;
+  Actor actor = 5;
+}
+
+message CreateDraftFromVersionResponse {
+  string template_id = 1;
+  int32 major = 2;
+  int32 minor = 3;
+  TemplateStatus status = 4;
+  string message = 5;
+}
+
+message UpdateDraftRequest {
+  string template_id = 1;
+  int32 major = 2;
+  int32 minor = 3;
+  optional string name = 4;
+  optional string description = 5;
+  optional string sdui_schema = 6;
+  optional string data_schema = 7;
+  optional string sdui_html = 8;
+  map<string, AppVersionConstraint> compatible_app_version = 9;
+  Actor actor = 10;
+}
+
+message UpdateDraftResponse {
+  bool success = 1;
+  string message = 2;
+}
+
+message PublishDraftRequest {
+  string template_id = 1;
+  int32 major = 2;
+  int32 minor = 3;
+  Actor actor = 4;
+}
+
+message PublishDraftResponse {
+  bool success = 1;
+  TemplateStatus status = 2;
+  string message = 3;
+}
+
+message UpdateStatusRequest {
+  string template_id = 1;
+  int32 major = 2;
+  int32 minor = 3;
+  TemplateStatus new_status = 4;
+  Actor actor = 5;
+}
+
+message UpdateStatusResponse {
+  bool success = 1;
+  TemplateStatus status = 2;
+  string message = 3;
+}
+
+message GetTemplateRequest {
+  string template_id = 1;
+  int32 major = 2;
+  int32 minor = 3;
+  optional int32 app_version = 4;
+  optional string platform = 5;
+}
+
+message GetTemplateResponse {
+  SduiTemplateRuntime template = 1;
+  string message = 2;
+}
+
+message SduiTemplateInfo {
+  string template_id = 1;
+  int32 major = 2;
+  int32 minor = 3;
+}
+
+message BatchGetTemplatesRequest {
+  repeated SduiTemplateInfo templates = 1;
+}
+
+message BatchGetTemplatesResponse {
+  repeated SduiTemplateRuntime templates = 1;
+  string message = 2;
+}
+
+message GetTemplatePreviewHtmlRequest {
+  string template_id = 1;
+  int32 major = 2;
+  int32 minor = 3;
+}
+
+message GetTemplatePreviewHtmlResponse {
+  string sdui_html = 1;
+  string message = 2;
+}
+
+message ListTemplatesRequest {
+  repeated TemplateStatus status_filter = 1;
+  optional int32 page = 2;
+  optional int32 limit = 3;
+  optional int64 from = 4;
+  optional int64 to = 5;
+  optional string created_by = 6;
+  optional string name = 7;
+}
+
+message ListTemplatesResponse {
+  repeated SduiTemplate templates = 1;
+  int32 total_count = 2;
+  string message = 3;
+}
+
+// One field the FE wants to make dynamic. `path` identifies the exact JSON leaf
+// in `raw_json` (JSONPath: $.data[0].value.children[0].value...). `variable` is
+// the Velocity variable name to render at that position.
+message DynamicField {
+  string path = 1;
+  string variable = 2;
+}
+
+// One auto-detected #foreach scope. `container_path` is the JSON path of the
+// item template (element [0] of the list); `widget_id` is its `property.id` or
+// `id`. `data_variable` / `loop_variable` are the list / loop variable names.
+message RepeatDetection {
+  string container_path = 1;
+  string widget_id = 2;
+  string strategy = 3;
+  string data_variable = 4;
+  string loop_variable = 5;
+  int32 item_count = 6;
+}
+
+message GenerateVelocityTemplateRequest {
+  // Raw SDUI JSON (object or array) authored in the admin UI. A scrollRow may
+  // contain a single sample item; other lists need >= 2 same-shaped items.
+  string raw_json = 1;
+  repeated DynamicField dynamic_fields = 2;
+  // Optional name of the repeated list in data_schema / sample_data. Default
+  // "items"; further scrollRows get "<name>_2", "<name>_3", ...
+  optional string container_name = 3;
+  // Optional loop variable in `#foreach($<loop_variable> in $<list>)`.
+  // Default "item", independent of container_name.
+  optional string loop_variable = 4;
+}
+
+message GenerateVelocityTemplateResponse {
+  bool success = 1;
+  string message = 2;
+  string velocity_template = 3;
+  string data_schema = 4;
+  string sample_data = 5;
+  repeated RepeatDetection repeat_detections = 6;
+  // velocity_template rendered with sample_data (same engine as the widget gateway): the JSON
+  // the app would receive, ready for preview.
+  string rendered_json = 7;
+}
