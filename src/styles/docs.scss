@@ -224,6 +224,10 @@
   color: var(--primary);
 }
 
+.markdown-body .sdui-doc-example {
+  margin: 16px 0 24px;
+}
+
 .markdown-body pre {
   background-color: var(--bg-secondary);
   border: 1px solid var(--border);

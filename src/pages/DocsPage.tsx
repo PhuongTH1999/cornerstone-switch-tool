@@ -2,9 +2,12 @@ import { request } from '../lib/http'
 import { useState, useEffect } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import ReactMarkdown from 'react-markdown'
+import type { Components } from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import ChangelogView from '../components/ChangelogView'
+import SDUIDocExample from '../components/SDUIDocExample'
 import '../styles/docs.scss'
+import '../styles/sdui.scss'
 
 interface DocFile {
   name: string
@@ -17,10 +20,22 @@ interface DocFile {
 
 const docFiles: DocFile[] = [
   { name: 'introduction', title: '📖 Guides', path: 'introduction.md', category: 'Getting Started' },
+  { name: 'sdui', title: '🎨 SDUI là gì?', path: 'sdui-intro.md', category: 'Getting Started' },
   { name: 'api', title: '🔌 APIs', path: 'api.md', category: 'Development' },
   { name: 'INTEGRATION', title: '🏗️ Architecture', path: 'INTEGRATION.md', category: 'Development' },
   { name: 'changelog', title: '📝 ChangeLog', category: 'References', remote: true },
 ]
+
+/** Khối ```sdui trong markdown được vẽ thành preview SDUI thay vì hiện JSON */
+const markdownComponents: Components = {
+  pre({ node, children, ...props }) {
+    const code = node?.children[0]
+    if (code?.type === 'element' && code.tagName === 'code' && String(code.properties.className ?? '').split(/[\s,]+/).includes('language-sdui')) {
+      return <SDUIDocExample source={code.children.map(child => child.type === 'text' ? child.value : '').join('')} />
+    }
+    return <pre {...props}>{children}</pre>
+  },
+}
 
 export default function DocsPage() {
   const [searchParams, setSearchParams] = useSearchParams()
@@ -114,7 +129,7 @@ export default function DocsPage() {
               <div className="docs-loading">Loading...</div>
             ) : (
               <div className="markdown-body">
-                <ReactMarkdown remarkPlugins={[remarkGfm]}>{content}</ReactMarkdown>
+                <ReactMarkdown remarkPlugins={[remarkGfm]} components={markdownComponents}>{content}</ReactMarkdown>
               </div>
             )}
           </div>

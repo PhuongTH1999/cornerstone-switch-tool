@@ -117,6 +117,7 @@ Xem `SETUP_GUIDE.md` để biết cách cấu hình và build frontend.
 
 ## Các tài liệu khác
 
+- 🧱 **[SDUI là gì?](/docs?doc=sdui)** — Giải thích SDUI và quy trình tạo giao diện
 - 🔌 **[Integration Guide](/?#/integrate)** — Hướng dẫn tích hợp vào Mini Apps
 - 📡 **[API Reference](/?#/api)** — Tham chiếu API endpoints
 - 🎨 **[SDUI Schema](/?#/sdui)** — Đặc tả cấu trúc dữ liệu SDUI
