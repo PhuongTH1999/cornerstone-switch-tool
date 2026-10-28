@@ -26,7 +26,7 @@ export default function Navbar() {
   const { user, logout } = useAuth()
   const navigate = useNavigate()
   const [isUserDropdownOpen, setIsUserDropdownOpen] = useState(false)
-  const [theme, setTheme] = useState(() => document.documentElement.getAttribute('data-theme') || 'dark')
+  const [theme, setTheme] = useState(() => document.documentElement.getAttribute('data-theme') || 'light')
 
   const handleLogout = () => {
     logout()
