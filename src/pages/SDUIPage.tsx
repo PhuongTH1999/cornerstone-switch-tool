@@ -57,6 +57,26 @@ function unwrapSchema(input: any): any {
   return root
 }
 
+type SDUITab = 'builder' | 'templates' | 'document' | 'migration'
+const SDUI_TABS: { id: SDUITab; label: string; icon: 'library' | 'editor' | 'document' | 'figma' }[] = [
+  { id: 'templates', label: 'Schema library', icon: 'library' },
+  { id: 'builder', label: 'Editor', icon: 'editor' },
+  { id: 'document', label: 'Document', icon: 'document' },
+  { id: 'migration', label: 'Figma migration', icon: 'figma' },
+]
+
+// ARIA tabs pattern: arrow keys / Home / End move between tabs and select them.
+function moveTabFocus(event: React.KeyboardEvent<HTMLElement>) {
+  const tabs = [...event.currentTarget.querySelectorAll<HTMLButtonElement>('[role="tab"]')]
+  const index = tabs.indexOf(document.activeElement as HTMLButtonElement)
+  if (index < 0) return
+  const next = { ArrowRight: index + 1, ArrowLeft: index - 1, Home: 0, End: tabs.length - 1 }[event.key]
+  if (next === undefined) return
+  event.preventDefault()
+  const target = tabs[(next + tabs.length) % tabs.length]
+  target.focus(); target.click()
+}
+
 const countNodes = (node: BuilderNode): number => 1 + (node.children || []).reduce((total, child) => total + countNodes(child), 0)
 
 function normalizeBuilderTree(tree: any): BuilderNode | null {
@@ -74,7 +94,7 @@ function normalizeBuilderTree(tree: any): BuilderNode | null {
 }
 
 export default function SDUIPage() {
-  const [activeTab, setActiveTab] = useState<'builder' | 'templates' | 'document' | 'migration'>('templates')
+  const [activeTab, setActiveTab] = useState<SDUITab>('templates')
   const [status, setStatus] = useState('')
   useEffect(() => {
     if (!status || status.endsWith('…') || /lỗi|error|cannot|could not|không/i.test(status)) return
@@ -374,15 +394,27 @@ export default function SDUIPage() {
   return (
     <main className="sdui-page">
       <header className="sdui-header">
-        <div><a className="sdui-kicker" href="/">← Cornerstone</a><h1>Server-driven UI</h1><p>Create, edit and manage your native UI schemas.</p></div>
-        <div className="sdui-pills"><span className="sdui-pill">{cloudStatus === 'connected' ? 'Templates API connected' : cloudStatus === 'loading' ? 'Loading API…' : 'Templates API unavailable'}</span><span className="sdui-pill sdui-pill-muted">{savedSchemas.length} schemas</span></div>
+        <div className="sdui-title-row">
+          <span className="sdui-title-icon"><SDUIIcon kind="library" /></span>
+          <div><h1>Server-driven UI</h1><p>Create, edit and manage your native UI schemas.</p></div>
+        </div>
+        <div className="sdui-pills">
+          <span className={`sdui-api-status is-${cloudStatus}`} role="status">
+            <i aria-hidden="true" />{cloudStatus === 'connected' ? 'Templates API connected' : cloudStatus === 'loading' ? 'Connecting to API…' : 'Templates API unavailable'}
+            {cloudStatus === 'error' && <button type="button" onClick={() => void refresh()}>Retry</button>}
+          </span>
+        </div>
       </header>
-      <nav className="sdui-tabs" aria-label="SDUI workspace">
-        <button className={activeTab === 'templates' ? 'active' : ''} onClick={() => setActiveTab('templates')}>Schema library</button>
-        <button className={activeTab === 'builder' ? 'active' : ''} onClick={() => setActiveTab('builder')}>Editor {dirty && baseline ? '•' : ''}</button>
-        <button className={activeTab === 'document' ? 'active' : ''} onClick={() => setActiveTab('document')}>Document</button>
-        <button className={activeTab === 'migration' ? 'active' : ''} onClick={() => setActiveTab('migration')}>Figma migration</button>
-      </nav>
+      <div className="sdui-tabs-bar">
+        <nav className="sdui-tabs" role="tablist" aria-label="SDUI workspace" onKeyDown={moveTabFocus}>
+          {SDUI_TABS.map(tab => <button key={tab.id} type="button" role="tab" aria-selected={activeTab === tab.id} tabIndex={activeTab === tab.id ? 0 : -1}
+            className={activeTab === tab.id ? 'active' : ''} onClick={() => setActiveTab(tab.id)}>
+            <SDUIIcon kind={tab.icon} /><span className="sdui-tab-label">{tab.label}</span>
+            {tab.id === 'templates' && cloudStatus === 'connected' && <span className="sdui-tab-count">{savedSchemas.length}</span>}
+            {tab.id === 'builder' && dirty && baseline && <span className="sdui-tab-dirty" title="Unsaved changes"><span className="sr-only">Unsaved changes</span></span>}
+          </button>)}
+        </nav>
+      </div>
       {activeTab === 'migration' && <FigmaMigration onImport={result => {
         const tree = normalizeBuilderTree(result.template)
         if (!tree || !canReplaceDraft()) return

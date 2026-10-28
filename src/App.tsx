@@ -32,7 +32,7 @@ function AppContent() {
       <Route path="/" element={<ProtectedRoute><Layout><IntroductionPage /></Layout></ProtectedRoute>} />
       <Route path="/dashboard" element={<ProtectedRoute><Layout><DashboardPage /></Layout></ProtectedRoute>} />
       <Route path="/docs" element={<ProtectedRoute><Layout><DocsPage /></Layout></ProtectedRoute>} />
-      <Route path="/sdui" element={<ProtectedRoute><SDUIPage /></ProtectedRoute>} />
+      <Route path="/sdui" element={<ProtectedRoute><Layout><SDUIPage /></Layout></ProtectedRoute>} />
       <Route path="/tools" element={<ProtectedRoute><Layout><ToolsPage /></Layout></ProtectedRoute>} />
       <Route path="/profile" element={<ProtectedRoute><Layout><ProfilePage /></Layout></ProtectedRoute>} />
       <Route path="/admin" element={<ProtectedRoute><Layout><AdminPanel /></Layout></ProtectedRoute>} />

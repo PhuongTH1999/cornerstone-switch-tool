@@ -2,7 +2,6 @@
   display: flex;
   flex-direction: column;
   min-height: 100vh;
-  background-color: var(--bg);
 }
 
 .docs-body {
@@ -72,26 +71,27 @@
 }
 
 .docs-link {
+  margin: 0 10px;
   background: none;
   border: none;
-  padding: 8px 16px;
+  border-radius: var(--radius);
+  padding: 8px 12px;
   text-align: left;
   color: var(--text-secondary);
   cursor: pointer;
   font-size: 14px;
   font-weight: 500;
-  transition: all 0.2s ease;
+  transition: all var(--t-fast) var(--ease-out);
 
   &:hover {
-    color: var(--primary);
+    color: var(--primary-text);
     background-color: var(--bg-secondary);
   }
 
   &.active {
-    color: var(--primary);
-    background-color: var(--bg-secondary);
-    border-left: 3px solid var(--primary);
-    padding-left: 13px;
+    color: var(--primary-text);
+    background-color: var(--primary-soft);
+    font-weight: 600;
   }
 }
 
@@ -210,18 +210,18 @@
   background-color: var(--bg-secondary);
   padding: 2px 6px;
   border-radius: 4px;
-  font-family: 'JetBrains Mono', monospace;
+  font-family: var(--font-code);
   font-size: 13px;
-  color: var(--primary);
+  color: var(--primary-text);
 }
 
 .markdown-body .inline-code {
   background-color: var(--bg-secondary);
   padding: 2px 6px;
   border-radius: 4px;
-  font-family: 'JetBrains Mono', monospace;
+  font-family: var(--font-code);
   font-size: 13px;
-  color: var(--primary);
+  color: var(--primary-text);
 }
 
 .markdown-body .sdui-doc-example {
@@ -252,7 +252,7 @@
 }
 
 .markdown-body a {
-  color: var(--primary);
+  color: var(--primary-text);
   text-decoration: none;
   transition: opacity 0.2s ease;
 
@@ -333,7 +333,7 @@
   transition: all 0.2s ease;
 
   &:hover {
-    color: var(--primary);
+    color: var(--primary-text);
     border-color: var(--primary);
   }
 }
@@ -398,7 +398,7 @@
   font-weight: 600;
   padding: 2px 8px;
   border-radius: 999px;
-  color: var(--primary);
+  color: var(--primary-text);
   background-color: var(--bg-secondary);
 }
 

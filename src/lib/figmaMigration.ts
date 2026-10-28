@@ -162,3 +162,35 @@ export function migrateFigmaJson(input: unknown, options: MigrationOptions = {})
   const root = convert({ type: source.body.scrollable ? 'ScrollView' : 'View', styles: source.body.style, children: source.body.children }, '$.body')
   return { name: source.meta?.screenName || 'Migrated Figma template', template: { type: 'template_widget', templateType: 'SDUI_WIDGET', data: [root] }, warnings }
 }
+
+export type WarningGroupId = 'asset' | 'token' | 'unsupported' | 'screen' | 'other'
+export interface WarningGroup { id: WarningGroupId; warnings: MigrationIssue[]; /** Unsupported keys (props.size, styles.overflow…) with how often they occur. */ keys: [string, number][] }
+const groupOf = (message: string): WarningGroupId =>
+  /URL ảnh|SVG/.test(message) ? 'asset'
+    : /Chưa map token|Cần giá trị số/.test(message) ? 'token'
+      : /cấp màn hình|Header màn hình/.test(message) ? 'screen'
+        : /chưa có mapping|chưa map|không hỗ trợ|chưa biết/.test(message) ? 'unsupported' : 'other'
+
+/** Groups migration warnings by what the user has to do, in the order they should handle them. */
+export function groupMigrationWarnings(warnings: MigrationIssue[]): WarningGroup[] {
+  const order: WarningGroupId[] = ['asset', 'token', 'unsupported', 'screen', 'other']
+  return order.map(id => {
+    const items = warnings.filter(warning => groupOf(warning.message) === id)
+    const counts = new Map<string, number>()
+    for (const { path } of items) {
+      const key = path.match(/\.(props|styles)\.([^.]+)/)?.slice(1).join('.') ?? path.match(/^\$\.(\w+)$/)?.[1]
+      if (key) counts.set(key, (counts.get(key) || 0) + 1)
+    }
+    return { id, warnings: items, keys: [...counts].sort((a, b) => b[1] - a[1]) }
+  }).filter(group => group.warnings.length)
+}
+
+/** Images that fell back to the placeholder: mapping key (source URL or node path) and how many nodes use it. */
+export function unresolvedAssets(warnings: MigrationIssue[]): { key: string; count: number }[] {
+  const counts = new Map<string, number>()
+  for (const { message } of warnings) {
+    const key = message.match(/asset mapping cho (.+); đang dùng ảnh/)?.[1]
+    if (key) counts.set(key, (counts.get(key) || 0) + 1)
+  }
+  return [...counts].map(([key, count]) => ({ key, count }))
+}

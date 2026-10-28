@@ -3,7 +3,7 @@ import { DESIGN_TOKENS, resolveSDUIDesignTokens } from '../src/lib/designTokens'
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import fixture from './fixtures/figma-template.json'
-import { migrateFigmaJson } from '../src/lib/figmaMigration'
+import { groupMigrationWarnings, migrateFigmaJson, unresolvedAssets } from '../src/lib/figmaMigration'
 
 test('user sample expands repeated references and maps text, layout and SVG warnings', () => {
   const result = migrateFigmaJson(fixture)
@@ -66,4 +66,22 @@ test('design tokens resolve on SDUI import without changing text or input object
   assert.equal(input.style.backgroundColor, 'Colors.black_01')
   assert.equal(DESIGN_TOKENS['Colors.red_11'], '#fef8f8')
   assert.equal(DESIGN_TOKENS['Spacing.Size5XL'], 64)
+})
+
+test('groups warnings by action and counts unsupported keys', () => {
+  const groups = groupMigrationWarnings(migrateFigmaJson(fixture).warnings)
+  assert.deepEqual(groups.map(group => group.id), ['asset', 'unsupported', 'screen'])
+  const unsupported = groups.find(group => group.id === 'unsupported')!
+  assert.deepEqual(unsupported.keys.find(([key]) => key === 'styles.textAlignVertical'), ['styles.textAlignVertical', 3])
+  assert.deepEqual(groups.find(group => group.id === 'screen')!.keys.map(([key]) => key), ['tracking', 'localization'])
+})
+
+test('lists each unresolved image once and mapping it removes the warning', () => {
+  const assets = unresolvedAssets(migrateFigmaJson(fixture).warnings)
+  const photo = assets.find(asset => asset.key.endsWith('fig-33e47424cc08887f.png'))!
+  assert.equal(photo.count, 3)
+  assert.equal(assets.filter(asset => asset.key.startsWith('$.body')).length, 3)
+  const mapped = migrateFigmaJson(fixture, { assets: { [photo.key]: 'https://cdn.example.com/photo.png' } })
+  assert.equal(unresolvedAssets(mapped.warnings).some(asset => asset.key === photo.key), false)
+  assert.ok(JSON.stringify(mapped.template).includes('https://cdn.example.com/photo.png'))
 })

@@ -1,4 +1,4 @@
-export default function SDUIIcon({ name = '', kind }: { name?: string; kind?: 'import' | 'plus' | 'edit' | 'library' }) {
+export default function SDUIIcon({ name = '', kind }: { name?: string; kind?: 'import' | 'plus' | 'edit' | 'library' | 'editor' | 'document' | 'figma' }) {
   const type = kind || (/image/i.test(name) ? 'image' : /carousel|banner/i.test(name) ? 'carousel' : /promotion/i.test(name) ? 'promotion' : /insight/i.test(name) ? 'insight' : 'library')
   const paths: Record<string, React.ReactNode> = {
     image: <><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8" cy="8" r="1.5"/><path d="m3 17 6-6 4 4 3-3 5 5"/></>,
@@ -9,6 +9,9 @@ export default function SDUIIcon({ name = '', kind }: { name?: string; kind?: 'i
     plus: <path d="M12 5v14M5 12h14"/>,
     edit: <><path d="m14 5 5 5M4 20l5-1L21 7a2 2 0 0 0-5-5L4 14v6Z"/></>,
     library: <><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></>,
+    editor: <><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M3 9h18M9 21V9"/></>,
+    document: <><path d="M6 3h9l4 4v14H6z"/><path d="M14 3v5h5M9 13h7M9 17h5"/></>,
+    figma: <><path d="M12 3H9a3 3 0 0 0 0 6h3zm0 6H9a3 3 0 0 0 0 6h3zm0 0h3a3 3 0 1 1 0 6 3 3 0 0 1-3-3z"/><path d="M12 3h3a3 3 0 0 1 0 6h-3zM9 15a3 3 0 1 0 3 3v-3z"/></>,
   }
   return <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">{paths[type]}</svg>
 }

@@ -2,7 +2,6 @@
   display: flex;
   flex-direction: column;
   min-height: 100vh;
-  background-color: var(--bg);
 }
 
 .profile-content {
@@ -88,7 +87,7 @@
     &:focus {
       outline: none;
       border-color: var(--primary);
-      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+      box-shadow: var(--focus-ring);
     }
 
     &:disabled {
@@ -136,7 +135,7 @@
 }
 
 .info-value {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: var(--font-code);
   font-size: 14px;
   color: var(--text);
   word-break: break-all;

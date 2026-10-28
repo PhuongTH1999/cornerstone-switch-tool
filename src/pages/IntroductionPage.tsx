@@ -176,14 +176,15 @@ export default function IntroductionPage() {
                     style={{
                       background: 'var(--surface)',
                       border: '1px solid var(--border)',
-                      borderRadius: '12px',
+                      borderRadius: 'var(--radius-lg)',
+                      boxShadow: 'var(--shadow)',
                       padding: '16px',
                       textAlign: 'center',
                       cursor: item.file ? 'pointer' : 'default',
                       transition: 'all 0.2s ease',
                     }}
-                    onMouseEnter={(e) => item.file && (e.currentTarget.style.borderColor = 'var(--primary)', e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.1)')}
-                    onMouseLeave={(e) => (e.currentTarget.style.borderColor = 'var(--border)', e.currentTarget.style.boxShadow = 'none')}
+                    onMouseEnter={(e) => item.file && (e.currentTarget.style.borderColor = 'var(--primary)', e.currentTarget.style.boxShadow = 'var(--shadow-md)')}
+                    onMouseLeave={(e) => (e.currentTarget.style.borderColor = 'var(--border)', e.currentTarget.style.boxShadow = 'var(--shadow)')}
                   >
                     <div style={{ fontSize: '32px', marginBottom: '8px' }}>{item.icon}</div>
                     <h4 style={{ margin: '0 0 8px 0', fontSize: '14px', fontWeight: 600, color: 'var(--text)' }}>{item.name}</h4>
@@ -223,14 +224,15 @@ export default function IntroductionPage() {
                     style={{
                       background: 'var(--surface)',
                       border: '1px solid var(--border)',
-                      borderRadius: '12px',
+                      borderRadius: 'var(--radius-lg)',
+                      boxShadow: 'var(--shadow)',
                       padding: '16px',
                       textAlign: 'center',
                       cursor: item.file ? 'pointer' : 'default',
                       transition: 'all 0.2s ease',
                     }}
-                    onMouseEnter={(e) => item.file && (e.currentTarget.style.borderColor = 'var(--primary)', e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.1)')}
-                    onMouseLeave={(e) => (e.currentTarget.style.borderColor = 'var(--border)', e.currentTarget.style.boxShadow = 'none')}
+                    onMouseEnter={(e) => item.file && (e.currentTarget.style.borderColor = 'var(--primary)', e.currentTarget.style.boxShadow = 'var(--shadow-md)')}
+                    onMouseLeave={(e) => (e.currentTarget.style.borderColor = 'var(--border)', e.currentTarget.style.boxShadow = 'var(--shadow)')}
                   >
                     <div style={{ fontSize: '32px', marginBottom: '8px' }}>{item.icon}</div>
                     <h4 style={{ margin: '0 0 8px 0', fontSize: '14px', fontWeight: 600, color: 'var(--text)' }}>{item.name}</h4>
